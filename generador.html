@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Generador Tipificaciones (Excel → JSON)</title>
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; background:#fff; color:#111; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 20px; }
+    h1 { font-size: 18px; margin: 0 0 12px; }
+    .card { border: 1px solid #e6e6e6; border-radius: 12px; padding: 16px; background:#fff; }
+    .row { display:flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .row > * { flex: 0 0 auto; }
+    label { font-size: 12px; color:#333; display:block; margin-bottom:6px; }
+    input[type="file"], input[type="text"] { padding: 10px; border:1px solid #ddd; border-radius: 10px; min-width: 260px; }
+    button { padding: 10px 12px; border:1px solid #111; background:#111; color:#fff; border-radius: 10px; cursor:pointer; }
+    button.secondary { background:#fff; color:#111; }
+    button:disabled { opacity:.5; cursor:not-allowed; }
+    .muted { color:#666; font-size: 12px; }
+    .tabs { display:flex; gap: 8px; margin: 14px 0; }
+    .tab { border:1px solid #ddd; padding: 10px 12px; border-radius: 10px; cursor:pointer; background:#fff; }
+    .tab.active { border-color:#111; }
+    .grid { display:grid; grid-template-columns: 1fr; gap: 12px; }
+    .statbar { display:flex; gap: 10px; flex-wrap: wrap; }
+    .stat { border:1px solid #eee; border-radius: 10px; padding: 10px 12px; }
+    .stat .k { font-size: 11px; color:#666; }
+    .stat .v { font-size: 14px; font-weight: 600; }
+    pre { white-space: pre-wrap; word-break: break-word; background:#fafafa; border:1px solid #eee; padding: 12px; border-radius: 12px; margin:0; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align:left; padding: 10px; border-bottom: 1px solid #eee; font-size: 12px; vertical-align: top; }
+    th { background:#fafafa; position: sticky; top: 0; z-index: 1; }
+    .pill { display:inline-block; font-size: 11px; padding: 4px 8px; border:1px solid #ddd; border-radius: 999px; margin-right: 6px; }
+    .right { margin-left:auto; }
+    .danger { color:#b00020; }
+    .ok { color:#0a7a2f; }
+    .small { font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Webapp: Excel → JSON (Tipificaciones + Errores)</h1>
+
+    <div class="card">
+      <div class="row">
+        <div>
+          <label>Archivo Excel</label>
+          <input id="file" type="file" accept=".xlsx,.xls" />
+        </div>
+
+        <div>
+          <label>Hoja objetivo (case-insensitive)</label>
+          <input id="sheetTarget" type="text" value="madre" />
+          <div class="muted">Se busca coincidencia exacta por nombre (ignorando mayúsculas/minúsculas).</div>
+        </div>
+
+        <div class="right">
+          <label>&nbsp;</label>
+          <button id="btnProcess" disabled>Procesar</button>
+          <button id="btnDownload" class="secondary" disabled>Descargar JSON</button>
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div class="tabs">
+        <div id="tabGen" class="tab active">Generador</div>
+        <div id="tabErr" class="tab">Errores</div>
+      </div>
+
+      <div id="viewGen" class="grid">
+        <div class="statbar">
+          <div class="stat"><div class="k">Archivo</div><div class="v" id="sFile">—</div></div>
+          <div class="stat"><div class="k">Hoja</div><div class="v" id="sSheet">—</div></div>
+          <div class="stat"><div class="k">Total filas (excel_base)</div><div class="v" id="sRows">—</div></div>
+          <div class="stat"><div class="k">Nodos N1</div><div class="v" id="sN1">—</div></div>
+          <div class="stat"><div class="k">Errores/Inconsistencias</div><div class="v" id="sErr">—</div></div>
+        </div>
+
+        <div class="card" style="border-color:#eee;">
+          <div class="muted">Preview JSON (recortado)</div>
+          <pre id="jsonPreview">Carga un archivo y presiona "Procesar".</pre>
+        </div>
+      </div>
+
+      <div id="viewErr" class="grid" style="display:none;">
+        <div class="row">
+          <div class="small">
+            <span class="pill">HEADER_MISSING</span>
+            <span class="pill">INCONSISTENCIA</span>
+            <span class="pill">CRUCE_FAMILIA</span>
+          </div>
+        </div>
+
+        <div class="card" style="border-color:#eee;">
+          <div class="row" style="align-items:flex-end;">
+            <div style="min-width:260px;">
+              <label>Filtrar por tipo</label>
+              <input id="filterTipo" type="text" placeholder="Ej: INCONSISTENCIA" />
+            </div>
+            <div style="min-width:260px;">
+              <label>Filtrar por nivel</label>
+              <input id="filterNivel" type="text" placeholder="Ej: 3" />
+            </div>
+            <div class="right">
+              <button id="btnClearFilters" class="secondary">Limpiar filtros</button>
+            </div>
+          </div>
+
+          <div style="height:10px"></div>
+
+          <div style="max-height: 420px; overflow:auto; border:1px solid #eee; border-radius:12px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>tipo</th>
+                  <th>nivel</th>
+                  <th>fila_excel</th>
+                  <th>mensaje</th>
+                  <th>contexto</th>
+                </tr>
+              </thead>
+              <tbody id="errTbody">
+                <tr><td colspan="5" class="muted">No hay datos aún.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div style="height:10px"></div>
+          <div class="muted" id="errCount">—</div>
+        </div>
+      </div>
+
+      <div style="height:10px"></div>
+      <div class="muted">
+        Nota: Esta app funciona completamente en tu navegador. El Excel no se sube a ningún servidor.
+      </div>
+    </div>
+  </div>
+
+  <!-- SheetJS (XLSX) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <script>
+    // =======================
+    // Config (igual que index.js)
+    // =======================
+    const OUTPUT_FILE_NAME = "salida_tipificaciones.json";
+
+    const N1_HEADER = "Tipo de Gestión (N1)";
+    const N3_HEADER = "Proceso (N3)";
+    const N4_HEADER = "Tipo (N4)";
+    const N5_HEADER = "Nivel 5";
+
+    const NIVEL2_ATTRS = [
+      "Pospago",
+      "Prepago",
+      "Internet Fijo (FTTH/HFC)",
+      "Telefonia Fija",
+      "TV/Streaming",
+      "App - Defender +",
+      "APP/CPE Less",
+      "APP - Más APP",
+      "APP - HBO",
+      "APP - Disney",
+    ];
+
+    // =======================
+    // Helpers (igual que index.js)
+    // =======================
+    function normalizeCell(v) {
+      if (v === undefined || v === null) return "";
+      return String(v).trim();
+    }
+
+    // SOLO X o x
+    function isMarkedStrict(v) {
+      const s = normalizeCell(v);
+      return s === "X" || s === "x";
+    }
+
+    function transformN4Strict(valueRaw) {
+      const v = normalizeCell(valueRaw);
+      if (!v) return "";
+      const s = v.toLowerCase().trim();
+
+      if (s === "derivación" || s === "derivar") return "Derivación";
+      if (s === "derivar a fidelización") return "Derivar a Fidelización";
+
+      if (s === "tipificación (sin escalamiento)" || s === "tipificacion (sin escalamiento)") return "Resuelto";
+
+      return v;
+    }
+
+    function getProcessPrefix(n3) {
+      const m = String(n3 || "").trim().match(/\b([A-Z]\d[A-Z])\b/i);
+      return m ? m[1].toUpperCase() : null;
+    }
+    function getN1FamilyPrefix(n1) {
+      const m = String(n1 || "").trim().match(/\(([A-Z]\d[A-Z])\)/i);
+      return m ? m[1].toUpperCase() : null;
+    }
+
+    function makeComboId(n1, n2, n3, n4, n5) {
+      return [n1, n2, n3, n4, n5].map((x) => String(x ?? "").trim()).join("|||");
+    }
+
+    function findSheetNameCI(sheetNames, targetName) {
+      const target = String(targetName || "").toLowerCase().trim();
+      return sheetNames.find((n) => String(n).toLowerCase().trim() === target);
+    }
+
+    function ensureNode(map, key, factory) {
+      if (!map.has(key)) map.set(key, factory());
+      return map.get(key);
+    }
+    function addFila(setObj, filaExcel) { setObj.add(filaExcel); }
+    function setToSortedArray(setObj) { return Array.from(setObj).sort((a,b)=>a-b); }
+
+    function buildTipificaciones(rows) {
+      const errores = [];
+      const first = rows[0] || {};
+
+      // Validación headers obligatorios
+      const required = [N1_HEADER, N3_HEADER, N4_HEADER, N5_HEADER, ...NIVEL2_ATTRS];
+      const missing = required.filter((h) => !Object.prototype.hasOwnProperty.call(first, h));
+      if (missing.length) {
+        errores.push({
+          tipo: "HEADER_MISSING",
+          nivel: null,
+          fila_excel: null,
+          mensaje: "Faltan headers requeridos para construir tipificaciones.",
+          contexto: { faltantes: missing, headers_detectados: Object.keys(first) },
+        });
+      }
+
+      // Root
+      const root = new Map();
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const filaExcel = i + 2; // igual que index.js
+
+        const n1 = normalizeCell(row[N1_HEADER]);
+        const n3 = normalizeCell(row[N3_HEADER]);
+        const n4 = transformN4Strict(row[N4_HEADER]);
+        const n5 = normalizeCell(row[N5_HEADER]);
+
+        // N2 activos estrictos (pueden ser múltiples)
+        const n2Activos = [];
+        for (const attr of NIVEL2_ATTRS) {
+          if (isMarkedStrict(row[attr])) n2Activos.push(attr);
+        }
+
+        // Validaciones duras (excluye fila)
+        if (!n1) {
+          errores.push({ tipo: "INCONSISTENCIA", nivel: 1, fila_excel: filaExcel, mensaje: "N1 vacío", contexto: { n1_raw: row[N1_HEADER] } });
+          continue;
+        }
+        if (n2Activos.length === 0) {
+          errores.push({ tipo: "INCONSISTENCIA", nivel: 2, fila_excel: filaExcel, mensaje: "Sin N2 marcado (X/x)", contexto: { n1 } });
+          continue;
+        }
+        if (!n3) {
+          errores.push({ tipo: "INCONSISTENCIA", nivel: 3, fila_excel: filaExcel, mensaje: "N3 vacío", contexto: { n1 } });
+          continue;
+        }
+        if (!n4) {
+          errores.push({ tipo: "INCONSISTENCIA", nivel: 4, fila_excel: filaExcel, mensaje: "N4 vacío", contexto: { n1, n3 } });
+          continue;
+        }
+        if (!n5) {
+          errores.push({ tipo: "INCONSISTENCIA", nivel: 5, fila_excel: filaExcel, mensaje: "N5 vacío", contexto: { n1, n3, n4 } });
+          continue;
+        }
+
+        // Auditoría cruce (solo registra; se inserta igual)
+        const n1Family = getN1FamilyPrefix(n1);
+        const n3Prefix = getProcessPrefix(n3);
+        if (n1Family && n3Prefix && n1Family !== n3Prefix) {
+          errores.push({
+            tipo: "CRUCE_FAMILIA",
+            nivel: 3,
+            fila_excel: filaExcel,
+            mensaje: `Cruce: N1(${n1Family}) vs N3(${n3Prefix}). Se inserta igual.`,
+            contexto: { n1, n3 },
+          });
+        }
+
+        // Insertar por cada N2 activo (combinaciones)
+        const n1Node = ensureNode(root, n1, () => ({ filas: new Set(), n2: new Map() }));
+        addFila(n1Node.filas, filaExcel);
+
+        for (const n2 of n2Activos) {
+          const n2Node = ensureNode(n1Node.n2, n2, () => ({ filas: new Set(), n3: new Map() }));
+          addFila(n2Node.filas, filaExcel);
+
+          const n3Node = ensureNode(n2Node.n3, n3, () => ({ filas: new Set(), n4: new Map() }));
+          addFila(n3Node.filas, filaExcel);
+
+          const n4Node = ensureNode(n3Node.n4, n4, () => ({ filas: new Set(), n5: new Map() }));
+          addFila(n4Node.filas, filaExcel);
+
+          const n5Node = ensureNode(n4Node.n5, n5, () => ({
+            filas: new Set(),
+            comboId: makeComboId(n1, n2, n3, n4, n5),
+          }));
+          addFila(n5Node.filas, filaExcel);
+        }
+      }
+
+      // Convertir a JSON “visual”
+      const tipificaciones = [];
+      for (const [n1, n1Node] of root.entries()) {
+        const nivel2 = [];
+        for (const [n2, n2Node] of n1Node.n2.entries()) {
+          const nivel3 = [];
+          for (const [n3, n3Node] of n2Node.n3.entries()) {
+            const nivel4 = [];
+            for (const [n4, n4Node] of n3Node.n4.entries()) {
+              const nivel5 = [];
+              for (const [n5, n5Node] of n4Node.n5.entries()) {
+                const filas5 = setToSortedArray(n5Node.filas);
+                nivel5.push({
+                  id_combo: n5Node.comboId,
+                  valor: n5,
+                  filas_excel: filas5,
+                  cantidad_filas: filas5.length,
+                });
+              }
+              nivel5.sort((a, b) => a.valor.localeCompare(b.valor));
+
+              const filas4 = setToSortedArray(n4Node.filas);
+              nivel4.push({
+                tipo: n4,
+                filas_excel: filas4,
+                cantidad_filas: filas4.length,
+                nivel_5: nivel5,
+              });
+            }
+            nivel4.sort((a, b) => a.tipo.localeCompare(b.tipo));
+
+            const filas3 = setToSortedArray(n3Node.filas);
+            nivel3.push({
+              proceso: n3,
+              filas_excel: filas3,
+              cantidad_filas: filas3.length,
+              nivel_4: nivel4,
+            });
+          }
+          nivel3.sort((a, b) => a.proceso.localeCompare(b.proceso));
+
+          const filas2 = setToSortedArray(n2Node.filas);
+          nivel2.push({
+            atributo: n2,
+            filas_excel: filas2,
+            cantidad_filas: filas2.length,
+            nivel_3: nivel3,
+          });
+        }
+        nivel2.sort((a, b) => a.atributo.localeCompare(b.atributo));
+
+        const filas1 = setToSortedArray(n1Node.filas);
+        tipificaciones.push({
+          nivel_1: n1,
+          filas_excel: filas1,
+          cantidad_filas: filas1.length,
+          nivel_2: nivel2,
+        });
+      }
+      tipificaciones.sort((a, b) => a.nivel_1.localeCompare(b.nivel_1));
+
+      return { tipificaciones, errores };
+    }
+
+    // =======================
+    // UI Logic
+    // =======================
+    const $ = (id) => document.getElementById(id);
+
+    const fileInput = $("file");
+    const sheetTarget = $("sheetTarget");
+    const btnProcess = $("btnProcess");
+    const btnDownload = $("btnDownload");
+
+    const tabGen = $("tabGen");
+    const tabErr = $("tabErr");
+    const viewGen = $("viewGen");
+    const viewErr = $("viewErr");
+
+    const jsonPreview = $("jsonPreview");
+
+    const sFile = $("sFile");
+    const sSheet = $("sSheet");
+    const sRows = $("sRows");
+    const sN1 = $("sN1");
+    const sErr = $("sErr");
+
+    const errTbody = $("errTbody");
+    const errCount = $("errCount");
+    const filterTipo = $("filterTipo");
+    const filterNivel = $("filterNivel");
+    const btnClearFilters = $("btnClearFilters");
+
+    let lastOutput = null;
+    let lastErrors = [];
+
+    function setTab(which) {
+      const gen = which === "gen";
+      tabGen.classList.toggle("active", gen);
+      tabErr.classList.toggle("active", !gen);
+      viewGen.style.display = gen ? "" : "none";
+      viewErr.style.display = gen ? "none" : "";
+    }
+
+    tabGen.addEventListener("click", () => setTab("gen"));
+    tabErr.addEventListener("click", () => setTab("err"));
+
+    fileInput.addEventListener("change", () => {
+      btnProcess.disabled = !(fileInput.files && fileInput.files[0]);
+      btnDownload.disabled = true;
+      lastOutput = null;
+      lastErrors = [];
+      jsonPreview.textContent = "Carga un archivo y presiona \"Procesar\".";
+      sFile.textContent = fileInput.files?.[0]?.name || "—";
+      sSheet.textContent = "—";
+      sRows.textContent = "—";
+      sN1.textContent = "—";
+      sErr.textContent = "—";
+      renderErrors([]);
+    });
+
+    btnProcess.addEventListener("click", async () => {
+      const f = fileInput.files?.[0];
+      if (!f) return;
+
+      btnProcess.disabled = true;
+      btnDownload.disabled = true;
+      jsonPreview.textContent = "Procesando...";
+
+      try {
+        const arrayBuffer = await f.arrayBuffer();
+        const wb = XLSX.read(arrayBuffer, { cellDates: true, raw: false });
+
+        const target = sheetTarget.value || "madre";
+        const foundSheet = findSheetNameCI(wb.SheetNames, target);
+
+        if (!foundSheet) {
+          // Mantener UX friendly: mostramos error “tipo” similar a la consola del script
+          throw new Error(`No encontré la hoja "${target}". Hojas disponibles: ${wb.SheetNames.join(", ")}`);
+        }
+
+        const ws = wb.Sheets[foundSheet];
+
+        // sheet_to_json con defval:null y blankrows:false (igual intención del script)
+        const excel_base = XLSX.utils.sheet_to_json(ws, { defval: null, blankrows: false, raw: false });
+
+        const { tipificaciones, errores } = buildTipificaciones(excel_base);
+
+        const output = {
+          excel_base,
+          tipificaciones,
+          errores,
+          meta: {
+            archivo_entrada: f.name,
+            hoja: foundSheet,
+            total_filas: excel_base.length,
+            generado_en: new Date().toISOString(),
+          }
+        };
+
+        lastOutput = output;
+        lastErrors = errores;
+
+        // Stats
+        sFile.textContent = f.name;
+        sSheet.textContent = foundSheet;
+        sRows.textContent = String(excel_base.length);
+        sN1.textContent = String(tipificaciones.length);
+        sErr.textContent = String(errores.length);
+
+        // Preview recortado
+        const pretty = JSON.stringify(output, null, 2);
+        jsonPreview.textContent = pretty.length > 20000 ? (pretty.slice(0, 20000) + "\n\n…(recortado en vista previa)") : pretty;
+
+        renderErrors(errores);
+
+        btnDownload.disabled = false;
+      } catch (e) {
+        jsonPreview.textContent = `Error: ${e?.message || String(e)}`;
+        sErr.textContent = "—";
+        renderErrors([{
+          tipo: "APP_ERROR",
+          nivel: null,
+          fila_excel: null,
+          mensaje: e?.message || String(e),
+          contexto: {}
+        }]);
+        setTab("err");
+      } finally {
+        btnProcess.disabled = false;
+      }
+    });
+
+    btnDownload.addEventListener("click", () => {
+      if (!lastOutput) return;
+      const blob = new Blob([JSON.stringify(lastOutput, null, 2)], { type: "application/json;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = OUTPUT_FILE_NAME;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+    });
+
+    function renderErrors(errores) {
+      const tipoQ = (filterTipo.value || "").trim().toLowerCase();
+      const nivelQ = (filterNivel.value || "").trim();
+
+      const filtered = (errores || []).filter(er => {
+        const okTipo = !tipoQ || String(er.tipo || "").toLowerCase().includes(tipoQ);
+        const okNivel = !nivelQ || String(er.nivel ?? "").includes(nivelQ);
+        return okTipo && okNivel;
+      });
+
+      if (!filtered.length) {
+        errTbody.innerHTML = `<tr><td colspan="5" class="muted">No hay errores para mostrar con los filtros actuales.</td></tr>`;
+      } else {
+        errTbody.innerHTML = filtered.map(er => {
+          const ctx = safeStringify(er.contexto);
+          return `
+            <tr>
+              <td>${escapeHtml(er.tipo ?? "")}</td>
+              <td>${escapeHtml(er.nivel ?? "")}</td>
+              <td>${escapeHtml(er.fila_excel ?? "")}</td>
+              <td>${escapeHtml(er.mensaje ?? "")}</td>
+              <td><pre style="margin:0; max-width:520px">${escapeHtml(ctx)}</pre></td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      errCount.textContent = `Mostrando ${filtered.length} de ${(errores || []).length} errores.`;
+    }
+
+    filterTipo.addEventListener("input", () => renderErrors(lastErrors));
+    filterNivel.addEventListener("input", () => renderErrors(lastErrors));
+
+    btnClearFilters.addEventListener("click", () => {
+      filterTipo.value = "";
+      filterNivel.value = "";
+      renderErrors(lastErrors);
+    });
+
+    function safeStringify(x) {
+      try { return JSON.stringify(x ?? {}, null, 2); } catch { return String(x); }
+    }
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[c]));
+    }
+  </script>
+</body>
+</html>

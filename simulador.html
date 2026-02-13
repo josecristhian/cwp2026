@@ -1,0 +1,740 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Tipificaciones + Errores</title>
+
+<style>
+:root{
+  --bg:#ffffff; --text:#0f172a; --muted:#64748b; --border:#e2e8f0; --panel:#f8fafc;
+  --accent:#2563eb; --accent2:#1d4ed8;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+}
+body{margin:24px;background:var(--bg);color:var(--text);}
+.wrap{max-width:1100px;margin:0 auto;}
+h1{font-size:20px;margin:0 0 6px;}
+.sub{font-size:13px;color:var(--muted);margin:0 0 18px;}
+
+.topbar{
+  display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  margin: 10px 0 18px;
+  padding: 12px;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background: var(--panel);
+}
+.topbarLeft{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.topbarRight{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.filePill{
+  padding:6px 10px;border:1px solid var(--border);
+  border-radius:999px;background:#fff;font-size:12px;color:var(--text);
+}
+.small{font-size:12px;color:var(--muted);}
+
+.tabs{display:flex;gap:10px;margin:14px 0 18px;}
+.tabbtn{padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--panel);cursor:pointer;font-weight:600;}
+.tabbtn.active{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8;}
+.tab{display:none;}
+.tab.active{display:block;}
+
+.gridRow3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px;}
+.gridRow2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:14px;}
+@media(max-width:1000px){ .gridRow3,.gridRow2{grid-template-columns:1fr;} }
+
+.card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:14px;}
+.levelHead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px;}
+.lvl{font-weight:800;font-size:14px;margin:0;}
+.hint{font-size:12px;color:var(--muted);margin:0 0 10px;}
+
+label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px;}
+select,input{width:100%;padding:10px;border-radius:12px;border:1px solid var(--border);}
+select:disabled{background:#f1f5f9;color:#94a3b8;}
+
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;}
+button{padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:#fff;cursor:pointer;font-weight:600;}
+button.primary{background:var(--accent);border-color:#1e40af;color:#fff;}
+button.primary:hover{background:var(--accent2);}
+button.ghost{background:transparent;}
+
+.badgeBtn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 10px;border-radius:999px;border:1px solid var(--border);
+  background:#fff;color:var(--text);cursor:pointer;font-size:12px;
+  user-select:none;
+}
+.badgeBtn:disabled{cursor:not-allowed;opacity:.5;}
+.badgeBtn b{font-weight:900;}
+
+.breadcrumb{
+  margin-top:12px;padding:12px;border:1px dashed var(--border);
+  border-radius:14px;background:var(--panel);white-space:pre-wrap;font-size:13px;
+}
+.mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+
+.pills{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+.pill{padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:var(--panel);font-size:12px;}
+
+.kpiGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px;}
+@media(max-width:900px){.kpiGrid{grid-template-columns:repeat(2,1fr);}}
+.kpi{border:1px solid var(--border);background:var(--panel);border-radius:14px;padding:12px;}
+.kpi .k{font-size:12px;color:var(--muted);}
+.kpi .v{font-size:18px;font-weight:900;}
+
+.tableWrap{overflow:auto;border:1px solid var(--border);border-radius:14px;margin-top:14px;}
+table{width:100%;border-collapse:collapse;min-width:900px;}
+th,td{padding:8px;border-bottom:1px solid var(--border);font-size:12px;text-align:left;vertical-align:top;}
+th{background:var(--panel);position:sticky;top:0;}
+
+.modalBackdrop{position:fixed;inset:0;background:rgba(2,6,23,.45);display:none;align-items:center;justify-content:center;padding:18px;z-index:9999;}
+.modalBackdrop.open{display:flex;}
+.modal{width:min(760px, 100%);background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:0 20px 60px rgba(2,6,23,.25);padding:14px;}
+.modalHead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.modalTitle{font-weight:900;}
+.modalClose{border:1px solid var(--border);background:var(--panel);border-radius:12px;padding:8px 10px;cursor:pointer;font-weight:700;}
+.modalBody{margin-top:10px;}
+.modalBox{border:1px solid var(--border);background:var(--panel);border-radius:14px;padding:12px;white-space:pre-wrap;}
+
+/* Buscador (con borde verde para validar visibilidad) */
+.searchWrap{position:relative;border:2px solid #22c55e;background:#f0fdf4;}
+.searchRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.searchRow input{flex:1 1 520px;}
+.drop{
+  position:absolute;left:0;right:0;top:108px;
+  background:#fff;border:1px solid var(--border);border-radius:14px;
+  box-shadow:0 12px 30px rgba(2,6,23,.12);
+  overflow:hidden;display:none;z-index:50;
+}
+.drop.open{display:block;}
+.drop .item{padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;}
+.drop .item:last-child{border-bottom:none;}
+.drop .item:hover{background:var(--panel);}
+
+kbd{
+  border:1px solid var(--border);
+  background:#fff;
+  border-bottom-width:2px;
+  padding:2px 6px;
+  border-radius:8px;
+  font-size:12px;
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <h1>Tipificaciones + Errores</h1>
+
+  <!-- MENÚ CARGA JSON -->
+  <div class="topbar">
+    <div class="topbarLeft">
+      <button class="primary" id="btnLoad">Cargar JSON</button>
+      <input id="fileInput" type="file" accept=".json,application/json" style="display:none"/>
+      <span class="filePill" id="fileName">Sin archivo cargado</span>
+      <span class="filePill" id="metaPill">meta: —</span>
+    </div>
+    <div class="topbarRight">
+      <span class="small"></span>
+      <span class="filePill mono" id="searchStatus"></span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tabbtn active" data-tab="tip">Tipificaciones</button>
+    <button class="tabbtn" data-tab="err">Errores</button>
+  </div>
+
+  <!-- TAB TIPIFICACIONES -->
+  <section id="tip" class="tab active">
+
+    <!-- BUSCADOR -->
+    <div class="card searchWrap">
+      <div class="row">
+        <div>
+          <div class="lvl">Buscador (N1|||N2|||N3)</div>
+          <div class="hint">Busca por texto en N1, N2 o N3. Selecciona un resultado para setear los combos N1–N3.</div>
+        </div>
+        <span class="filePill mono" id="mounted">mounted: no</span>
+      </div>
+
+      <div class="searchRow" style="margin-top:10px;">
+        <input id="q" type="text" placeholder="Buscar… ej: 'Portabilidad', 'Facturación', 'Reclamos', 'Cambio de plan'"/>
+        <button id="btnClearSearch">Limpiar</button>
+      </div>
+
+      <div id="drop" class="drop"></div>
+      <div class="small" style="margin-top:10px;">Mínimo 2 letras • Máximo 30 resultados • Prioriza match en N3, luego N2, luego N1.</div>
+    </div>
+
+    <!-- FILA 1 -->
+    <div class="gridRow3">
+      <div class="card">
+        <div class="levelHead">
+          <div>
+            <p class="lvl">Nivel 1</p>
+          </div>
+          <button class="badgeBtn" id="bN1" disabled title="Ver filas Excel afectadas">filas: <b id="bN1v">—</b></button>
+        </div>
+        <select id="n1"></select>
+      </div>
+
+      <div class="card">
+        <div class="levelHead">
+          <div>
+            <p class="lvl">Nivel 2</p>
+          </div>
+          <button class="badgeBtn" id="bN2" disabled title="Ver filas Excel afectadas">filas: <b id="bN2v">—</b></button>
+        </div>
+        <select id="n2" disabled></select>
+      </div>
+
+      <div class="card">
+        <div class="levelHead">
+          <div>
+            <p class="lvl">Nivel 3</p>
+          </div>
+          <button class="badgeBtn" id="bN3" disabled title="Ver filas Excel afectadas">filas: <b id="bN3v">—</b></button>
+        </div>
+        <select id="n3" disabled></select>
+      </div>
+    </div>
+
+    <!-- FILA 2 -->
+    <div class="gridRow2">
+      <div class="card">
+        <div class="levelHead">
+          <div>
+            <p class="lvl">Nivel 4</p>
+          </div>
+          <button class="badgeBtn" id="bN4" disabled title="Ver filas Excel afectadas">filas: <b id="bN4v">—</b></button>
+        </div>
+        <select id="n4" disabled></select>
+      </div>
+
+      <div class="card">
+        <div class="levelHead">
+          <div>
+            <p class="lvl">Nivel 5</p>
+          </div>
+          <button class="badgeBtn" id="bN5" disabled title="Ver filas Excel afectadas">filas: <b id="bN5v">—</b></button>
+        </div>
+        <select id="n5" disabled></select>
+      </div>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="card">
+      <div class="row">
+        <div class="lvl">Path seleccionado</div>
+        <div class="row">
+          <button id="btnCopy" class="primary">Copiar Path</button>
+          <button id="btnReset">Reset</button>
+        </div>
+      </div>
+      <div id="crumb" class="breadcrumb mono">—</div>
+      <div class="pills">
+        <span class="pill" id="statLevels">Niveles seleccionados: 0/5</span>
+        <span class="pill" id="statN1">N1 disponibles: 0</span>
+        <span class="pill" id="statN5">N5 bajo selección actual: 0</span>
+      </div>
+      <div class="small" style="margin-top:10px;">* Click en “filas: X” abre el detalle y permite copiar.</div>
+    </div>
+
+  </section>
+
+  <!-- TAB ERRORES -->
+  <section id="err" class="tab">
+    <div class="card">
+      <div class="lvl">Resumen de errores</div>
+      <div class="hint">Nodo: <span class="mono">errores</span></div>
+
+      <div class="kpiGrid">
+        <div class="kpi"><div class="k">Total</div><div id="kTotal" class="v">0</div></div>
+        <div class="kpi"><div class="k">Tipos</div><div id="kTipos" class="v">0</div></div>
+        <div class="kpi"><div class="k">Niveles</div><div id="kNiveles" class="v">0</div></div>
+        <div class="kpi"><div class="k">Mensajes</div><div id="kMsgs" class="v">0</div></div>
+      </div>
+
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:170px">tipo</th>
+              <th style="width:80px">nivel</th>
+              <th style="width:110px">fila_excel</th>
+              <th>mensaje</th>
+              <th style="width:360px">contexto</th>
+            </tr>
+          </thead>
+          <tbody id="errBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- MODAL FILAS -->
+<div class="modalBackdrop" id="modalBackdrop" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modalHead">
+      <div>
+        <div class="modalTitle" id="modalTitle">—</div>
+        <div class="small" id="modalMeta">—</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <button class="primary" id="btnCopyRows">Copiar filas</button>
+        <button class="modalClose" id="btnCloseModal">Cerrar</button>
+      </div>
+    </div>
+    <div class="modalBody">
+      <div class="modalBox mono" id="modalBox">—</div>
+      <div class="small" style="margin-top:8px;">Formato copiable: filas separadas por comas.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ========= DATA ========= */
+let TIP = [];
+let ERRS = [];
+let META = null;
+
+// índice de búsqueda: [{key, n1, n2, n3, text}]
+let SEARCH_INDEX = [];
+
+const state = { n1:null, n2:null, n3:null, n4:null, n5Id:null };
+
+/* ========= DOM ========= */
+const fileInput = document.getElementById("fileInput");
+const btnLoad = document.getElementById("btnLoad");
+const btnLoadSample = document.getElementById("btnLoadSample");
+const fileName = document.getElementById("fileName");
+const metaPill = document.getElementById("metaPill");
+
+// Search
+const q = document.getElementById("q");
+const drop = document.getElementById("drop");
+const btnClearSearch = document.getElementById("btnClearSearch");
+const mounted = document.getElementById("mounted");
+const searchStatus = document.getElementById("searchStatus");
+
+// Selects
+const n1 = document.getElementById("n1");
+const n2 = document.getElementById("n2");
+const n3 = document.getElementById("n3");
+const n4 = document.getElementById("n4");
+const n5 = document.getElementById("n5");
+
+// Badges
+const bN1 = document.getElementById("bN1"), bN1v = document.getElementById("bN1v");
+const bN2 = document.getElementById("bN2"), bN2v = document.getElementById("bN2v");
+const bN3 = document.getElementById("bN3"), bN3v = document.getElementById("bN3v");
+const bN4 = document.getElementById("bN4"), bN4v = document.getElementById("bN4v");
+const bN5 = document.getElementById("bN5"), bN5v = document.getElementById("bN5v");
+
+// Summary
+const crumb = document.getElementById("crumb");
+
+// Modal
+const modalBackdrop = document.getElementById("modalBackdrop");
+const modalTitle = document.getElementById("modalTitle");
+const modalMeta = document.getElementById("modalMeta");
+const modalBox = document.getElementById("modalBox");
+const btnCopyRows = document.getElementById("btnCopyRows");
+const btnCloseModal = document.getElementById("btnCloseModal");
+let modalRowsToCopy = "";
+
+/* ========= HELPERS ========= */
+function norm(s){ return (s ?? "").toString().trim(); }
+function fold(s){ return norm(s).toLowerCase(); }
+function uniq(arr){
+  const set = new Set(), out = [];
+  for (const x of (arr || [])){
+    if (x === null || x === undefined) continue;
+    const key = String(x);
+    if (set.has(key)) continue;
+    set.add(key); out.push(x);
+  }
+  return out;
+}
+function sortNum(arr){ return (arr || []).slice().sort((a,b)=>Number(a)-Number(b)); }
+function sortText(arr){ return (arr || []).slice().sort((a,b)=>String(a).localeCompare(String(b),"es",{sensitivity:"base"})); }
+function fmtRows(rows){
+  const u = sortNum(uniq(rows));
+  if (!u.length) return "—";
+  const compact = u.join(", ");
+  if (compact.length <= 180) return compact;
+  return u.join("\n");
+}
+function fillSelect(sel, arr, placeholder, selected){
+  sel.innerHTML = "";
+  const opt0 = document.createElement("option");
+  opt0.value = "";
+  opt0.textContent = placeholder;
+  sel.appendChild(opt0);
+
+  for (const item of (arr || [])){
+    const op = document.createElement("option");
+    if (typeof item === "string"){
+      op.value = item; op.textContent = item;
+    } else {
+      op.value = item.value; op.textContent = item.label;
+    }
+    sel.appendChild(op);
+  }
+  sel.value = selected ?? "";
+}
+
+/* ========= FIND SELECTED OBJECTS (schema) ========= */
+function getN1Obj(){ return state.n1 ? (TIP.find(x => norm(x.nivel_1) === norm(state.n1)) || null) : null; }
+function getN2Obj(n1Obj){ return (n1Obj && state.n2) ? ((n1Obj.nivel_2||[]).find(x => norm(x.atributo)===norm(state.n2))||null) : null; }
+function getN3Obj(n2Obj){ return (n2Obj && state.n3) ? ((n2Obj.nivel_3||[]).find(x => norm(x.proceso)===norm(state.n3))||null) : null; }
+function getN4Obj(n3Obj){ return (n3Obj && state.n4) ? ((n3Obj.nivel_4||[]).find(x => norm(x.tipo)===norm(state.n4))||null) : null; }
+function getN5Obj(n4Obj){ return (n4Obj && state.n5Id) ? ((n4Obj.nivel_5||[]).find(x => norm(x.id_combo)===norm(state.n5Id))||null) : null; }
+
+/* ========= OPTIONS ========= */
+function getN1List(){ return sortText(uniq(TIP.map(x => x.nivel_1))); }
+function getN2List(n1v){
+  const a = TIP.find(x => norm(x.nivel_1) === norm(n1v));
+  return a ? sortText(uniq((a.nivel_2||[]).map(x => x.atributo))) : [];
+}
+function getN3List(n1v,n2v){
+  const a = TIP.find(x => norm(x.nivel_1) === norm(n1v));
+  if (!a) return [];
+  const b = (a.nivel_2||[]).find(x => norm(x.atributo)===norm(n2v));
+  return b ? sortText(uniq((b.nivel_3||[]).map(x => x.proceso))) : [];
+}
+function getN4List(n1v,n2v,n3v){
+  const a = TIP.find(x => norm(x.nivel_1) === norm(n1v));
+  if (!a) return [];
+  const b = (a.nivel_2||[]).find(x => norm(x.atributo)===norm(n2v));
+  if (!b) return [];
+  const c = (b.nivel_3||[]).find(x => norm(x.proceso)===norm(n3v));
+  return c ? sortText(uniq((c.nivel_4||[]).map(x => x.tipo))) : [];
+}
+function getN5Options(n1v,n2v,n3v,n4v){
+  const a = TIP.find(x => norm(x.nivel_1) === norm(n1v));
+  if (!a) return [];
+  const b = (a.nivel_2||[]).find(x => norm(x.atributo)===norm(n2v));
+  if (!b) return [];
+  const c = (b.nivel_3||[]).find(x => norm(x.proceso)===norm(n3v));
+  if (!c) return [];
+  const d = (c.nivel_4||[]).find(x => norm(x.tipo)===norm(n4v));
+  if (!d) return [];
+  const list = Array.isArray(d.nivel_5) ? d.nivel_5 : [];
+  const mapped = list
+    .filter(x => x && typeof x === "object")
+    .map(x => ({ value: norm(x.id_combo), label: norm(x.valor) }))
+    .filter(x => x.value && x.label)
+    .sort((x,y)=>x.label.localeCompare(y.label,"es",{sensitivity:"base"}));
+  return mapped;
+}
+
+/* ========= MODAL ========= */
+function openRowsModal({ levelName, selectionLabel, cantidad, filas }){
+  const rowsUniqueSorted = sortNum(uniq(filas));
+  modalTitle.textContent = `${levelName} • filas_excel`;
+  modalMeta.textContent = `${selectionLabel || "—"} • cantidad_filas: ${cantidad ?? "—"}`;
+  modalBox.textContent = fmtRows(rowsUniqueSorted);
+  modalRowsToCopy = rowsUniqueSorted.join(", ");
+  modalBackdrop.classList.add("open");
+}
+btnCloseModal.addEventListener("click", () => modalBackdrop.classList.remove("open"));
+modalBackdrop.addEventListener("click", (e) => { if (e.target === modalBackdrop) modalBackdrop.classList.remove("open"); });
+btnCopyRows.addEventListener("click", async () => { try{ await navigator.clipboard.writeText(modalRowsToCopy || ""); }catch{} });
+
+function setBadge(btn, lblEl, obj, levelName, labelForModal){
+  const qty = obj?.cantidad_filas;
+  const rows = obj?.filas_excel;
+  const enabled = (qty !== undefined && qty !== null && Array.isArray(rows));
+  lblEl.textContent = enabled ? String(qty) : "—";
+  btn.disabled = !enabled;
+  btn.onclick = () => {
+    if (!enabled) return;
+    openRowsModal({ levelName, selectionLabel: labelForModal, cantidad: qty, filas: rows });
+  };
+}
+
+/* ========= SUMMARY ========= */
+function updateSummary(){
+  const done = [state.n1,state.n2,state.n3,state.n4,state.n5Id].filter(Boolean).length;
+  document.getElementById("statLevels").textContent = `Niveles seleccionados: ${done}/5`;
+  document.getElementById("statN1").textContent = `N1 disponibles: ${getN1List().length}`;
+  const n5Count = (state.n1 && state.n2 && state.n3 && state.n4) ? getN5Options(state.n1,state.n2,state.n3,state.n4).length : 0;
+  document.getElementById("statN5").textContent = `N5 bajo selección actual: ${n5Count}`;
+
+  const n1Obj = getN1Obj();
+  const n2Obj = getN2Obj(n1Obj);
+  const n3Obj = getN3Obj(n2Obj);
+  const n4Obj = getN4Obj(n3Obj);
+  const n5Obj = getN5Obj(n4Obj);
+  const n5Label = n5Obj ? n5Obj.valor : null;
+
+  crumb.textContent =
+`N1: ${state.n1 ?? "-"}
+N2: ${state.n2 ?? "-"}
+N3: ${state.n3 ?? "-"}
+N4: ${state.n4 ?? "-"}
+N5: ${n5Label ?? "-"}`;
+}
+
+/* ========= RENDER ========= */
+function resetFrom(level){
+  if (level <= 1) state.n1 = null;
+  if (level <= 2) state.n2 = null;
+  if (level <= 3) state.n3 = null;
+  if (level <= 4) state.n4 = null;
+  if (level <= 5) state.n5Id = null;
+}
+
+function repaintTip(){
+  fillSelect(n1, getN1List(), "Selecciona N1", state.n1 || "");
+  fillSelect(n2, state.n1 ? getN2List(state.n1) : [], state.n1 ? "Selecciona N2" : "Selecciona N1 primero", state.n2 || "");
+  fillSelect(n3, (state.n1 && state.n2) ? getN3List(state.n1,state.n2) : [], (state.n1 && state.n2) ? "Selecciona N3" : "Selecciona N1 y N2 primero", state.n3 || "");
+  fillSelect(n4, (state.n1 && state.n2 && state.n3) ? getN4List(state.n1,state.n2,state.n3) : [], (state.n1 && state.n2 && state.n3) ? "Selecciona N4" : "Selecciona N1..N3 primero", state.n4 || "");
+  fillSelect(n5, (state.n1 && state.n2 && state.n3 && state.n4) ? getN5Options(state.n1,state.n2,state.n3,state.n4) : [], (state.n1 && state.n2 && state.n3 && state.n4) ? "Selecciona N5" : "Selecciona N1..N4 primero", state.n5Id || "");
+
+  n2.disabled = !state.n1;
+  n3.disabled = !(state.n1 && state.n2);
+  n4.disabled = !(state.n1 && state.n2 && state.n3);
+  n5.disabled = !(state.n1 && state.n2 && state.n3 && state.n4);
+
+  const n1Obj = getN1Obj();
+  const n2Obj = getN2Obj(n1Obj);
+  const n3Obj = getN3Obj(n2Obj);
+  const n4Obj = getN4Obj(n3Obj);
+  const n5Obj = getN5Obj(n4Obj);
+
+  setBadge(bN1, bN1v, n1Obj, "Nivel 1", n1Obj?.nivel_1 || "");
+  setBadge(bN2, bN2v, n2Obj, "Nivel 2", n2Obj?.atributo || "");
+  setBadge(bN3, bN3v, n3Obj, "Nivel 3", n3Obj?.proceso || "");
+  setBadge(bN4, bN4v, n4Obj, "Nivel 4", n4Obj?.tipo || "");
+  setBadge(bN5, bN5v, n5Obj, "Nivel 5", n5Obj?.valor || "");
+
+  updateSummary();
+}
+
+/* ========= SEARCH INDEX (N1+N2+N3 consolidated) ========= */
+function buildSearchIndex(){
+  const idx = [];
+  for (const a of TIP){
+    const n1v = norm(a.nivel_1);
+    for (const b of (a.nivel_2 || [])){
+      const n2v = norm(b.atributo);
+      for (const c of (b.nivel_3 || [])){
+        const n3v = norm(c.proceso);
+        const key = `${n1v}|||${n2v}|||${n3v}`;
+        idx.push({ key, n1:n1v, n2:n2v, n3:n3v, text: fold(`${n1v} ${n2v} ${n3v}`) });
+      }
+    }
+  }
+  const seen = new Set();
+  SEARCH_INDEX = [];
+  for (const it of idx){
+    if (!it.key || seen.has(it.key)) continue;
+    seen.add(it.key);
+    SEARCH_INDEX.push(it);
+  }
+  // searchStatus.textContent = `search: ${SEARCH_INDEX.length}`;
+}
+
+function scoreMatch(query, it){
+  const q = query;
+  const n1t = fold(it.n1), n2t = fold(it.n2), n3t = fold(it.n3);
+  let score = 0;
+  if (n3t.includes(q)) score += 300;
+  if (n2t.includes(q)) score += 200;
+  if (n1t.includes(q)) score += 100;
+  if (n3t.startsWith(q)) score += 40;
+  if (n2t.startsWith(q)) score += 25;
+  if (n1t.startsWith(q)) score += 10;
+  return score;
+}
+
+function renderDropdown(items){
+  drop.innerHTML = "";
+  if (!items.length){
+    drop.classList.remove("open");
+    return;
+  }
+  for (const it of items){
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML = `<div class="mono">${it.key}</div>`;
+    div.addEventListener("click", () => {
+      applySearchSelection(it);
+      drop.classList.remove("open");
+    });
+    drop.appendChild(div);
+  }
+  drop.classList.add("open");
+}
+
+function applySearchSelection(it){
+  state.n1 = it.n1;
+  state.n2 = it.n2;
+  state.n3 = it.n3;
+  state.n4 = null;
+  state.n5Id = null;
+
+  repaintTip();
+  q.value = it.key;
+  n4.focus();
+}
+
+/* ========= EVENTS ========= */
+n1.addEventListener("change", () => { resetFrom(2); state.n1 = n1.value || null; repaintTip(); });
+n2.addEventListener("change", () => { resetFrom(3); state.n2 = n2.value || null; repaintTip(); });
+n3.addEventListener("change", () => { resetFrom(4); state.n3 = n3.value || null; repaintTip(); });
+n4.addEventListener("change", () => { resetFrom(5); state.n4 = n4.value || null; repaintTip(); });
+n5.addEventListener("change", () => { state.n5Id = n5.value || null; repaintTip(); });
+
+document.getElementById("btnReset").addEventListener("click", () => { resetFrom(1); repaintTip(); });
+document.getElementById("btnCopy").addEventListener("click", async () => { try{ await navigator.clipboard.writeText(crumb.textContent); }catch{} });
+
+// Tabs
+document.querySelectorAll(".tabbtn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tabbtn").forEach(x => x.classList.remove("active"));
+    document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.tab).classList.add("active");
+  });
+});
+
+// Search
+mounted.textContent = "mounted: sí";
+q.addEventListener("input", () => {
+  const query = fold(q.value);
+  if (!query || query.length < 2){
+    drop.classList.remove("open");
+    drop.innerHTML = "";
+    return;
+  }
+  const matches = SEARCH_INDEX
+    .map(it => ({ it, s: scoreMatch(query, it) }))
+    .filter(x => x.s > 0)
+    .sort((a,b) => b.s - a.s)
+    .slice(0, 30)
+    .map(x => x.it);
+
+  renderDropdown(matches);
+});
+q.addEventListener("focus", () => { if (drop.innerHTML.trim()) drop.classList.add("open"); });
+document.addEventListener("click", (e) => { if (!drop.contains(e.target) && e.target !== q) drop.classList.remove("open"); });
+btnClearSearch.addEventListener("click", () => { q.value = ""; drop.classList.remove("open"); drop.innerHTML = ""; q.focus(); });
+
+// Hotkey Ctrl+K
+document.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k"){
+    e.preventDefault();
+    q.focus();
+  }
+});
+
+/* ========= Loader ========= */
+btnLoad.addEventListener("click", () => fileInput.click());
+fileInput.addEventListener("change", async () => {
+  const f = fileInput.files?.[0];
+  if (!f) return;
+  try{
+    const text = await f.text();
+    const json = JSON.parse(text);
+    applyJson(json, f.name);
+  }catch(e){
+    alert("No se pudo leer el JSON. Verifica que sea válido.\n\n" + e.message);
+  }finally{
+    fileInput.value = "";
+  }
+});
+btnLoadSample.addEventListener("click", async () => {
+  try{
+    const res = await fetch("salida_tipificaciones.json", { cache:"no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const json = await res.json();
+    applyJson(json, "salida_tipificaciones.json");
+  }catch(e){
+    alert("No se pudo cargar salida_tipificaciones.json.\nAsegúrate de estar ejecutando un servidor local y que el archivo exista.\n\n" + e.message);
+  }
+});
+
+// Drag & drop
+document.addEventListener("dragover", (e) => { e.preventDefault(); });
+document.addEventListener("drop", async (e) => {
+  e.preventDefault();
+  const f = e.dataTransfer?.files?.[0];
+  if (!f) return;
+  if (!f.name.toLowerCase().endsWith(".json")){
+    alert("Solo se permite cargar archivos .json");
+    return;
+  }
+  try{
+    const text = await f.text();
+    const json = JSON.parse(text);
+    applyJson(json, f.name);
+  }catch(err){
+    alert("No se pudo leer el JSON.\n\n" + err.message);
+  }
+});
+
+/* ========= Errors ========= */
+function uniqSimple(arr){ return [...new Set((arr||[]).filter(v => v !== undefined && v !== null))]; }
+function loadErrors(){
+  const kTotal = document.getElementById("kTotal");
+  const kTipos = document.getElementById("kTipos");
+  const kNiveles = document.getElementById("kNiveles");
+  const kMsgs = document.getElementById("kMsgs");
+  const errBody = document.getElementById("errBody");
+
+  kTotal.textContent = ERRS.length;
+  kTipos.textContent = uniqSimple(ERRS.map(e => e.tipo)).length;
+  kNiveles.textContent = uniqSimple(ERRS.map(e => e.nivel)).length;
+  kMsgs.textContent = uniqSimple(ERRS.map(e => e.mensaje)).length;
+
+  errBody.innerHTML = "";
+  for (const e of ERRS){
+    const tr = document.createElement("tr");
+    const ctx = e && e.contexto ? JSON.stringify(e.contexto) : "";
+    tr.innerHTML = `
+      <td class="mono">${norm(e.tipo)}</td>
+      <td class="mono">${norm(e.nivel)}</td>
+      <td class="mono">${norm(e.fila_excel)}</td>
+      <td>${norm(e.mensaje)}</td>
+      <td class="mono">${ctx}</td>
+    `;
+    errBody.appendChild(tr);
+  }
+}
+
+/* ========= Apply JSON ========= */
+function applyJson(json, sourceLabel){
+  TIP = Array.isArray(json.tipificaciones) ? json.tipificaciones : [];
+  ERRS = Array.isArray(json.errores) ? json.errores : [];
+  META = json.meta || null;
+
+  buildSearchIndex();
+
+  resetFrom(1);
+
+  fileName.textContent = sourceLabel || "JSON cargado";
+  if (META){
+    const metaText = `${META.archivo_entrada || "—"} | ${META.hoja || "—"} | filas: ${META.total_filas ?? "—"} | ${META.generado_en || "—"}`;
+    metaPill.textContent = `meta: ${metaText}`;
+  } else {
+    metaPill.textContent = "meta: —";
+  }
+
+  q.value = "";
+  drop.classList.remove("open");
+  drop.innerHTML = "";
+
+  repaintTip();
+  loadErrors();
+}
+
+/* ========= Init ========= */
+applyJson({ tipificaciones: [], errores: [], meta: null }, "Sin archivo cargado");
+</script>
+</body>
+</html>
