@@ -167,7 +167,21 @@
                         </div>
                     </div>
                     
-     
+                    <div class="welcome-info">
+                        <h3>Funcionalidades Disponibles</h3>
+                        <ul>
+                            <li><strong>Dashboard:</strong> Visualización de métricas clave y tendencias generales</li>
+                            <li><strong>Agentes:</strong> Análisis detallado del desempeño por agente</li>
+                            <li><strong>Tendencias:</strong> Evolución temporal de indicadores de calidad</li>
+                        </ul>
+                        
+                        <p class="welcome-tip">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="vertical-align: middle; margin-right: 8px;">
+                                <path d="M8 1.33334V14.6667M8 1.33334C4.31812 1.33334 1.33334 4.31811 1.33334 8M8 1.33334C11.6819 1.33334 14.6667 4.31811 14.6667 8M8 14.6667C11.6819 14.6667 14.6667 11.682 14.6667 8M8 14.6667C4.31812 14.6667 1.33334 11.682 1.33334 8M14.6667 8H1.33334" stroke="#3b82f6" stroke-width="1.5"/>
+                            </svg>
+                            <strong>Consejo:</strong> Utiliza los filtros para segmentar la información y obtener análisis más específicos
+                        </p>
+                    </div>
                 </div>
             </div>
         </main>
@@ -383,6 +397,7 @@
             
             // Formatear opciones para fechas en español
             const opciones = { year: 'numeric', month: 'long', day: 'numeric' };
+            const opcionesCompletas = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
             
             // === FECHAS DE MONITOREO ===
             const fechasMonitoreo = data.base_excel
@@ -419,8 +434,24 @@
                 .sort((a, b) => b - a); // Descendente
             const ultimoMonitoreoAT = fechasAT[0];
             
+            // === FECHA DE GENERACIÓN DEL JSON ===
+            let fechaGeneracion = null;
+            if (data.fecha_generacion) {
+                fechaGeneracion = new Date(data.fecha_generacion);
+            }
+            
             // === CONSTRUIR MENSAJE HTML ===
             let html = '<div class="info-section">';
+            
+            // Fecha de generación (si existe)
+            if (fechaGeneracion && !isNaN(fechaGeneracion.getTime())) {
+                html += `
+                    <div class="info-item info-item-highlight">
+                        <strong>🔄 Fecha de Generación del Dataset</strong>
+                        <div>${fechaGeneracion.toLocaleDateString('es-ES', opcionesCompletas)}</div>
+                    </div>
+                `;
+            }
             
             if (monitoreoMasAntiguo && monitoreoMasReciente) {
                 html += `
