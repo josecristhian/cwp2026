@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insights de Comentarios</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .section-block {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+        }
+        .section-block h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 18px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-block h3 .icon { font-size: 1.15rem; }
+
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .kpi-box {
+            border-radius: 12px;
+            padding: 20px;
+            color: #fff;
+            text-align: center;
+        }
+        .kpi-box .kpi-label { font-size: 0.78rem; opacity: 0.9; font-weight: 500; margin-bottom: 6px; }
+        .kpi-box .kpi-value { font-size: 1.8rem; font-weight: 800; line-height: 1.2; }
+        .kpi-box .kpi-sub { font-size: 0.72rem; opacity: 0.8; margin-top: 4px; }
+
+        .insight-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.82rem;
+        }
+        .insight-table thead th {
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 600;
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            white-space: nowrap;
+        }
+        .insight-table thead th:first-child { border-radius: 8px 0 0 0; }
+        .insight-table thead th:last-child { border-radius: 0 8px 0 0; }
+        .insight-table tbody td {
+            padding: 9px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+        }
+        .insight-table tbody tr:hover { background: #f8fafc; }
+        .insight-table tbody tr:last-child td { border-bottom: none; }
+
+        .score-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .score-high { background: #d1fae5; color: #065f46; }
+        .score-mid { background: #fef3c7; color: #92400e; }
+        .score-low { background: #fee2e2; color: #991b1b; }
+
+        .freq-bar-container { display: flex; align-items: center; gap: 8px; }
+        .freq-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            transition: width 0.4s ease;
+        }
+        .freq-bar-bg {
+            flex: 1;
+            height: 8px;
+            background: #f1f5f9;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .freq-num {
+            font-weight: 700;
+            color: #3b82f6;
+            min-width: 38px;
+            text-align: right;
+            font-size: 0.78rem;
+        }
+
+        .chart-wrapper { position: relative; width: 100%; max-height: 380px; }
+        .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+        .heatmap-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 2px;
+            font-size: 0.75rem;
+        }
+        .heatmap-table th {
+            padding: 6px 8px;
+            font-weight: 600;
+            color: #475569;
+            background: #f8fafc;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .heatmap-table td {
+            text-align: center;
+            padding: 8px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.72rem;
+        }
+
+        .comment-preview {
+            max-height: 3.6em;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            line-height: 1.5;
+            font-size: 0.8rem;
+            color: #475569;
+        }
+        .comment-preview.expanded { max-height: none; }
+        .btn-expand {
+            background: none;
+            border: none;
+            color: #3b82f6;
+            font-size: 0.75rem;
+            cursor: pointer;
+            padding: 4px 0;
+            font-weight: 600;
+        }
+        .btn-expand:hover { text-decoration: underline; }
+
+        .table-scroll { overflow-x: auto; border-radius: 8px; }
+
+        @media (max-width: 768px) {
+            .chart-row { grid-template-columns: 1fr; }
+            .kpi-row { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 480px) {
+            .kpi-row { grid-template-columns: 1fr; }
+        }
+
+        .no-data { text-align: center; padding: 40px 20px; color: #94a3b8; font-size: 0.9rem; }
+        .no-data .no-data-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    </style>
+</head>
+<body style="background: transparent; padding: 0;">
+    <div style="padding: 0;">
+        <h2 style="margin-bottom: 24px; color: var(--text-primary, #1e293b);">🔍 Análisis Cualitativo de Comentarios</h2>
+        <div id="contenidoPrincipal">
+            <div class="loading">Cargando datos...</div>
+        </div>
+    </div>
+
+    <script>
+        // =============================================================
+        // 1. TODAS LAS VARIABLES Y CONSTANTES PRIMERO
+        // =============================================================
+        var chartInstances = [];
+
+        var STOPWORDS = new Set([
+            'el','la','de','que','en','y','a','los','se','por','un','con','no','una',
+            'su','para','es','al','lo','como','más','del','pero','sus','le','ya','o',
+            'este','fue','ha','si','son','me','te','las','les','ese','mi','dos','sin',
+            'muy','bien','hay','está','son','ser','tiene','esto','todo','esta','ella',
+            'también','fue','nos','ni','otro','ese','eso','era','había','puede','hace',
+            'donde','entre','cada','así','sobre','antes','desde','estos','parte','tal',
+            'cual','aquí','tanto','sino','mismo','cuando','hasta','dan','dia','vez',
+            'algo','solo','siendo','debe','hacia','etc','han','van','dar','ver','uno',
+            'otro','otra','otros','otras','porque','sean','sea','tan','tras','mediante'
+        ]);
+
+        var CATEGORIAS = {
+            'Tipificación': ['tipifica', 'tipificación', 'tipificacion', 'tipo de caso', 'categoría incorrecta', 'categoria', 'tipificar'],
+            'Tiempo / AHT': ['tiempo', 'demora', 'espera', 'tardó', 'tardo', 'aht', 'tmmo', 'duración', 'duracion', 'hold', 'mute'],
+            'Conocimiento': ['desconoce', 'no sabe', 'no conoce', 'capacitación', 'capacitacion', 'falta conocimiento', 'entrenamiento'],
+            'Proceso': ['proceso', 'procedimiento', 'política', 'politica', 'protocolo', 'paso', 'pasos', 'flujo'],
+            'Sistemas': ['sistema', 'herramienta', 'plataforma', 'portal', 'app', 'caída', 'caida', 'aplicación', 'aplicacion'],
+            'Solución': ['solución', 'solucion', 'resuelve', 'gestión', 'gestion', 'no solucionó', 'no gestionó', 'resolver'],
+            'Autogestión': ['autogestión', 'autogestion', 'orientó', 'oriento', 'indicó cómo', 'self-service', 'auto servicio'],
+            'Empatía': ['empatía', 'empatia', 'tono', 'amable', 'cordial', 'actitud', 'rapport', 'cortesía', 'cortesia'],
+            'Documentación': ['documenta', 'registra', 'notas', 'bitácora', 'bitacora', 'registro', 'anotación', 'anotacion']
+        };
+
+        var PALABRAS_POSITIVAS = ['excelente', 'bien', 'correcta', 'adecuada', 'cumple', 'logra', 'efectiva', 'buena',
+            'correcto', 'adecuado', 'buen', 'óptimo', 'optimo', 'positivo', 'satisfactorio', 'eficiente'];
+        var PALABRAS_NEGATIVAS = ['no', 'error', 'mal', 'incorrecto', 'falta', 'omite', 'olvida', 'inadecuado',
+            'incorrecta', 'deficiente', 'negativo', 'problema', 'falla', 'nunca', 'omitió', 'olvidó'];
+
+        var CAT_COLORS = {
+            'Tipificación': '#ef4444',
+            'Tiempo / AHT': '#f59e0b',
+            'Conocimiento': '#8b5cf6',
+            'Proceso': '#3b82f6',
+            'Sistemas': '#6366f1',
+            'Solución': '#10b981',
+            'Autogestión': '#14b8a6',
+            'Empatía': '#ec4899',
+            'Documentación': '#f97316',
+            'Sin categorizar': '#94a3b8'
+        };
+
+        // =============================================================
+        // 2. TODAS LAS FUNCIONES
+        // =============================================================
+        function notifyHeight() {
+            window.parent.postMessage({ type: 'RESIZE', height: document.body.scrollHeight }, '*');
+        }
+
+        function destroyCharts() {
+            chartInstances.forEach(function(c) { c.destroy(); });
+            chartInstances = [];
+        }
+
+        function tokenizar(texto) {
+            if (!texto) return [];
+            return texto.toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()¿?¡!"""'']/g, ' ')
+                .split(/\s+/)
+                .filter(function(w) { return w.length >= 4 && !STOPWORDS.has(w); });
+        }
+
+        function tokenizarDisplay(texto) {
+            if (!texto) return [];
+            return texto.toLowerCase()
+                .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()¿?¡!"""'']/g, ' ')
+                .split(/\s+/)
+                .filter(function(w) {
+                    var norm = w.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                    return w.length >= 4 && !STOPWORDS.has(norm);
+                });
+        }
+
+        function contarPalabras(comentarios) {
+            var freq = {};
+            comentarios.forEach(function(c) {
+                tokenizarDisplay(c).forEach(function(p) {
+                    freq[p] = (freq[p] || 0) + 1;
+                });
+            });
+            return Object.entries(freq).sort(function(a, b) { return b[1] - a[1]; });
+        }
+
+        function extraerBigramas(comentarios) {
+            var bigramas = {};
+            comentarios.forEach(function(c) {
+                var palabras = tokenizarDisplay(c);
+                for (var i = 0; i < palabras.length - 1; i++) {
+                    var bigrama = palabras[i] + ' ' + palabras[i + 1];
+                    bigramas[bigrama] = (bigramas[bigrama] || 0) + 1;
+                }
+            });
+            return Object.entries(bigramas).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 20);
+        }
+
+        function categorizarComentario(comentario) {
+            var matched = [];
+            if (!comentario) return ['Sin categorizar'];
+            var lower = comentario.toLowerCase();
+            for (var cat in CATEGORIAS) {
+                if (CATEGORIAS[cat].some(function(kw) { return lower.includes(kw); })) {
+                    matched.push(cat);
+                }
+            }
+            return matched.length > 0 ? matched : ['Sin categorizar'];
+        }
+
+        function calcularSentimiento(comentario) {
+            if (!comentario) return 'Neutral';
+            var lower = comentario.toLowerCase();
+            var score = 0;
+            PALABRAS_POSITIVAS.forEach(function(p) { if (lower.includes(p)) score++; });
+            PALABRAS_NEGATIVAS.forEach(function(p) { if (lower.includes(p)) score--; });
+            return score > 0 ? 'Positivo' : score < 0 ? 'Negativo' : 'Neutral';
+        }
+
+        function scoreBadge(val) {
+            var n = parseFloat(val);
+            if (isNaN(n)) return '<span class="score-badge score-mid">N/A</span>';
+            if (n >= 80) return '<span class="score-badge score-high">' + n.toFixed(1) + '</span>';
+            if (n >= 70) return '<span class="score-badge score-mid">' + n.toFixed(1) + '</span>';
+            return '<span class="score-badge score-low">' + n.toFixed(1) + '</span>';
+        }
+
+        function groupBy(records, field) {
+            return records.reduce(function(acc, r) {
+                var key = r[field] || 'Sin especificar';
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(r);
+                return acc;
+            }, {});
+        }
+
+        function promedio(arr, field) {
+            var vals = arr.map(function(r) { return parseFloat(r[field]); }).filter(function(v) { return !isNaN(v); });
+            return vals.length ? vals.reduce(function(a, b) { return a + b; }, 0) / vals.length : 0;
+        }
+
+        function toggleComment(idx, btn, encoded) {
+            var el = document.getElementById('comment-' + idx);
+            if (el.classList.contains('expanded')) {
+                el.classList.remove('expanded');
+                var decoded = decodeURIComponent(encoded);
+                var words = decoded.split(/\s+/);
+                el.textContent = words.slice(0, 40).join(' ') + (words.length > 40 ? '...' : '');
+                btn.textContent = 'Ver completo ▼';
+            } else {
+                el.classList.add('expanded');
+                el.textContent = decodeURIComponent(encoded);
+                btn.textContent = 'Colapsar ▲';
+            }
+            setTimeout(notifyHeight, 100);
+        }
+
+        // =============================================================
+        // 3. FUNCIÓN PRINCIPAL DE CARGA
+        // =============================================================
+        function cargarPagina(data) {
+            if (!data || !data.base_excel) return;
+            destroyCharts();
+
+            var records = data.base_excel;
+            var container = document.getElementById('contenidoPrincipal');
+
+            var allComentarios = records.map(function(r) { return (r.COMENTARIOS || '').trim(); });
+            var comentariosValidos = allComentarios.filter(function(c) { return c.length > 0; });
+
+            if (comentariosValidos.length === 0) {
+                container.innerHTML = '<div class="no-data"><div class="no-data-icon">💬</div><p>No hay comentarios disponibles en los datos filtrados.</p></div>';
+                setTimeout(notifyHeight, 100);
+                return;
+            }
+
+            var recordsConComentario = records.filter(function(r) { return (r.COMENTARIOS || '').trim().length > 0; });
+
+            // ========== KPIs ==========
+            var totalAuditorias = records.length;
+            var totalConComentario = comentariosValidos.length;
+            var cobertura = (totalConComentario / totalAuditorias) * 100;
+            var totalPalabras = comentariosValidos.reduce(function(s, c) { return s + c.split(/\s+/).length; }, 0);
+            var promPalabras = totalPalabras / totalConComentario;
+            var promCaracteres = comentariosValidos.reduce(function(s, c) { return s + c.length; }, 0) / totalConComentario;
+
+            var sentimientos = comentariosValidos.map(function(c) { return calcularSentimiento(c); });
+            var sentCount = { Positivo: 0, Neutral: 0, Negativo: 0 };
+            sentimientos.forEach(function(s) { sentCount[s]++; });
+
+            // ========== PALABRAS CLAVE ==========
+            var topPalabras = contarPalabras(comentariosValidos).slice(0, 30);
+            var maxFreq = topPalabras.length ? topPalabras[0][1] : 1;
+            var totalTokens = topPalabras.reduce(function(s, p) { return s + p[1]; }, 0);
+
+            // ========== CATEGORIZACIÓN ==========
+            var catCount = {};
+            var catRecords = {};
+            Object.keys(CATEGORIAS).forEach(function(c) { catCount[c] = 0; catRecords[c] = []; });
+            catCount['Sin categorizar'] = 0;
+            catRecords['Sin categorizar'] = [];
+
+            recordsConComentario.forEach(function(r) {
+                var cats = categorizarComentario(r.COMENTARIOS);
+                cats.forEach(function(cat) {
+                    catCount[cat] = (catCount[cat] || 0) + 1;
+                    if (!catRecords[cat]) catRecords[cat] = [];
+                    catRecords[cat].push(r);
+                });
+            });
+
+            var catSorted = Object.entries(catCount)
+                .filter(function(e) { return e[1] > 0; })
+                .sort(function(a, b) { return b[1] - a[1]; });
+            var totalCatMenciones = catSorted.reduce(function(s, e) { return s + e[1]; }, 0);
+
+            // ========== IMPACTO ==========
+            var scoreGeneral = promedio(records, 'QA SCORE');
+            var impactData = catSorted.map(function(entry) {
+                var cat = entry[0], count = entry[1];
+                var recs = catRecords[cat] || [];
+                var avgScore = promedio(recs, 'QA SCORE');
+                var gap = avgScore - scoreGeneral;
+                var cuartiles = {};
+                recs.forEach(function(r) { var q = r.CUARTIL || 'N/A'; cuartiles[q] = (cuartiles[q] || 0) + 1; });
+                var cuartilDom = Object.entries(cuartiles).sort(function(a, b) { return b[1] - a[1]; })[0];
+                return { cat: cat, count: count, avgScore: avgScore, gap: gap, cuartilDom: cuartilDom ? cuartilDom[0] : 'N/A' };
+            }).sort(function(a, b) { return a.gap - b.gap; });
+
+            // ========== BIGRAMAS ==========
+            var bigramas = extraerBigramas(comentariosValidos);
+            var maxBigrama = bigramas.length ? bigramas[0][1] : 1;
+
+            // ========== EVOLUCIÓN TEMPORAL ==========
+            var semanasSet = {};
+            records.forEach(function(r) { if (r.SEMANA) semanasSet[r.SEMANA] = true; });
+            var semanas = Object.keys(semanasSet).sort();
+
+            var catTimeline = {};
+            Object.keys(CATEGORIAS).forEach(function(cat) {
+                catTimeline[cat] = {};
+                semanas.forEach(function(s) { catTimeline[cat][s] = 0; });
+            });
+
+            recordsConComentario.forEach(function(r) {
+                var sem = r.SEMANA;
+                if (!sem) return;
+                var cats = categorizarComentario(r.COMENTARIOS);
+                cats.forEach(function(cat) {
+                    if (catTimeline[cat] && catTimeline[cat][sem] !== undefined) {
+                        catTimeline[cat][sem]++;
+                    }
+                });
+            });
+
+            // ========== SENTIMIENTO POR BPO ==========
+            var sentByBPO = {};
+            recordsConComentario.forEach(function(r) {
+                var bpo = r.BPO || 'Sin BPO';
+                var sent = calcularSentimiento(r.COMENTARIOS);
+                if (!sentByBPO[bpo]) sentByBPO[bpo] = { Positivo: 0, Neutral: 0, Negativo: 0 };
+                sentByBPO[bpo][sent]++;
+            });
+
+            // ========== TOP AGENTES ==========
+            var agenteGroups = groupBy(recordsConComentario, 'AGENTE');
+            var agentProblems = Object.entries(agenteGroups).map(function(entry) {
+                var agente = entry[0], recs = entry[1];
+                var catFreq = {};
+                recs.forEach(function(r) {
+                    categorizarComentario(r.COMENTARIOS).forEach(function(cat) {
+                        if (cat !== 'Sin categorizar') catFreq[cat] = (catFreq[cat] || 0) + 1;
+                    });
+                });
+                var sorted = Object.entries(catFreq).sort(function(a, b) { return b[1] - a[1]; });
+                var topProb = sorted[0] || ['N/A', 0];
+                return {
+                    agente: agente, total: recs.length, problema: topProb[0],
+                    frecuencia: topProb[1], pct: (topProb[1] / recs.length) * 100,
+                    score: promedio(recs, 'QA SCORE')
+                };
+            })
+            .filter(function(a) { return a.problema !== 'N/A' && a.total >= 3; })
+            .sort(function(a, b) { return b.pct - a.pct; })
+            .slice(0, 10);
+
+            // ========== COMENTARIOS DESTACADOS ==========
+            var destacados = recordsConComentario
+                .filter(function(r) { return r.COMENTARIOS.split(/\s+/).length > 50; })
+                .sort(function(a, b) { return b.COMENTARIOS.length - a.COMENTARIOS.length; })
+                .slice(0, 15);
+
+            // ========== CO-OCURRENCIA ==========
+            var catKeys = Object.keys(CATEGORIAS);
+            var coMatrix = {};
+            catKeys.forEach(function(a) { coMatrix[a] = {}; catKeys.forEach(function(b) { coMatrix[a][b] = 0; }); });
+
+            recordsConComentario.forEach(function(r) {
+                var cats = categorizarComentario(r.COMENTARIOS).filter(function(c) { return c !== 'Sin categorizar'; });
+                for (var i = 0; i < cats.length; i++) {
+                    for (var j = i; j < cats.length; j++) {
+                        coMatrix[cats[i]][cats[j]]++;
+                        if (i !== j) coMatrix[cats[j]][cats[i]]++;
+                    }
+                }
+            });
+
+            // =============================================================
+            // RENDERIZAR HTML
+            // =============================================================
+            var html = '';
+
+            // --- KPIs ---
+            html += '<div class="kpi-row">';
+            html += '<div class="kpi-box" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">';
+            html += '<div class="kpi-label">Total Auditorías</div>';
+            html += '<div class="kpi-value">' + totalAuditorias.toLocaleString() + '</div>';
+            html += '<div class="kpi-sub">' + totalConComentario.toLocaleString() + ' con comentario</div></div>';
+            html += '<div class="kpi-box" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">';
+            html += '<div class="kpi-label">Cobertura de Comentarios</div>';
+            html += '<div class="kpi-value">' + cobertura.toFixed(1) + '%</div>';
+            html += '<div class="kpi-sub">Auditorías con comentarios</div></div>';
+            html += '<div class="kpi-box" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">';
+            html += '<div class="kpi-label">Promedio Palabras</div>';
+            html += '<div class="kpi-value">' + promPalabras.toFixed(1) + '</div>';
+            html += '<div class="kpi-sub">' + promCaracteres.toFixed(0) + ' caracteres prom.</div></div>';
+            html += '<div class="kpi-box" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">';
+            html += '<div class="kpi-label">Sentimiento General</div>';
+            html += '<div class="kpi-value">' + ((sentCount.Positivo / totalConComentario) * 100).toFixed(0) + '% ✓</div>';
+            html += '<div class="kpi-sub">' + ((sentCount.Negativo / totalConComentario) * 100).toFixed(0) + '% negativo · ' + ((sentCount.Neutral / totalConComentario) * 100).toFixed(0) + '% neutral</div></div>';
+            html += '</div>';
+
+            // --- TOP PALABRAS ---
+            html += '<div class="section-block">';
+            html += '<h3><span class="icon">🏷️</span> Top 30 Palabras Clave</h3>';
+            html += '<div class="table-scroll"><table class="insight-table">';
+            html += '<thead><tr><th>#</th><th>Palabra</th><th>Frecuencia</th><th style="width:40%;">Distribución</th><th>% del Total</th></tr></thead><tbody>';
+            topPalabras.forEach(function(entry, i) {
+                html += '<tr>';
+                html += '<td style="color:#94a3b8;font-weight:600;">' + (i + 1) + '</td>';
+                html += '<td style="font-weight:600;color:#1e293b;">' + entry[0] + '</td>';
+                html += '<td><span class="freq-num">' + entry[1] + '</span></td>';
+                html += '<td><div class="freq-bar-bg"><div class="freq-bar" style="width:' + (entry[1] / maxFreq * 100).toFixed(1) + '%"></div></div></td>';
+                html += '<td style="color:#64748b;">' + ((entry[1] / totalTokens) * 100).toFixed(1) + '%</td>';
+                html += '</tr>';
+            });
+            html += '</tbody></table></div></div>';
+
+            // --- CATEGORIZACIÓN ---
+            html += '<div class="section-block">';
+            html += '<h3><span class="icon">📂</span> Categorización de Oportunidades</h3>';
+            html += '<div class="chart-wrapper"><canvas id="chartCategorias"></canvas></div></div>';
+
+            // --- IMPACTO ---
+            html += '<div class="section-block">';
+            html += '<h3><span class="icon">📈</span> Impacto en Score por Categoría</h3>';
+            html += '<p style="font-size:0.8rem;color:#64748b;margin:-8px 0 14px;">Score general: <strong>' + scoreGeneral.toFixed(1) + '</strong></p>';
+            html += '<div class="table-scroll"><table class="insight-table">';
+            html += '<thead><tr><th>Categoría</th><th>Auditorías</th><th>Score Promedio</th><th>Gap vs General</th><th>Cuartil Dominante</th></tr></thead><tbody>';
+            impactData.forEach(function(d) {
+                html += '<tr>';
+                html += '<td style="font-weight:600;"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:' + (CAT_COLORS[d.cat] || '#94a3b8') + ';margin-right:6px;"></span>' + d.cat + '</td>';
+                html += '<td>' + d.count + '</td>';
+                html += '<td>' + scoreBadge(d.avgScore) + '</td>';
+                html += '<td style="font-weight:700;color:' + (d.gap >= 0 ? '#10b981' : '#ef4444') + ';">' + (d.gap >= 0 ? '+' : '') + d.gap.toFixed(1) + '</td>';
+                html += '<td>' + d.cuartilDom + '</td></tr>';
+            });
+            html += '</tbody></table></div></div>';
+
+            // --- BIGRAMAS ---
+            html += '<div class="section-block">';
+            html += '<h3><span class="icon">💬</span> Top 20 Frases Frecuentes (Bigramas)</h3>';
+            html += '<div class="table-scroll"><table class="insight-table">';
+            html += '<thead><tr><th>#</th><th>Frase</th><th>Frecuencia</th><th style="width:35%;">Distribución</th></tr></thead><tbody>';
+            bigramas.forEach(function(entry, i) {
+                html += '<tr>';
+                html += '<td style="color:#94a3b8;font-weight:600;">' + (i + 1) + '</td>';
+                html += '<td style="font-weight:600;color:#1e293b;">"' + entry[0] + '"</td>';
+                html += '<td><span class="freq-num">' + entry[1] + '</span></td>';
+                html += '<td><div class="freq-bar-bg"><div class="freq-bar" style="width:' + (entry[1] / maxBigrama * 100).toFixed(1) + '%;background:linear-gradient(90deg,#8b5cf6,#a78bfa);"></div></div></td>';
+                html += '</tr>';
+            });
+            html += '</tbody></table></div></div>';
+
+            // --- EVOLUCIÓN + SENTIMIENTO ---
+            html += '<div class="chart-row">';
+            html += '<div class="section-block"><h3><span class="icon">📊</span> Evolución Temporal de Categorías</h3>';
+            html += '<div class="chart-wrapper"><canvas id="chartEvolucion"></canvas></div></div>';
+            html += '<div class="section-block"><h3><span class="icon">😊</span> Distribución de Sentimiento</h3>';
+            html += '<div class="chart-wrapper" style="max-height:260px;"><canvas id="chartSentimiento"></canvas></div>';
+            html += '<div id="sentBpoComparativo" style="margin-top:16px;"></div></div></div>';
+
+            // --- TOP AGENTES ---
+            if (agentProblems.length > 0) {
+                html += '<div class="section-block">';
+                html += '<h3><span class="icon">👤</span> Top Agentes con Problemas Recurrentes</h3>';
+                html += '<p style="font-size:0.78rem;color:#64748b;margin:-8px 0 14px;">Agentes con ≥3 auditorías; ordenados por % de recurrencia.</p>';
+                html += '<div class="table-scroll"><table class="insight-table">';
+                html += '<thead><tr><th>Agente</th><th>Problema Principal</th><th>Frecuencia</th><th>% Auditorías</th><th>Score Prom.</th></tr></thead><tbody>';
+                agentProblems.forEach(function(a) {
+                    html += '<tr>';
+                    html += '<td style="font-weight:600;">' + a.agente + '</td>';
+                    html += '<td><span style="display:inline-block;padding:2px 8px;border-radius:12px;background:' + (CAT_COLORS[a.problema] || '#e2e8f0') + '20;color:' + (CAT_COLORS[a.problema] || '#475569') + ';font-size:0.75rem;font-weight:600;">' + a.problema + '</span></td>';
+                    html += '<td>' + a.frecuencia + ' / ' + a.total + '</td>';
+                    html += '<td style="font-weight:700;">' + a.pct.toFixed(0) + '%</td>';
+                    html += '<td>' + scoreBadge(a.score) + '</td></tr>';
+                });
+                html += '</tbody></table></div></div>';
+            }
+
+            // --- HEATMAP ---
+            html += '<div class="section-block">';
+            html += '<h3><span class="icon">🔗</span> Co-ocurrencia de Problemas</h3>';
+            html += '<p style="font-size:0.78rem;color:#64748b;margin:-8px 0 14px;">Auditorías donde ambas categorías aparecen juntas.</p>';
+            html += '<div class="table-scroll"><table class="heatmap-table"><thead><tr><th></th>';
+            catKeys.forEach(function(k) { html += '<th>' + k.split('/')[0].trim().substring(0, 8) + '</th>'; });
+            html += '</tr></thead><tbody>';
+            catKeys.forEach(function(row) {
+                var rowMax = 1;
+                catKeys.forEach(function(col) { if (row !== col && coMatrix[row][col] > rowMax) rowMax = coMatrix[row][col]; });
+                html += '<tr><th style="text-align:right;font-size:0.72rem;">' + row.split('/')[0].trim().substring(0, 10) + '</th>';
+                catKeys.forEach(function(col) {
+                    var val = coMatrix[row][col];
+                    if (row === col) {
+                        html += '<td style="background:#f1f5f9;color:#94a3b8;">—</td>';
+                    } else {
+                        var intensity = Math.min(val / Math.max(rowMax, 1), 1);
+                        html += '<td style="background:rgba(59,130,246,' + (intensity * 0.6).toFixed(2) + ');color:' + (intensity > 0.4 ? '#fff' : '#334155') + ';">' + (val || '') + '</td>';
+                    }
+                });
+                html += '</tr>';
+            });
+            html += '</tbody></table></div></div>';
+
+            // --- COMENTARIOS DESTACADOS ---
+            if (destacados.length > 0) {
+                html += '<div class="section-block">';
+                html += '<h3><span class="icon">⚠️</span> Comentarios Destacados (casos extensos)</h3>';
+                html += '<p style="font-size:0.78rem;color:#64748b;margin:-8px 0 14px;">Comentarios con más de 50 palabras.</p>';
+                html += '<div class="table-scroll"><table class="insight-table">';
+                html += '<thead><tr><th>ID</th><th>Agente</th><th>Score</th><th>Palabras</th><th>Comentario</th></tr></thead><tbody>';
+                destacados.forEach(function(r, idx) {
+                    var words = r.COMENTARIOS.split(/\s+/);
+                    var preview = words.slice(0, 40).join(' ') + (words.length > 40 ? '...' : '');
+                    var encoded = encodeURIComponent(r.COMENTARIOS);
+                    html += '<tr>';
+                    html += '<td style="white-space:nowrap;">' + (r['ID_INTERACCIÓN'] || r['ID INTERACCIÓN'] || 'N/A') + '</td>';
+                    html += '<td style="white-space:nowrap;font-weight:600;">' + (r.AGENTE || 'N/A') + '</td>';
+                    html += '<td>' + scoreBadge(r['QA SCORE']) + '</td>';
+                    html += '<td>' + words.length + '</td>';
+                    html += '<td><div class="comment-preview" id="comment-' + idx + '">' + preview + '</div>';
+                    if (words.length > 40) {
+                        html += '<button class="btn-expand" onclick="toggleComment(' + idx + ', this, \'' + encoded.replace(/'/g, "\\'") + '\')">Ver completo ▼</button>';
+                    }
+                    html += '</td></tr>';
+                });
+                html += '</tbody></table></div></div>';
+            }
+
+            container.innerHTML = html;
+
+            // =============================================================
+            // GRÁFICOS (Chart.js)
+            // =============================================================
+
+            // Categorías
+            var ctxCat = document.getElementById('chartCategorias');
+            if (ctxCat) {
+                chartInstances.push(new Chart(ctxCat, {
+                    type: 'bar',
+                    data: {
+                        labels: catSorted.map(function(e) { return e[0]; }),
+                        datasets: [{
+                            label: 'Menciones',
+                            data: catSorted.map(function(e) { return e[1]; }),
+                            backgroundColor: catSorted.map(function(e) { return CAT_COLORS[e[0]] || '#94a3b8'; }),
+                            borderRadius: 6, barThickness: 28
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y', responsive: true, maintainAspectRatio: true,
+                        plugins: { legend: { display: false },
+                            tooltip: { callbacks: { label: function(ctx) { return ctx.raw + ' (' + ((ctx.raw / totalCatMenciones) * 100).toFixed(1) + '%)'; } } }
+                        },
+                        scales: {
+                            x: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 } } },
+                            y: { grid: { display: false }, ticks: { font: { size: 11, weight: '600' } } }
+                        }
+                    }
+                }));
+            }
+
+            // Evolución
+            var ctxEvo = document.getElementById('chartEvolucion');
+            if (ctxEvo && semanas.length > 0) {
+                var topCats = catSorted.slice(0, 5).map(function(e) { return e[0]; }).filter(function(c) { return c !== 'Sin categorizar'; });
+                chartInstances.push(new Chart(ctxEvo, {
+                    type: 'line',
+                    data: {
+                        labels: semanas,
+                        datasets: topCats.map(function(cat) {
+                            return {
+                                label: cat,
+                                data: semanas.map(function(s) { return catTimeline[cat] ? (catTimeline[cat][s] || 0) : 0; }),
+                                borderColor: CAT_COLORS[cat], backgroundColor: CAT_COLORS[cat] + '20',
+                                tension: 0.3, fill: false, pointRadius: 3, borderWidth: 2
+                            };
+                        })
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: true,
+                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } },
+                        scales: {
+                            x: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 }, maxRotation: 45 } },
+                            y: { grid: { color: '#f1f5f9' }, beginAtZero: true, ticks: { font: { size: 10 } } }
+                        }
+                    }
+                }));
+            }
+
+            // Sentimiento
+            var ctxSent = document.getElementById('chartSentimiento');
+            if (ctxSent) {
+                chartInstances.push(new Chart(ctxSent, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Positivo', 'Neutral', 'Negativo'],
+                        datasets: [{ data: [sentCount.Positivo, sentCount.Neutral, sentCount.Negativo], backgroundColor: ['#10b981', '#94a3b8', '#ef4444'], borderWidth: 0 }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: true, cutout: '60%',
+                        plugins: {
+                            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+                            tooltip: { callbacks: { label: function(ctx) { return ctx.label + ': ' + ctx.raw + ' (' + ((ctx.raw / totalConComentario) * 100).toFixed(1) + '%)'; } } }
+                        }
+                    }
+                }));
+            }
+
+            // BPO comparativo
+            var sentBpoDiv = document.getElementById('sentBpoComparativo');
+            if (sentBpoDiv && Object.keys(sentByBPO).length > 0) {
+                var bpoHtml = '<p style="font-size:0.78rem;font-weight:600;color:#475569;margin-bottom:8px;">Comparativo por BPO</p>';
+                bpoHtml += '<table class="insight-table"><thead><tr><th>BPO</th><th>Positivo</th><th>Neutral</th><th>Negativo</th></tr></thead><tbody>';
+                for (var bpo in sentByBPO) {
+                    var c = sentByBPO[bpo], t = c.Positivo + c.Neutral + c.Negativo;
+                    bpoHtml += '<tr><td style="font-weight:600;">' + bpo + '</td>';
+                    bpoHtml += '<td style="color:#10b981;font-weight:600;">' + ((c.Positivo / t) * 100).toFixed(0) + '%</td>';
+                    bpoHtml += '<td style="color:#94a3b8;">' + ((c.Neutral / t) * 100).toFixed(0) + '%</td>';
+                    bpoHtml += '<td style="color:#ef4444;font-weight:600;">' + ((c.Negativo / t) * 100).toFixed(0) + '%</td></tr>';
+                }
+                bpoHtml += '</tbody></table>';
+                sentBpoDiv.innerHTML = bpoHtml;
+            }
+
+            setTimeout(notifyHeight, 200);
+            setTimeout(notifyHeight, 600);
+            setTimeout(notifyHeight, 1200);
+        }
+
+        // =============================================================
+        // 4. ARRANQUE (AL FINAL, DESPUÉS DE TODO LO DEMÁS)
+        // =============================================================
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'FILTERED_DATA') {
+                cargarPagina(event.data.data);
+            }
+        });
+
+        if (window.parent.filteredData || window.parent.rawData) {
+            cargarPagina(window.parent.filteredData || window.parent.rawData);
+        }
+    </script>
+</body>
+</html>

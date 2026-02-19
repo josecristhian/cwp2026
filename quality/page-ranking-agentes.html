@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking de Agentes</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ============================
+           ESTILOS LOCALES - Ranking Agentes
+           ============================ */
+
+        /* --- Filtros internos --- */
+        .filtros-internos {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            padding: 16px 20px;
+            background: #ffffff;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .filtro-grupo {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 160px;
+        }
+        .filtro-grupo label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .filtro-grupo select {
+            padding: 7px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #1e293b;
+            background: #f8fafc;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .filtro-grupo select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+        }
+
+        /* --- KPI Grid personalizado --- */
+        .kpi-grid-custom {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .kpi-card-custom {
+            padding: 22px 24px;
+            border-radius: 12px;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+        .kpi-card-custom::after {
+            content: '';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+        }
+        .kpi-label-custom {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        .kpi-value-custom {
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 4px;
+        }
+        .kpi-sub {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* --- Secciones --- */
+        .seccion {
+            margin-bottom: 28px;
+        }
+        .seccion-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .seccion-header h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+        .seccion-header .icono {
+            font-size: 20px;
+        }
+
+        /* --- Histograma card --- */
+        .chart-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            margin-bottom: 28px;
+        }
+        .chart-card .chart-title-custom {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
+        }
+
+        /* --- Columnas lado a lado --- */
+        .dual-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+        @media (max-width: 900px) {
+            .dual-columns {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* --- Panel tabla --- */
+        .tabla-panel {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+        .tabla-panel-header {
+            padding: 16px 20px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tabla-panel-header.top {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+        .tabla-panel-header.bottom {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        .tabla-panel-header.riesgo {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        .tabla-panel-header.destacado {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        .tabla-panel-header.percentil {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+        .tabla-scroll {
+            max-height: 480px;
+            overflow-y: auto;
+        }
+        .tabla-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .tabla-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        /* --- Tabla interna --- */
+        .tabla-ranking {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .tabla-ranking thead th {
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding: 10px 14px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .tabla-ranking tbody tr {
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.15s;
+        }
+        .tabla-ranking tbody tr:hover {
+            background: #f8fafc;
+        }
+        .tabla-ranking tbody td {
+            padding: 10px 14px;
+            color: #334155;
+        }
+
+        /* --- Badges --- */
+        .badge-custom {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+        .badge-gold {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #78350f;
+        }
+        .badge-silver {
+            background: linear-gradient(135deg, #cbd5e1, #94a3b8);
+            color: #1e293b;
+        }
+        .badge-bronze {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            color: #fff;
+        }
+        .badge-riesgo {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        .badge-destacado {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+        .badge-q1 { background: #ecfdf5; color: #059669; }
+        .badge-q2 { background: #eff6ff; color: #2563eb; }
+        .badge-q3 { background: #fffbeb; color: #d97706; }
+        .badge-q4 { background: #fef2f2; color: #dc2626; }
+
+        /* --- Rank number --- */
+        .rank-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 12px;
+        }
+        .rank-1 { background: #fef3c7; color: #92400e; }
+        .rank-2 { background: #e2e8f0; color: #334155; }
+        .rank-3 { background: #fed7aa; color: #9a3412; }
+        .rank-default { background: #f1f5f9; color: #64748b; }
+
+        /* --- Score bar --- */
+        .score-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .score-bar {
+            flex: 1;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+            min-width: 60px;
+        }
+        .score-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.4s ease;
+        }
+        .score-text {
+            font-weight: 700;
+            font-size: 13px;
+            min-width: 40px;
+            text-align: right;
+        }
+
+        /* --- Tendencia --- */
+        .tendencia-up { color: #10b981; font-weight: 700; }
+        .tendencia-down { color: #ef4444; font-weight: 700; }
+        .tendencia-neutral { color: #94a3b8; }
+
+        /* --- Percentiles table --- */
+        .percentiles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 0;
+        }
+        .percentil-item {
+            text-align: center;
+            padding: 18px 12px;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .percentil-item:last-child {
+            border-right: none;
+        }
+        .percentil-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #8b5cf6;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .percentil-valor {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        /* --- Acción recomendada --- */
+        .accion-tag {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: #fef3c7;
+            color: #92400e;
+            font-weight: 600;
+        }
+
+        /* --- Scatter legend --- */
+        .scatter-legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e2e8f0;
+        }
+        .scatter-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #64748b;
+        }
+        .scatter-legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        /* --- Loading --- */
+        .loading-custom {
+            text-align: center;
+            padding: 80px 20px;
+            color: #94a3b8;
+            font-size: 15px;
+        }
+        .loading-custom .spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 640px) {
+            .kpi-grid-custom {
+                grid-template-columns: 1fr 1fr;
+            }
+            .kpi-value-custom {
+                font-size: 24px;
+            }
+            .percentiles-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
+</head>
+<body style="background: transparent; padding: 0;">
+    <div style="padding: 0;">
+        <h2 style="margin-bottom: 24px; color: var(--text-primary, #1e293b);">📊 Ranking de Agentes</h2>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <div id="contenidoPrincipal">
+            <div class="loading-custom">
+                <div class="spinner"></div>
+                Cargando datos de agentes...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =====================================================
+        // PATRÓN OBLIGATORIO: Comunicación con el padre (iframe)
+        // =====================================================
+        function notifyHeight() {
+            const height = document.body.scrollHeight;
+            window.parent.postMessage({ type: 'RESIZE', height: height }, '*');
+        }
+
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'FILTERED_DATA') {
+                cargarPagina(event.data.data);
+            }
+        });
+
+        if (window.parent.filteredData || window.parent.rawData) {
+            cargarPagina(window.parent.filteredData || window.parent.rawData);
+        }
+
+        // =====================================================
+        // VARIABLES GLOBALES para gráficos (destruir antes de recrear)
+        // Usar var para hoisting — se ejecutan antes de las declaraciones let
+        // =====================================================
+        var chartHistograma = null;
+        var chartScatter = null;
+
+        // =====================================================
+        // UTILIDADES DE CÁLCULO
+        // =====================================================
+
+        /** Agrupa un array de registros por un campo */
+        function groupBy(records, field) {
+            return records.reduce((acc, r) => {
+                const key = r[field] || 'Sin especificar';
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(r);
+                return acc;
+            }, {});
+        }
+
+        /** Calcula promedio de un campo numérico */
+        function promedio(records, field) {
+            const vals = records.map(r => parseFloat(r[field])).filter(v => !isNaN(v));
+            if (vals.length === 0) return 0;
+            return vals.reduce((a, b) => a + b, 0) / vals.length;
+        }
+
+        /** Calcula la moda (valor más frecuente) */
+        function moda(arr) {
+            const freq = {};
+            arr.forEach(v => { freq[v] = (freq[v] || 0) + 1; });
+            let maxFreq = 0, result = arr[0];
+            for (const [key, count] of Object.entries(freq)) {
+                if (count > maxFreq) { maxFreq = count; result = key; }
+            }
+            return result;
+        }
+
+        /** Calcula percentil de un array ordenado */
+        function percentil(sortedArr, p) {
+            if (sortedArr.length === 0) return 0;
+            const idx = (p / 100) * (sortedArr.length - 1);
+            const lower = Math.floor(idx);
+            const upper = Math.ceil(idx);
+            if (lower === upper) return sortedArr[lower];
+            return sortedArr[lower] + (sortedArr[upper] - sortedArr[lower]) * (idx - lower);
+        }
+
+        /** Devuelve color según score */
+        function colorScore(score) {
+            if (score >= 90) return '#10b981';
+            if (score >= 80) return '#3b82f6';
+            if (score >= 70) return '#f59e0b';
+            return '#ef4444';
+        }
+
+        /** Cuenta errores fatales de un conjunto de registros (Q12≠1 o Q15≠1) */
+        function contarErroresFatales(records) {
+            return records.filter(r => {
+                const q12 = String(r['Q12'] || '').trim();
+                const q15 = String(r['Q15'] || '').trim();
+                return q12 !== '1' || q15 !== '1';
+            }).length;
+        }
+
+        // =====================================================
+        // FUNCIÓN PRINCIPAL DE CARGA
+        // =====================================================
+        function cargarPagina(data) {
+            if (!data || !data.base_excel) return;
+
+            const records = data.base_excel;
+            if (records.length === 0) {
+                document.getElementById('contenidoPrincipal').innerHTML =
+                    '<div class="loading-custom">No hay datos disponibles con los filtros actuales.</div>';
+                setTimeout(notifyHeight, 100);
+                return;
+            }
+
+            // -----------------------------------------------
+            // 1. PROCESAR DATOS POR AGENTE
+            // -----------------------------------------------
+            const porAgente = groupBy(records, 'AGENTE');
+            const agentes = Object.entries(porAgente).map(([nombre, recs]) => {
+                const scores = recs.map(r => parseFloat(r['QA SCORE'])).filter(v => !isNaN(v));
+                const scorePromedio = scores.length > 0
+                    ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+                const cuartiles = recs.map(r => r['CUARTIL']).filter(Boolean);
+                const cuartilDominante = cuartiles.length > 0 ? moda(cuartiles) : '—';
+                const erroresFatales = contarErroresFatales(recs);
+                const supervisor = recs[0]['SUPERVISOR'] || 'Sin asignar';
+                const bpo = recs[0]['BPO'] || '—';
+                const skill = recs[0]['DATA_SKILL'] || '—';
+
+                // Porcentaje en Q1
+                const enQ1 = cuartiles.filter(c => c === 'Q1').length;
+                const pctQ1 = cuartiles.length > 0 ? (enQ1 / cuartiles.length) * 100 : 0;
+
+                return {
+                    nombre, supervisor, bpo, skill,
+                    totalAuditorias: recs.length,
+                    scorePromedio: Math.round(scorePromedio * 100) / 100,
+                    cuartilDominante,
+                    erroresFatales,
+                    pctQ1,
+                    scores
+                };
+            });
+
+            // Ordenar por score descendente
+            agentes.sort((a, b) => b.scorePromedio - a.scorePromedio);
+
+            // -----------------------------------------------
+            // 2. CALCULAR KPIs
+            // -----------------------------------------------
+            const totalAgentes = agentes.length;
+            const scoreTodos = agentes.map(a => a.scorePromedio);
+            const scorePromedioGlobal = scoreTodos.length > 0
+                ? scoreTodos.reduce((a, b) => a + b, 0) / scoreTodos.length : 0;
+            const auditoriasPromedio = agentes.length > 0
+                ? agentes.reduce((a, b) => a + b.totalAuditorias, 0) / agentes.length : 0;
+            const enRiesgo = agentes.filter(a =>
+                a.cuartilDominante === 'Q4' || a.erroresFatales > 0
+            ).length;
+            const pctRiesgo = totalAgentes > 0 ? (enRiesgo / totalAgentes) * 100 : 0;
+
+            // -----------------------------------------------
+            // 3. CALCULAR PERCENTILES (sobre scores promedio de agentes)
+            // -----------------------------------------------
+            const scoresSorted = [...scoreTodos].sort((a, b) => a - b);
+            const percentiles = {
+                p10: percentil(scoresSorted, 10),
+                p25: percentil(scoresSorted, 25),
+                p50: percentil(scoresSorted, 50),
+                p75: percentil(scoresSorted, 75),
+                p90: percentil(scoresSorted, 90),
+                p95: percentil(scoresSorted, 95),
+                p99: percentil(scoresSorted, 99)
+            };
+
+            // -----------------------------------------------
+            // 4. OBTENER OPCIONES PARA FILTROS INTERNOS
+            // -----------------------------------------------
+            const bpos = [...new Set(agentes.map(a => a.bpo))].sort();
+            const supervisores = [...new Set(agentes.map(a => a.supervisor))].sort();
+            const skills = [...new Set(agentes.map(a => a.skill))].sort();
+
+            // -----------------------------------------------
+            // 5. RENDERIZAR TODO
+            // -----------------------------------------------
+            renderizarContenido(agentes, {
+                totalAgentes, scorePromedioGlobal, auditoriasPromedio,
+                enRiesgo, pctRiesgo, percentiles,
+                bpos, supervisores, skills
+            });
+
+            setTimeout(notifyHeight, 100);
+            setTimeout(notifyHeight, 500);
+            setTimeout(notifyHeight, 1000);
+        }
+
+        // =====================================================
+        // RENDERIZADO COMPLETO
+        // =====================================================
+        function renderizarContenido(agentesOriginal, kpis) {
+            const container = document.getElementById('contenidoPrincipal');
+
+            container.innerHTML = `
+                <!-- FILTROS INTERNOS -->
+                <div class="filtros-internos" id="filtrosInternos">
+                    <div class="filtro-grupo">
+                        <label>BPO</label>
+                        <select id="filtroBPO" onchange="aplicarFiltrosInternos()">
+                            <option value="">Todos</option>
+                            ${kpis.bpos.map(b => `<option value="${b}">${b}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="filtro-grupo">
+                        <label>Supervisor</label>
+                        <select id="filtroSupervisor" onchange="aplicarFiltrosInternos()">
+                            <option value="">Todos</option>
+                            ${kpis.supervisores.map(s => `<option value="${escapeHTML(s)}">${s}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="filtro-grupo">
+                        <label>Skill</label>
+                        <select id="filtroSkill" onchange="aplicarFiltrosInternos()">
+                            <option value="">Todos</option>
+                            ${kpis.skills.map(s => `<option value="${escapeHTML(s)}">${s}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- KPIs -->
+                <div class="kpi-grid-custom" id="kpiGrid"></div>
+
+                <!-- HISTOGRAMA -->
+                <div class="chart-card" id="seccionHistograma">
+                    <div class="chart-title-custom">Distribución del QA Score por Agente</div>
+                    <canvas id="chartHistograma" height="100"></canvas>
+                </div>
+
+                <!-- PERCENTILES -->
+                <div class="tabla-panel" id="seccionPercentiles" style="margin-bottom:28px;">
+                    <div class="tabla-panel-header percentil">📐 Percentiles de Referencia</div>
+                    <div class="percentiles-grid" id="percentilesGrid"></div>
+                </div>
+
+                <!-- TOP 20 y BOTTOM 20 lado a lado -->
+                <div class="dual-columns" id="seccionTopBottom">
+                    <div class="tabla-panel">
+                        <div class="tabla-panel-header top">🏆 Top 20 Agentes</div>
+                        <div class="tabla-scroll" id="tablaTop20"></div>
+                    </div>
+                    <div class="tabla-panel">
+                        <div class="tabla-panel-header bottom">⚠️ Bottom 20 Agentes</div>
+                        <div class="tabla-scroll" id="tablaBottom20"></div>
+                    </div>
+                </div>
+
+                <!-- AGENTES EN RIESGO -->
+                <div class="tabla-panel" id="seccionRiesgo" style="margin-bottom:28px;">
+                    <div class="tabla-panel-header riesgo">🚨 Agentes en Zona de Riesgo</div>
+                    <div class="tabla-scroll" id="tablaRiesgo"></div>
+                </div>
+
+                <!-- AGENTES DESTACADOS -->
+                <div class="tabla-panel" id="seccionDestacados" style="margin-bottom:28px;">
+                    <div class="tabla-panel-header destacado">⭐ Agentes Destacados</div>
+                    <div class="tabla-scroll" id="tablaDestacados"></div>
+                </div>
+
+                <!-- SCATTER PLOT -->
+                <div class="chart-card" id="seccionScatter">
+                    <div class="chart-title-custom">Mapa de Agentes: Volumen vs Score</div>
+                    <canvas id="chartScatter" height="120"></canvas>
+                    <div class="scatter-legend">
+                        <div class="scatter-legend-item">
+                            <div class="scatter-legend-dot" style="background:#10b981;"></div>
+                            Score ≥ 90
+                        </div>
+                        <div class="scatter-legend-item">
+                            <div class="scatter-legend-dot" style="background:#3b82f6;"></div>
+                            Score 80-89
+                        </div>
+                        <div class="scatter-legend-item">
+                            <div class="scatter-legend-dot" style="background:#f59e0b;"></div>
+                            Score 70-79
+                        </div>
+                        <div class="scatter-legend-item">
+                            <div class="scatter-legend-dot" style="background:#ef4444;"></div>
+                            Score < 70
+                        </div>
+                        <div class="scatter-legend-item">
+                            ● Tamaño del punto = errores fatales
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Guardar datos originales para filtros internos
+            window._agentesOriginal = agentesOriginal;
+            window._kpisOriginal = kpis;
+
+            // Renderizar con datos completos
+            renderizarVistas(agentesOriginal, kpis);
+        }
+
+        // =====================================================
+        // FILTROS INTERNOS
+        // =====================================================
+        function escapeHTML(str) {
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function aplicarFiltrosInternos() {
+            const bpo = document.getElementById('filtroBPO').value;
+            const sup = document.getElementById('filtroSupervisor').value;
+            const skill = document.getElementById('filtroSkill').value;
+
+            let filtrados = window._agentesOriginal;
+
+            if (bpo) filtrados = filtrados.filter(a => a.bpo === bpo);
+            if (sup) filtrados = filtrados.filter(a => a.supervisor === sup);
+            if (skill) filtrados = filtrados.filter(a => a.skill === skill);
+
+            // Recalcular KPIs para datos filtrados
+            const totalAgentes = filtrados.length;
+            const scoreTodos = filtrados.map(a => a.scorePromedio);
+            const scorePromedioGlobal = scoreTodos.length > 0
+                ? scoreTodos.reduce((a, b) => a + b, 0) / scoreTodos.length : 0;
+            const auditoriasPromedio = filtrados.length > 0
+                ? filtrados.reduce((a, b) => a + b.totalAuditorias, 0) / filtrados.length : 0;
+            const enRiesgo = filtrados.filter(a =>
+                a.cuartilDominante === 'Q4' || a.erroresFatales > 0
+            ).length;
+            const pctRiesgo = totalAgentes > 0 ? (enRiesgo / totalAgentes) * 100 : 0;
+
+            const scoresSorted = [...scoreTodos].sort((a, b) => a - b);
+            const percentiles = {
+                p10: percentil(scoresSorted, 10),
+                p25: percentil(scoresSorted, 25),
+                p50: percentil(scoresSorted, 50),
+                p75: percentil(scoresSorted, 75),
+                p90: percentil(scoresSorted, 90),
+                p95: percentil(scoresSorted, 95),
+                p99: percentil(scoresSorted, 99)
+            };
+
+            const kpisActualizados = {
+                ...window._kpisOriginal,
+                totalAgentes, scorePromedioGlobal, auditoriasPromedio,
+                enRiesgo, pctRiesgo, percentiles
+            };
+
+            filtrados.sort((a, b) => b.scorePromedio - a.scorePromedio);
+            renderizarVistas(filtrados, kpisActualizados);
+            setTimeout(notifyHeight, 200);
+        }
+
+        // =====================================================
+        // RENDERIZAR TODAS LAS SECCIONES
+        // =====================================================
+        function renderizarVistas(agentes, kpis) {
+            renderKPIs(kpis);
+            renderPercentiles(kpis.percentiles);
+            renderHistograma(agentes);
+            renderTablaTop(agentes.slice(0, 20), 'tablaTop20', 'top');
+            renderTablaTop([...agentes].reverse().slice(0, 20), 'tablaBottom20', 'bottom');
+            renderTablaRiesgo(agentes);
+            renderTablaDestacados(agentes);
+            renderScatter(agentes);
+        }
+
+        // =====================================================
+        // RENDER: KPIs
+        // =====================================================
+        function renderKPIs(kpis) {
+            document.getElementById('kpiGrid').innerHTML = `
+                <div class="kpi-card-custom" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+                    <div class="kpi-label-custom">Total Agentes</div>
+                    <div class="kpi-value-custom">${kpis.totalAgentes}</div>
+                    <div class="kpi-sub">Agentes únicos evaluados</div>
+                </div>
+                <div class="kpi-card-custom" style="background: linear-gradient(135deg, #10b981, #047857);">
+                    <div class="kpi-label-custom">Score Promedio</div>
+                    <div class="kpi-value-custom">${kpis.scorePromedioGlobal.toFixed(1)}</div>
+                    <div class="kpi-sub">Promedio general de calidad</div>
+                </div>
+                <div class="kpi-card-custom" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">
+                    <div class="kpi-label-custom">Auditorías / Agente</div>
+                    <div class="kpi-value-custom">${kpis.auditoriasPromedio.toFixed(1)}</div>
+                    <div class="kpi-sub">Promedio de evaluaciones</div>
+                </div>
+                <div class="kpi-card-custom" style="background: linear-gradient(135deg, ${kpis.pctRiesgo > 30 ? '#ef4444, #dc2626' : '#f59e0b, #d97706'});">
+                    <div class="kpi-label-custom">Agentes en Riesgo</div>
+                    <div class="kpi-value-custom">${kpis.pctRiesgo.toFixed(1)}%</div>
+                    <div class="kpi-sub">${kpis.enRiesgo} agentes (Q4 o errores fatales)</div>
+                </div>
+            `;
+        }
+
+        // =====================================================
+        // RENDER: PERCENTILES
+        // =====================================================
+        function renderPercentiles(p) {
+            const items = [
+                { label: 'P10', value: p.p10 },
+                { label: 'P25', value: p.p25 },
+                { label: 'P50 (Mediana)', value: p.p50 },
+                { label: 'P75', value: p.p75 },
+                { label: 'P90', value: p.p90 },
+                { label: 'P95', value: p.p95 },
+                { label: 'P99', value: p.p99 }
+            ];
+            document.getElementById('percentilesGrid').innerHTML = items.map(item => `
+                <div class="percentil-item">
+                    <div class="percentil-label">${item.label}</div>
+                    <div class="percentil-valor" style="color:${colorScore(item.value)}">${item.value.toFixed(1)}</div>
+                </div>
+            `).join('');
+        }
+
+        // =====================================================
+        // RENDER: HISTOGRAMA DE DISTRIBUCIÓN
+        // =====================================================
+        function renderHistograma(agentes) {
+            // Rangos del histograma
+            const rangos = [
+                { label: '0-50', min: 0, max: 50, color: '#ef4444' },
+                { label: '50-60', min: 50, max: 60, color: '#f97316' },
+                { label: '60-70', min: 60, max: 70, color: '#f59e0b' },
+                { label: '70-80', min: 70, max: 80, color: '#eab308' },
+                { label: '80-90', min: 80, max: 90, color: '#3b82f6' },
+                { label: '90-100', min: 90, max: 101, color: '#10b981' }
+            ];
+
+            const conteos = rangos.map(r =>
+                agentes.filter(a => a.scorePromedio >= r.min && a.scorePromedio < r.max).length
+            );
+
+            // Destruir gráfico previo si existe
+            if (chartHistograma) chartHistograma.destroy();
+
+            const ctx = document.getElementById('chartHistograma').getContext('2d');
+            chartHistograma = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: rangos.map(r => r.label),
+                    datasets: [{
+                        label: 'Cantidad de Agentes',
+                        data: conteos,
+                        backgroundColor: rangos.map(r => r.color + 'CC'),
+                        borderColor: rangos.map(r => r.color),
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        barPercentage: 0.75
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => `${ctx.parsed.y} agentes`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Rango de QA Score', font: { weight: '600' } },
+                            grid: { display: false }
+                        },
+                        y: {
+                            title: { display: true, text: 'Cantidad de Agentes', font: { weight: '600' } },
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    }
+                },
+                plugins: [{
+                    // Plugin para línea de zona de riesgo
+                    id: 'zonaRiesgo',
+                    afterDraw(chart) {
+                        const { ctx, chartArea, scales } = chart;
+                        // Dibujar fondo rojo sutil para las primeras 3 barras (< 70)
+                        const xEnd = scales.x.getPixelForValue(2) +
+                            (scales.x.getPixelForValue(1) - scales.x.getPixelForValue(0)) / 2;
+                        ctx.save();
+                        ctx.fillStyle = 'rgba(239, 68, 68, 0.06)';
+                        ctx.fillRect(chartArea.left, chartArea.top, xEnd - chartArea.left, chartArea.bottom - chartArea.top);
+
+                        // Etiqueta
+                        ctx.fillStyle = '#ef4444';
+                        ctx.font = 'bold 11px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('ZONA DE RIESGO', (chartArea.left + xEnd) / 2, chartArea.top + 16);
+                        ctx.restore();
+                    }
+                }]
+            });
+        }
+
+        // =====================================================
+        // RENDER: TABLA RANKING (Top / Bottom)
+        // =====================================================
+        function renderTablaTop(agentes, containerId, tipo) {
+            if (agentes.length === 0) {
+                document.getElementById(containerId).innerHTML =
+                    '<div style="padding:24px;text-align:center;color:#94a3b8;">Sin datos</div>';
+                return;
+            }
+
+            const filas = agentes.map((a, idx) => {
+                const rank = tipo === 'top' ? idx + 1 : idx + 1;
+                const rankClass = tipo === 'top'
+                    ? (rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : 'rank-default')
+                    : 'rank-default';
+                const badgeRank = tipo === 'top' && rank <= 3
+                    ? `<span class="badge-custom ${rank === 1 ? 'badge-gold' : rank === 2 ? 'badge-silver' : 'badge-bronze'}">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉'}</span>`
+                    : '';
+                const cuartilBadge = `<span class="badge-custom badge-${(a.cuartilDominante || '').toLowerCase()}">${a.cuartilDominante}</span>`;
+                const scoreColor = colorScore(a.scorePromedio);
+                const barWidth = Math.min(a.scorePromedio, 100);
+
+                return `<tr>
+                    <td><span class="rank-num ${rankClass}">${rank}</span></td>
+                    <td style="font-weight:600;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHTML(a.nombre)}">${escapeHTML(a.nombre)} ${badgeRank}</td>
+                    <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHTML(a.supervisor)}">${escapeHTML(a.supervisor)}</td>
+                    <td>${a.bpo}</td>
+                    <td style="text-align:center;">${a.totalAuditorias}</td>
+                    <td>
+                        <div class="score-bar-container">
+                            <span class="score-text" style="color:${scoreColor}">${a.scorePromedio.toFixed(1)}</span>
+                            <div class="score-bar"><div class="score-bar-fill" style="width:${barWidth}%;background:${scoreColor};"></div></div>
+                        </div>
+                    </td>
+                    <td>${cuartilBadge}</td>
+                    <td style="text-align:center;font-weight:600;color:${a.erroresFatales > 0 ? '#ef4444' : '#10b981'}">${a.erroresFatales}</td>
+                </tr>`;
+            }).join('');
+
+            document.getElementById(containerId).innerHTML = `
+                <table class="tabla-ranking">
+                    <thead>
+                        <tr>
+                            <th style="width:45px;">#</th>
+                            <th>Agente</th>
+                            <th>Supervisor</th>
+                            <th>BPO</th>
+                            <th style="text-align:center;">Auditorías</th>
+                            <th style="min-width:140px;">Score</th>
+                            <th>Cuartil</th>
+                            <th style="text-align:center;">Err. Fatales</th>
+                        </tr>
+                    </thead>
+                    <tbody>${filas}</tbody>
+                </table>
+            `;
+        }
+
+        // =====================================================
+        // RENDER: TABLA AGENTES EN RIESGO
+        // =====================================================
+        function renderTablaRiesgo(agentes) {
+            const riesgo = agentes.filter(a =>
+                a.cuartilDominante === 'Q4' || a.erroresFatales > 0
+            ).sort((a, b) => a.scorePromedio - b.scorePromedio);
+
+            if (riesgo.length === 0) {
+                document.getElementById('tablaRiesgo').innerHTML =
+                    '<div style="padding:24px;text-align:center;color:#94a3b8;">✅ No hay agentes en zona de riesgo</div>';
+                return;
+            }
+
+            const filas = riesgo.map(a => {
+                let accion = '';
+                if (a.erroresFatales >= 3) accion = 'Plan de acción inmediato';
+                else if (a.cuartilDominante === 'Q4' && a.erroresFatales > 0) accion = 'Coaching + seguimiento';
+                else if (a.cuartilDominante === 'Q4') accion = 'Refuerzo de capacitación';
+                else accion = 'Monitoreo preventivo';
+
+                return `<tr>
+                    <td style="font-weight:600;">${escapeHTML(a.nombre)} <span class="badge-custom badge-riesgo">RIESGO</span></td>
+                    <td>${escapeHTML(a.supervisor)}</td>
+                    <td>${a.bpo}</td>
+                    <td style="text-align:center;">${a.totalAuditorias}</td>
+                    <td>
+                        <div class="score-bar-container">
+                            <span class="score-text" style="color:${colorScore(a.scorePromedio)}">${a.scorePromedio.toFixed(1)}</span>
+                            <div class="score-bar"><div class="score-bar-fill" style="width:${Math.min(a.scorePromedio, 100)}%;background:${colorScore(a.scorePromedio)};"></div></div>
+                        </div>
+                    </td>
+                    <td style="text-align:center;font-weight:700;color:#ef4444;">${a.erroresFatales}</td>
+                    <td><span class="accion-tag">${accion}</span></td>
+                </tr>`;
+            }).join('');
+
+            document.getElementById('tablaRiesgo').innerHTML = `
+                <table class="tabla-ranking">
+                    <thead>
+                        <tr>
+                            <th>Agente</th>
+                            <th>Supervisor</th>
+                            <th>BPO</th>
+                            <th style="text-align:center;">Auditorías</th>
+                            <th style="min-width:140px;">Score</th>
+                            <th style="text-align:center;">Err. Fatales</th>
+                            <th>Acción Recomendada</th>
+                        </tr>
+                    </thead>
+                    <tbody>${filas}</tbody>
+                </table>
+            `;
+        }
+
+        // =====================================================
+        // RENDER: TABLA AGENTES DESTACADOS
+        // =====================================================
+        function renderTablaDestacados(agentes) {
+            // Agentes con >80% de auditorías en Q1
+            const destacados = agentes.filter(a => a.pctQ1 > 80 && a.totalAuditorias >= 2)
+                .sort((a, b) => b.scorePromedio - a.scorePromedio);
+
+            if (destacados.length === 0) {
+                document.getElementById('tablaDestacados').innerHTML =
+                    '<div style="padding:24px;text-align:center;color:#94a3b8;">No hay agentes destacados con los criterios actuales (>80% en Q1, mín. 2 auditorías)</div>';
+                return;
+            }
+
+            const filas = destacados.map(a => `
+                <tr>
+                    <td style="font-weight:600;">${escapeHTML(a.nombre)} <span class="badge-custom badge-destacado">DESTACADO</span></td>
+                    <td>${escapeHTML(a.supervisor)}</td>
+                    <td>${a.bpo}</td>
+                    <td style="text-align:center;">${a.totalAuditorias}</td>
+                    <td>
+                        <div class="score-bar-container">
+                            <span class="score-text" style="color:${colorScore(a.scorePromedio)}">${a.scorePromedio.toFixed(1)}</span>
+                            <div class="score-bar"><div class="score-bar-fill" style="width:${Math.min(a.scorePromedio, 100)}%;background:${colorScore(a.scorePromedio)};"></div></div>
+                        </div>
+                    </td>
+                    <td style="text-align:center;color:#10b981;font-weight:700;">${a.pctQ1.toFixed(0)}%</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('tablaDestacados').innerHTML = `
+                <table class="tabla-ranking">
+                    <thead>
+                        <tr>
+                            <th>Agente</th>
+                            <th>Supervisor</th>
+                            <th>BPO</th>
+                            <th style="text-align:center;">Auditorías</th>
+                            <th style="min-width:140px;">Score</th>
+                            <th style="text-align:center;">% en Q1</th>
+                        </tr>
+                    </thead>
+                    <tbody>${filas}</tbody>
+                </table>
+            `;
+        }
+
+        // =====================================================
+        // RENDER: SCATTER PLOT - Volumen vs Score
+        // =====================================================
+        function renderScatter(agentes) {
+            if (chartScatter) chartScatter.destroy();
+
+            // Preparar datos del scatter
+            const dataPoints = agentes.map(a => ({
+                x: a.totalAuditorias,
+                y: a.scorePromedio,
+                r: Math.max(4, Math.min(a.erroresFatales * 3 + 4, 20)),
+                nombre: a.nombre,
+                errores: a.erroresFatales,
+                color: colorScore(a.scorePromedio)
+            }));
+
+            // Calcular medianas para cuadrantes
+            const medianAud = agentes.length > 0
+                ? [...agentes.map(a => a.totalAuditorias)].sort((a, b) => a - b)[Math.floor(agentes.length / 2)]
+                : 0;
+            const medianScore = agentes.length > 0
+                ? [...agentes.map(a => a.scorePromedio)].sort((a, b) => a - b)[Math.floor(agentes.length / 2)]
+                : 0;
+
+            const ctx = document.getElementById('chartScatter').getContext('2d');
+            chartScatter = new Chart(ctx, {
+                type: 'bubble',
+                data: {
+                    datasets: [{
+                        label: 'Agentes',
+                        data: dataPoints,
+                        backgroundColor: dataPoints.map(p => p.color + '99'),
+                        borderColor: dataPoints.map(p => p.color),
+                        borderWidth: 1.5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => {
+                                    const d = ctx.raw;
+                                    return [
+                                        `Agente: ${d.nombre}`,
+                                        `Auditorías: ${d.x}`,
+                                        `Score: ${d.y.toFixed(1)}`,
+                                        `Errores fatales: ${d.errores}`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Número de Auditorías', font: { weight: '600' } },
+                            grid: { color: '#f1f5f9' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Score Promedio', font: { weight: '600' } },
+                            grid: { color: '#f1f5f9' },
+                            min: 0,
+                            max: 100
+                        }
+                    }
+                },
+                plugins: [{
+                    // Plugin para dibujar líneas de cuadrantes
+                    id: 'cuadrantes',
+                    beforeDraw(chart) {
+                        const { ctx, chartArea, scales } = chart;
+                        if (!chartArea) return;
+
+                        const xMid = scales.x.getPixelForValue(medianAud);
+                        const yMid = scales.y.getPixelForValue(medianScore);
+
+                        ctx.save();
+                        // Línea vertical
+                        ctx.strokeStyle = '#cbd5e1';
+                        ctx.lineWidth = 1;
+                        ctx.setLineDash([5, 5]);
+                        ctx.beginPath();
+                        ctx.moveTo(xMid, chartArea.top);
+                        ctx.lineTo(xMid, chartArea.bottom);
+                        ctx.stroke();
+                        // Línea horizontal
+                        ctx.beginPath();
+                        ctx.moveTo(chartArea.left, yMid);
+                        ctx.lineTo(chartArea.right, yMid);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        // Etiquetas de cuadrantes
+                        ctx.font = '10px sans-serif';
+                        ctx.fillStyle = '#94a3b8';
+                        ctx.textAlign = 'center';
+
+                        const padX = 60, padY = 14;
+                        ctx.fillText('Bajo Vol / Alto Score', (chartArea.left + xMid) / 2, chartArea.top + padY);
+                        ctx.fillText('Alto Vol / Alto Score', (xMid + chartArea.right) / 2, chartArea.top + padY);
+                        ctx.fillText('Bajo Vol / Bajo Score', (chartArea.left + xMid) / 2, chartArea.bottom - padY + 6);
+                        ctx.fillText('Alto Vol / Bajo Score', (xMid + chartArea.right) / 2, chartArea.bottom - padY + 6);
+
+                        ctx.restore();
+                    }
+                }]
+            });
+        }
+    </script>
+</body>
+</html>

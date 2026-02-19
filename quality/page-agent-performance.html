@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis de Agentes</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Estilos específicos para análisis de agentes */
+        .agent-selector {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+        }
+        
+        .agent-selector label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .agent-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        
+        .agent-selector select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        
+        .scorecard-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .scorecard-metric {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .scorecard-metric .label {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+        
+        .scorecard-metric .value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .scorecard-metric .comparison {
+            font-size: 13px;
+            color: #64748b;
+        }
+        
+        .heatmap-container {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+            overflow-x: auto;
+        }
+        
+        .heatmap-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        
+        .heatmap-table th {
+            background: #f1f5f9;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 600;
+            color: #1e293b;
+            white-space: nowrap;
+        }
+        
+        .heatmap-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .heatmap-cell {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-align: center;
+            min-width: 50px;
+        }
+        
+        .performance-high { background: #d1fae5; color: #065f46; }
+        .performance-medium { background: #fef3c7; color: #92400e; }
+        .performance-low { background: #fee2e2; color: #991b1b; }
+        
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .insight-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .insight-card h4 {
+            margin: 0 0 12px 0;
+            color: #1e293b;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .insight-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .insight-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .insight-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .ranking-card {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+        }
+        
+        .ranking-position {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .percentile-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+        
+        .percentile-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #3b82f6 100%);
+            transition: width 0.5s ease;
+        }
+        
+        .tabs-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+        }
+        
+        .tabs-header {
+            display: flex;
+            border-bottom: 2px solid #f1f5f9;
+            overflow-x: auto;
+        }
+        
+        .tab-button {
+            padding: 16px 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        
+        .tab-button:hover {
+            color: #3b82f6;
+        }
+        
+        .tab-button.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+        
+        .tab-content {
+            padding: 24px;
+        }
+        
+        .tab-panel {
+            display: none;
+        }
+        
+        .tab-panel.active {
+            display: block;
+        }
+        
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .trend-up { color: #10b981; }
+        .trend-down { color: #ef4444; }
+        .trend-neutral { color: #64748b; }
+        
+        .error-frequency {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .error-bar {
+            flex: 1;
+            height: 24px;
+            background: #fee2e2;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .error-bar-fill {
+            height: 100%;
+            background: #ef4444;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .scorecard-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .heatmap-container {
+                padding: 16px;
+            }
+            
+            .tab-button {
+                padding: 12px 16px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body style="background: transparent; padding: 0;">
+    <div style="padding: 0;">
+        <h2 style="margin-bottom: 24px; color: var(--text-primary);">Análisis de Agentes</h2>
+        
+        <!-- Selector de Agente -->
+        <div class="agent-selector">
+            <label for="agenteSelect">Seleccionar Agente:</label>
+            <select id="agenteSelect">
+                <option value="">-- Seleccione un agente --</option>
+            </select>
+        </div>
+        
+        <!-- Contenido Principal -->
+        <div id="contenidoPrincipal">
+            <div class="loading">Seleccione un agente para ver el análisis completo</div>
+        </div>
+    </div>
+
+    <script>
+        // Función para obtener información de un criterio desde columnas
+        function getInfoCriterio(qId) {
+            const columnas = allData.columnas || [];
+            const col = columnas.find(c => c.columna === qId);
+            
+            if (col) {
+                return {
+                    nombre: col.descripcion || qId,
+                    max: col.puntaje || 3,
+                    indicadores: col.indicadores || []
+                };
+            }
+            
+            // Fallback si no se encuentra
+            return {
+                nombre: qId,
+                max: 3,
+                indicadores: []
+            };
+        }
+        
+        // Función para obtener descripción de un criterio
+        function getDescripcionCriterio(qId) {
+            return getInfoCriterio(qId).nombre;
+        }
+        
+        // Función para obtener puntaje máximo de un criterio
+        function getPuntajeMaximo(qId) {
+            return getInfoCriterio(qId).max;
+        }
+        
+        // Función para obtener indicadores de un criterio
+        function getIndicadores(qId) {
+            return getInfoCriterio(qId).indicadores;
+        }
+        
+        // Variables globales
+        let allData = null;
+        let currentAgent = null;
+        let charts = {};
+        
+        // Función para notificar altura al padre
+        function notifyHeight() {
+            const height = document.body.scrollHeight;
+            window.parent.postMessage({
+                type: 'RESIZE',
+                height: height
+            }, '*');
+        }
+        
+        // Escuchar mensajes del padre
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'FILTERED_DATA') {
+                allData = event.data.data;
+                inicializarPagina();
+            }
+        });
+        
+        // Cargar datos si están disponibles
+        if (window.parent.filteredData || window.parent.rawData) {
+            allData = window.parent.filteredData || window.parent.rawData;
+            inicializarPagina();
+        }
+        
+        // Inicializar la página
+        function inicializarPagina() {
+            if (!allData || !allData.base_excel) return;
+            
+            // Poblar selector de agentes
+            const agentes = [...new Set(allData.base_excel.map(r => r.AGENTE))].sort();
+            const select = document.getElementById('agenteSelect');
+            
+            agentes.forEach(agente => {
+                const option = document.createElement('option');
+                option.value = agente;
+                option.textContent = agente;
+                select.appendChild(option);
+            });
+            
+            // Evento de cambio de agente
+            select.addEventListener('change', (e) => {
+                if (e.target.value) {
+                    currentAgent = e.target.value;
+                    cargarAnalisisAgente(e.target.value);
+                } else {
+                    document.getElementById('contenidoPrincipal').innerHTML = 
+                        '<div class="loading">Seleccione un agente para ver el análisis completo</div>';
+                }
+            });
+            
+            notifyHeight();
+        }
+        
+        // Cargar análisis completo del agente
+        function cargarAnalisisAgente(agente) {
+            const records = allData.base_excel;
+            const agentRecords = records.filter(r => r.AGENTE === agente);
+            
+            if (agentRecords.length === 0) {
+                document.getElementById('contenidoPrincipal').innerHTML = 
+                    '<div class="loading">No hay datos disponibles para este agente</div>';
+                return;
+            }
+            
+            // Generar estructura de tabs
+            const html = `
+                <div class="tabs-container">
+                    <div class="tabs-header">
+                        <button class="tab-button active" data-tab="scorecard">📊 Scorecard</button>
+                        <button class="tab-button" data-tab="habilidades">🎯 Habilidades</button>
+                        <button class="tab-button" data-tab="errores">⚠️ Errores Críticos</button>
+                        <button class="tab-button" data-tab="contexto">📈 Por Tipo</button>
+                        <button class="tab-button" data-tab="ranking">🏆 Ranking</button>
+                        <button class="tab-button" data-tab="consistencia">📉 Consistencia</button>
+                        <button class="tab-button" data-tab="kpis">💼 KPIs Negocio</button>
+                        <button class="tab-button" data-tab="comentarios">💬 Comentarios</button>
+                        <button class="tab-button" data-tab="accion">✅ Plan de Acción</button>
+                    </div>
+                    <div class="tab-content">
+                        <div id="tab-scorecard" class="tab-panel active"></div>
+                        <div id="tab-habilidades" class="tab-panel"></div>
+                        <div id="tab-errores" class="tab-panel"></div>
+                        <div id="tab-contexto" class="tab-panel"></div>
+                        <div id="tab-ranking" class="tab-panel"></div>
+                        <div id="tab-consistencia" class="tab-panel"></div>
+                        <div id="tab-kpis" class="tab-panel"></div>
+                        <div id="tab-comentarios" class="tab-panel"></div>
+                        <div id="tab-accion" class="tab-panel"></div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('contenidoPrincipal').innerHTML = html;
+            
+            // Configurar tabs
+            setupTabs();
+            
+            // Cargar cada sección
+            cargarScorecard(agentRecords, records);
+            cargarHabilidades(agentRecords);
+            cargarErrores(agentRecords);
+            cargarContexto(agentRecords);
+            cargarRanking(agente, records);
+            cargarConsistencia(agentRecords);
+            cargarKPIs(agentRecords);
+            cargarComentarios(agentRecords);
+            cargarPlanAccion(agentRecords, records);
+            
+            setTimeout(notifyHeight, 100);
+            setTimeout(notifyHeight, 500);
+            setTimeout(notifyHeight, 1000);
+        }
+        
+        // Configurar sistema de tabs
+        function setupTabs() {
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Desactivar todos
+                    buttons.forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                    
+                    // Activar seleccionado
+                    button.classList.add('active');
+                    const tabId = 'tab-' + button.dataset.tab;
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Redimensionar gráficos si existen
+                    Object.values(charts).forEach(chart => {
+                        if (chart && chart.resize) chart.resize();
+                    });
+                    
+                    setTimeout(notifyHeight, 100);
+                });
+            });
+        }
+        
+        // 1. SCORECARD INDIVIDUAL
+        function cargarScorecard(agentRecords, allRecords) {
+            const agentScore = calcularPromedio(agentRecords, 'QA SCORE');
+            const generalScore = calcularPromedio(allRecords, 'QA SCORE');
+            const diff = agentScore - generalScore;
+            
+            // Distribución de cuartiles
+            const cuartiles = contarPor(agentRecords, 'CUMPLE PROCESO');
+            const totalAuditorias = agentRecords.length;
+            const cumpleProceso = (cuartiles['1'] || 0);
+            const tasaCumplimiento = ((cumpleProceso / totalAuditorias) * 100).toFixed(1);
+            
+            // Errores fatales
+            const recontactos = agentRecords.filter(r => r.RECONTACTO === '0').length;
+            const politicas = agentRecords.filter(r => r.POLITICAS === '0').length;
+            const tasaRecontacto = (((totalAuditorias - recontactos) / totalAuditorias) * 100).toFixed(1);
+            const tasaPoliticas = (((totalAuditorias - politicas) / totalAuditorias) * 100).toFixed(1);
+            
+            // Cuartiles
+            const cuartilesCount = contarPor(agentRecords, 'CUARTIL');
+            
+            const html = `
+                <div class="scorecard-container">
+                    <div class="scorecard-metric">
+                        <div class="label">QA Score Promedio</div>
+                        <div class="value" style="color: ${agentScore >= 80 ? '#10b981' : agentScore >= 60 ? '#f59e0b' : '#ef4444'}">
+                            ${agentScore.toFixed(1)}%
+                        </div>
+                        <div class="comparison">
+                            ${diff >= 0 ? '▲' : '▼'} ${Math.abs(diff).toFixed(1)} pts vs promedio general (${generalScore.toFixed(1)}%)
+                        </div>
+                    </div>
+                    
+                    <div class="scorecard-metric">
+                        <div class="label">Total Auditorías</div>
+                        <div class="value" style="color: #3b82f6">${totalAuditorias}</div>
+                        <div class="comparison">
+                            ${Object.keys(cuartilesCount).map(c => `${c}: ${cuartilesCount[c]}`).join(' | ')}
+                        </div>
+                    </div>
+                    
+                    <div class="scorecard-metric">
+                        <div class="label">Cumple Proceso</div>
+                        <div class="value" style="color: ${tasaCumplimiento >= 80 ? '#10b981' : '#f59e0b'}">
+                            ${tasaCumplimiento}%
+                        </div>
+                        <div class="comparison">${cumpleProceso} de ${totalAuditorias} auditorías</div>
+                    </div>
+                    
+                    <div class="scorecard-metric">
+                        <div class="label">Cumple Recontacto</div>
+                        <div class="value" style="color: ${tasaRecontacto >= 95 ? '#10b981' : '#ef4444'}">
+                            ${tasaRecontacto}%
+                        </div>
+                        <div class="comparison">${recontactos > 0 ? recontactos + ' errores fatales' : 'Sin errores'}</div>
+                    </div>
+                    
+                    <div class="scorecard-metric">
+                        <div class="label">Cumple Políticas</div>
+                        <div class="value" style="color: ${tasaPoliticas >= 95 ? '#10b981' : '#ef4444'}">
+                            ${tasaPoliticas}%
+                        </div>
+                        <div class="comparison">${politicas > 0 ? politicas + ' errores fatales' : 'Sin errores'}</div>
+                    </div>
+                </div>
+                
+                <div class="cards-grid" style="grid-template-columns: 1fr 1fr;">
+                    <div class="card">
+                        <div class="card-title">Tendencia por Semana</div>
+                        <div class="chart-container">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-title">Distribución de Cuartiles</div>
+                        <div class="chart-container">
+                            <canvas id="cuartilesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('tab-scorecard').innerHTML = html;
+            
+            // Gráfico de tendencia
+            crearGraficoTendencia(agentRecords);
+            crearGraficoCuartiles(cuartilesCount);
+        }
+        
+        function crearGraficoTendencia(records) {
+            const porSemana = agruparPor(records, 'SEMANA');
+            const semanas = Object.keys(porSemana).sort();
+            const scores = semanas.map(s => calcularPromedio(porSemana[s], 'QA SCORE'));
+            
+            const ctx = document.getElementById('trendChart');
+            if (charts.trend) charts.trend.destroy();
+            
+            charts.trend = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: semanas,
+                    datasets: [{
+                        label: 'QA Score',
+                        data: scores,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => `Score: ${context.parsed.y.toFixed(1)}%`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: (value) => value + '%'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function crearGraficoCuartiles(cuartiles) {
+            const labels = Object.keys(cuartiles).sort();
+            const valores = labels.map(l => cuartiles[l]);
+            const colores = {
+                'Q1': '#ef4444',
+                'Q2': '#f59e0b',
+                'Q3': '#3b82f6',
+                'Q4': '#10b981'
+            };
+            
+            const ctx = document.getElementById('cuartilesChart');
+            if (charts.cuartiles) charts.cuartiles.destroy();
+            
+            charts.cuartiles = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: valores,
+                        backgroundColor: labels.map(l => colores[l] || '#64748b'),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 2. ANÁLISIS DE BRECHAS DE HABILIDADES
+        function cargarHabilidades(agentRecords) {
+            // Calcular promedio por cada Q1-Q22
+            const criterios = [];
+            
+            for (let i = 1; i <= 22; i++) {
+                const campo = `Q${i}`;
+                const valores = agentRecords.map(r => parseFloat(r[campo]) || 0);
+                const promedio = valores.reduce((a, b) => a + b, 0) / valores.length;
+                
+                const nombre = getDescripcionCriterio(campo);
+                const puntajeMax = getPuntajeMaximo(campo);
+                const indicadoresArray = getIndicadores(campo);
+                const indicadoresStr = indicadoresArray.join(', ');
+                
+                criterios.push({
+                    id: campo,
+                    nombre: nombre,
+                    nombreCompleto: `${campo} - ${nombre}`,
+                    promedio: promedio,
+                    max: puntajeMax,
+                    porcentaje: (promedio / puntajeMax) * 100,
+                    indicadores: indicadoresStr
+                });
+            }
+            
+            // Ordenar por porcentaje
+            criterios.sort((a, b) => b.porcentaje - a.porcentaje);
+            
+            // Top 3 fortalezas
+            const fortalezas = criterios.slice(0, 3);
+            
+            // Top 5 oportunidades
+            const oportunidades = criterios.slice(-5).reverse();
+            
+            const html = `
+                <div class="insights-grid">
+                    <div class="insight-card" style="border-left: 4px solid #10b981;">
+                        <h4>🎯 Top 3 Fortalezas</h4>
+                        <ul class="insight-list">
+                            ${fortalezas.map(c => `
+                                <li>
+                                    <span><strong>${c.id}:</strong> ${c.nombre}</span>
+                                    <span class="badge badge-success">${c.porcentaje.toFixed(0)}%</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div class="insight-card" style="border-left: 4px solid #ef4444;">
+                        <h4>⚠️ Top 5 Oportunidades</h4>
+                        <ul class="insight-list">
+                            ${oportunidades.map(c => `
+                                <li>
+                                    <span><strong>${c.id}:</strong> ${c.nombre}</span>
+                                    <span class="badge badge-error">${c.porcentaje.toFixed(0)}%</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="heatmap-container">
+                    <h3 style="margin: 0 0 16px 0;">Mapa de Calor de Habilidades</h3>
+                    <table class="heatmap-table">
+                        <thead>
+                            <tr>
+                                <th style="min-width: 250px;">Criterio</th>
+                                <th>Promedio</th>
+                                <th>Máximo</th>
+                                <th>% Logro</th>
+                                <th>Indicadores</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${criterios.map(c => {
+                                let clase = 'performance-high';
+                                if (c.porcentaje < 60) clase = 'performance-low';
+                                else if (c.porcentaje < 80) clase = 'performance-medium';
+                                
+                                return `
+                                    <tr>
+                                        <td><strong>${c.id}:</strong> ${c.nombre}</td>
+                                        <td>${c.promedio.toFixed(2)}</td>
+                                        <td>${c.max}</td>
+                                        <td>
+                                            <span class="heatmap-cell ${clase}">
+                                                ${c.porcentaje.toFixed(0)}%
+                                            </span>
+                                        </td>
+                                        <td><small>${c.indicadores}</small></td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            document.getElementById('tab-habilidades').innerHTML = html;
+        }
+        
+        // 3. ERRORES CRÍTICOS Y FATALES
+        function cargarErrores(agentRecords) {
+            const atributos = allData.atributos_evaluacion || [];
+            
+            const criteriosCriticos = [
+                { id: 'Q4', nombre: getDescripcionCriterio('Q4'), puntos: 19 },
+                { id: 'Q11', nombre: getDescripcionCriterio('Q11'), puntos: 30 },
+                { id: 'Q20', nombre: getDescripcionCriterio('Q20'), puntos: 20 },
+                { id: 'RECONTACTO', nombre: 'Recontacto', puntos: 'FATAL' },
+                { id: 'POLITICAS', nombre: 'Políticas', puntos: 'FATAL' }
+            ];
+            
+            const errores = criteriosCriticos.map(c => {
+                let count;
+                if (c.id === 'RECONTACTO' || c.id === 'POLITICAS') {
+                    count = agentRecords.filter(r => r[c.id] === '0').length;
+                } else {
+                    // Para Q4, Q11, Q20: considerar error si puntaje es 0 o muy bajo
+                    count = agentRecords.filter(r => parseFloat(r[c.id]) < 1).length;
+                }
+                
+                return {
+                    ...c,
+                    frecuencia: count,
+                    porcentaje: (count / agentRecords.length) * 100
+                };
+            });
+            
+            // Evolución semanal
+            const porSemana = agruparPor(agentRecords, 'SEMANA');
+            const semanas = Object.keys(porSemana).sort();
+            
+            const html = `
+                <div class="card">
+                    <div class="card-title">Frecuencia de Errores Críticos</div>
+                    <div class="card-content">
+                        ${errores.map(e => `
+                            <div class="error-frequency">
+                                <div style="width: 220px; font-weight: 600; font-size: 13px;">
+                                    ${e.id !== 'RECONTACTO' && e.id !== 'POLITICAS' ? `<strong>${e.id}:</strong> ` : ''}${e.nombre}
+                                    ${e.puntos !== 'FATAL' ? `<small style="color: #64748b;"> (${e.puntos} pts)</small>` : 
+                                      '<span class="badge badge-error" style="font-size: 10px; margin-left: 4px;">FATAL</span>'}
+                                </div>
+                                <div class="error-bar">
+                                    <div class="error-bar-fill" style="width: ${Math.min(e.porcentaje, 100)}%">
+                                        ${e.frecuencia > 0 ? e.frecuencia : ''}
+                                    </div>
+                                </div>
+                                <div style="width: 80px; text-align: right; font-weight: 600; color: ${e.frecuencia > 0 ? '#ef4444' : '#10b981'};">
+                                    ${e.porcentaje.toFixed(1)}%
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 16px;">
+                    <div class="card-title">Evolución Semanal de Errores</div>
+                    <div class="chart-container">
+                        <canvas id="erroresChart"></canvas>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('tab-errores').innerHTML = html;
+            
+            // Gráfico de evolución
+            const datasets = criteriosCriticos.slice(0, 3).map((c, idx) => {
+                const colores = ['#ef4444', '#f59e0b', '#f97316'];
+                const datos = semanas.map(s => {
+                    const recs = porSemana[s];
+                    const count = recs.filter(r => parseFloat(r[c.id]) < 1).length;
+                    return (count / recs.length) * 100;
+                });
+                
+                return {
+                    label: c.nombre,
+                    data: datos,
+                    borderColor: colores[idx],
+                    backgroundColor: colores[idx] + '20',
+                    borderWidth: 2,
+                    tension: 0.4
+                };
+            });
+            
+            const ctx = document.getElementById('erroresChart');
+            if (charts.errores) charts.errores.destroy();
+            
+            charts.errores = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: semanas,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: (value) => value + '%'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 4. ANÁLISIS POR TIPO DE INTERACCIÓN
+        function cargarContexto(agentRecords) {
+            // Por Canal
+            const porCanal = agruparPor(agentRecords, 'DATA_CANAL');
+            const canales = Object.keys(porCanal).map(c => ({
+                tipo: c,
+                count: porCanal[c].length,
+                score: calcularPromedio(porCanal[c], 'QA SCORE')
+            }));
+            
+            // Por Skill
+            const porSkill = agruparPor(agentRecords, 'DATA_SKILL');
+            const skills = Object.keys(porSkill).map(s => ({
+                tipo: s,
+                count: porSkill[s].length,
+                score: calcularPromedio(porSkill[s], 'QA SCORE')
+            }));
+            
+            // Por Sub-skill
+            const porSubSkill = agruparPor(agentRecords, 'DATA_SUB_SKILL');
+            const subskills = Object.keys(porSubSkill).map(s => ({
+                tipo: s,
+                count: porSubSkill[s].length,
+                score: calcularPromedio(porSubSkill[s], 'QA SCORE')
+            }));
+            
+            // Por Tipo de Monitoreo
+            const porMonitoreo = agruparPor(agentRecords, 'TIPO DE MONITOREO');
+            const monitoreos = Object.keys(porMonitoreo).map(m => ({
+                tipo: m,
+                count: porMonitoreo[m].length,
+                score: calcularPromedio(porMonitoreo[m], 'QA SCORE')
+            }));
+            
+            const html = `
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-title">Por Canal</div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Canal</th>
+                                    <th>Auditorías</th>
+                                    <th>Score Promedio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${canales.map(c => `
+                                    <tr>
+                                        <td><strong>${c.tipo}</strong></td>
+                                        <td>${c.count}</td>
+                                        <td>
+                                            <span class="badge ${c.score >= 80 ? 'badge-success' : c.score >= 60 ? 'badge-warning' : 'badge-error'}">
+                                                ${c.score.toFixed(1)}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-title">Por Skill</div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Skill</th>
+                                    <th>Auditorías</th>
+                                    <th>Score Promedio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${skills.map(s => `
+                                    <tr>
+                                        <td><strong>${s.tipo}</strong></td>
+                                        <td>${s.count}</td>
+                                        <td>
+                                            <span class="badge ${s.score >= 80 ? 'badge-success' : s.score >= 60 ? 'badge-warning' : 'badge-error'}">
+                                                ${s.score.toFixed(1)}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-title">Por Sub-Skill</div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Sub-Skill</th>
+                                    <th>Auditorías</th>
+                                    <th>Score Promedio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${subskills.map(s => `
+                                    <tr>
+                                        <td><strong>${s.tipo}</strong></td>
+                                        <td>${s.count}</td>
+                                        <td>
+                                            <span class="badge ${s.score >= 80 ? 'badge-success' : s.score >= 60 ? 'badge-warning' : 'badge-error'}">
+                                                ${s.score.toFixed(1)}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-title">Por Tipo de Monitoreo</div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Auditorías</th>
+                                    <th>Score Promedio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${monitoreos.map(m => `
+                                    <tr>
+                                        <td><strong>${m.tipo}</strong></td>
+                                        <td>${m.count}</td>
+                                        <td>
+                                            <span class="badge ${m.score >= 80 ? 'badge-success' : m.score >= 60 ? 'badge-warning' : 'badge-error'}">
+                                                ${m.score.toFixed(1)}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('tab-contexto').innerHTML = html;
+        }
+        
+        // 5. RANKING DE AGENTES
+        function cargarRanking(agente, allRecords) {
+            // Calcular score por agente
+            const porAgente = agruparPor(allRecords, 'AGENTE');
+            const ranking = Object.keys(porAgente).map(a => ({
+                agente: a,
+                score: calcularPromedio(porAgente[a], 'QA SCORE'),
+                auditorias: porAgente[a].length
+            })).sort((a, b) => b.score - a.score);
+            
+            // Encontrar posición del agente actual
+            const posicion = ranking.findIndex(r => r.agente === agente) + 1;
+            const percentil = ((ranking.length - posicion + 1) / ranking.length) * 100;
+            
+            // Top 10
+            const top10 = ranking.slice(0, 10);
+            
+            // Bottom 10
+            const bottom10 = ranking.slice(-10).reverse();
+            
+            const html = `
+                <div class="ranking-card">
+                    <h3 style="margin: 0 0 16px 0;">Posición del Agente</h3>
+                    <div style="display: flex; gap: 24px; align-items: center; flex-wrap: wrap;">
+                        <div>
+                            <div class="ranking-position">
+                                #${posicion} de ${ranking.length}
+                            </div>
+                        </div>
+                        <div style="flex: 1; min-width: 200px;">
+                            <div style="font-size: 13px; color: #64748b; margin-bottom: 4px;">
+                                Percentil ${percentil.toFixed(0)}
+                            </div>
+                            <div class="percentile-bar">
+                                <div class="percentile-fill" style="width: ${percentil}%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-size: 13px; color: #64748b;">Score</div>
+                            <div style="font-size: 24px; font-weight: 700; color: #3b82f6;">
+                                ${ranking[posicion - 1].score.toFixed(1)}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="cards-grid" style="grid-template-columns: 1fr;">
+                    <div class="card">
+                        <div class="card-title">🏆 Top 10 Agentes</div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Agente</th>
+                                    <th>Auditorías</th>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${top10.map((r, idx) => `
+                                    <tr style="${r.agente === agente ? 'background: #eff6ff;' : ''}">
+                                        <td><strong>${idx + 1}</strong></td>
+                                        <td>${r.agente} ${r.agente === agente ? '⭐' : ''}</td>
+                                        <td>${r.auditorias}</td>
+                                        <td>
+                                            <span class="badge badge-success">${r.score.toFixed(1)}%</span>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-title">📉 Bottom 10 Agentes</div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Agente</th>
+                                    <th>Auditorías</th>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${bottom10.map((r, idx) => {
+                                    const pos = ranking.length - idx;
+                                    return `
+                                        <tr style="${r.agente === agente ? 'background: #eff6ff;' : ''}">
+                                            <td><strong>${pos}</strong></td>
+                                            <td>${r.agente} ${r.agente === agente ? '⭐' : ''}</td>
+                                            <td>${r.auditorias}</td>
+                                            <td>
+                                                <span class="badge badge-error">${r.score.toFixed(1)}%</span>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('tab-ranking').innerHTML = html;
+        }
+        
+        // 6. ANÁLISIS DE CONSISTENCIA
+        function cargarConsistencia(agentRecords) {
+            const scores = agentRecords.map(r => parseFloat(r['QA SCORE']) || 0);
+            const promedio = scores.reduce((a, b) => a + b, 0) / scores.length;
+            
+            // Desviación estándar
+            const varianza = scores.reduce((acc, val) => acc + Math.pow(val - promedio, 2), 0) / scores.length;
+            const desviacion = Math.sqrt(varianza);
+            
+            // Coeficiente de variación
+            const cv = (desviacion / promedio) * 100;
+            
+            // Detectar outliers (±2 desviaciones estándar)
+            const outliers = agentRecords.filter(r => {
+                const score = parseFloat(r['QA SCORE']) || 0;
+                return Math.abs(score - promedio) > (2 * desviacion);
+            });
+            
+            // Tendencia por mes
+            const porMes = agruparPor(agentRecords, 'MES');
+            const meses = Object.keys(porMes).sort();
+            const scoresPorMes = meses.map(m => calcularPromedio(porMes[m], 'QA SCORE'));
+            const desvPorMes = meses.map(m => {
+                const sc = porMes[m].map(r => parseFloat(r['QA SCORE']) || 0);
+                const avg = sc.reduce((a, b) => a + b, 0) / sc.length;
+                const vari = sc.reduce((acc, val) => acc + Math.pow(val - avg, 2), 0) / sc.length;
+                return Math.sqrt(vari);
+            });
+            
+            const html = `
+                <div class="kpi-grid">
+                    <div class="kpi-card" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                        <div class="kpi-label">Desviación Estándar</div>
+                        <div class="kpi-value">${desviacion.toFixed(2)}</div>
+                        <div class="kpi-change">
+                            ${desviacion < 5 ? 'Muy consistente' : desviacion < 10 ? 'Consistente' : 'Volátil'}
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <div class="kpi-label">Coeficiente de Variación</div>
+                        <div class="kpi-value">${cv.toFixed(1)}%</div>
+                        <div class="kpi-change">
+                            ${cv < 10 ? 'Baja variabilidad' : cv < 20 ? 'Variabilidad moderada' : 'Alta variabilidad'}
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                        <div class="kpi-label">Outliers Detectados</div>
+                        <div class="kpi-value">${outliers.length}</div>
+                        <div class="kpi-change">${(outliers.length / agentRecords.length * 100).toFixed(1)}% del total</div>
+                    </div>
+                </div>
+                
+                <div class="cards-grid" style="grid-template-columns: 1fr;">
+                    <div class="card">
+                        <div class="card-title">Tendencia y Variabilidad Mensual</div>
+                        <div class="chart-container">
+                            <canvas id="consistenciaChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                ${outliers.length > 0 ? `
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-title">Auditorías Atípicas (Outliers)</div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID Interacción</th>
+                                    <th>Fecha</th>
+                                    <th>Score</th>
+                                    <th>Cuartil</th>
+                                    <th>Comentarios</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${outliers.slice(0, 10).map(r => `
+                                    <tr>
+                                        <td>${r['ID_INTERACCIÓN']}</td>
+                                        <td>${r['FECHA DE INTERACCIÓN']}</td>
+                                        <td>
+                                            <span class="badge ${parseFloat(r['QA SCORE']) >= 80 ? 'badge-success' : 'badge-error'}">
+                                                ${r['QA SCORE']}%
+                                            </span>
+                                        </td>
+                                        <td>${r.CUARTIL}</td>
+                                        <td><small>${(r.COMENTARIOS || '').substring(0, 100)}...</small></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                ` : ''}
+            `;
+            
+            document.getElementById('tab-consistencia').innerHTML = html;
+            
+            // Gráfico de consistencia
+            const ctx = document.getElementById('consistenciaChart');
+            if (charts.consistencia) charts.consistencia.destroy();
+            
+            charts.consistencia = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: meses,
+                    datasets: [
+                        {
+                            type: 'line',
+                            label: 'Score Promedio',
+                            data: scoresPorMes,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'transparent',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            yAxisID: 'y'
+                        },
+                        {
+                            type: 'bar',
+                            label: 'Desviación Estándar',
+                            data: desvPorMes,
+                            backgroundColor: 'rgba(239, 68, 68, 0.5)',
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Score (%)'
+                            },
+                            max: 100
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Desviación Estándar'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 7. IMPACTO EN INDICADORES DE NEGOCIO
+        function cargarKPIs(agentRecords) {
+            // Construir mapeo de criterios por indicador desde columnas
+            const columnas = allData.columnas || [];
+            const indicadoresMap = {};
+            
+            // Recorrer todas las columnas Q1-Q22
+            for (let i = 1; i <= 22; i++) {
+                const qId = `Q${i}`;
+                const col = columnas.find(c => c.columna === qId);
+                
+                if (col && col.indicadores && Array.isArray(col.indicadores)) {
+                    col.indicadores.forEach(ind => {
+                        if (!indicadoresMap[ind]) {
+                            indicadoresMap[ind] = [];
+                        }
+                        indicadoresMap[ind].push(qId);
+                    });
+                }
+            }
+            
+            const scores = {};
+            
+            Object.keys(indicadoresMap).forEach(ind => {
+                const criterios = indicadoresMap[ind];
+                let totalScore = 0;
+                let totalMax = 0;
+                
+                criterios.forEach(q => {
+                    const valores = agentRecords.map(r => parseFloat(r[q]) || 0);
+                    const promedio = valores.reduce((a, b) => a + b, 0) / valores.length;
+                    
+                    // Usar función getPuntajeMaximo
+                    const max = getPuntajeMaximo(q);
+                    
+                    totalScore += promedio;
+                    totalMax += max;
+                });
+                
+                scores[ind] = {
+                    score: totalScore,
+                    max: totalMax,
+                    porcentaje: (totalScore / totalMax) * 100,
+                    criterios: criterios // Guardar criterios para mostrar en tabla
+                };
+            });
+            
+            const html = `
+                <div class="kpi-grid">
+                    ${Object.keys(scores).map(ind => {
+                        const s = scores[ind];
+                        let color = '#10b981';
+                        if (s.porcentaje < 60) color = '#ef4444';
+                        else if (s.porcentaje < 80) color = '#f59e0b';
+                        
+                        return `
+                            <div class="kpi-card" style="background: linear-gradient(135deg, ${color} 0%, ${color}dd 100%);">
+                                <div class="kpi-label">${ind}</div>
+                                <div class="kpi-value">${s.porcentaje.toFixed(1)}%</div>
+                                <div class="kpi-change">${s.score.toFixed(1)} / ${s.max.toFixed(1)} pts</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                
+                <div class="card" style="margin-top: 16px;">
+                    <div class="card-title">Comparación de Indicadores</div>
+                    <div class="chart-container">
+                        <canvas id="kpisChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 16px;">
+                    <div class="card-title">Detalle por Indicador</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Indicador</th>
+                                <th>Criterios Evaluados</th>
+                                <th>Score</th>
+                                <th>% Logro</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${Object.keys(scores).map(ind => {
+                                const s = scores[ind];
+                                return `
+                                    <tr>
+                                        <td><strong>${ind}</strong></td>
+                                        <td><small>${s.criterios.join(', ')}</small></td>
+                                        <td>${s.score.toFixed(1)} / ${s.max.toFixed(1)}</td>
+                                        <td>
+                                            <span class="badge ${s.porcentaje >= 80 ? 'badge-success' : s.porcentaje >= 60 ? 'badge-warning' : 'badge-error'}">
+                                                ${s.porcentaje.toFixed(1)}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            document.getElementById('tab-kpis').innerHTML = html;
+            
+            // Gráfico de radar
+            const ctx = document.getElementById('kpisChart');
+            if (charts.kpis) charts.kpis.destroy();
+            
+            charts.kpis = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: Object.keys(scores),
+                    datasets: [{
+                        label: 'Score del Agente',
+                        data: Object.values(scores).map(s => s.porcentaje),
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: (value) => value + '%'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+        
+        // 8. ANÁLISIS DE COMENTARIOS
+        function cargarComentarios(agentRecords) {
+            const comentarios = agentRecords
+                .map(r => r.COMENTARIOS || '')
+                .filter(c => c.trim().length > 0)
+                .join(' ');
+            
+            // Palabras a excluir (stopwords en español)
+            const stopwords = ['el', 'la', 'de', 'que', 'y', 'a', 'en', 'un', 'ser', 'se', 'no', 'por', 'con', 'para', 'una', 'su', 'al', 'lo', 'como', 'más', 'pero', 'sus', 'le', 'ya', 'o', 'fue', 'este', 'ha', 'si', 'porque', 'esta', 'son', 'los', 'las', 'del', 'del', 'es', 'está'];
+            
+            // Contar frecuencia de palabras
+            const palabras = comentarios
+                .toLowerCase()
+                .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
+                .split(/\s+/)
+                .filter(p => p.length > 3 && !stopwords.includes(p));
+            
+            const frecuencias = {};
+            palabras.forEach(p => {
+                frecuencias[p] = (frecuencias[p] || 0) + 1;
+            });
+            
+            // Top 20 palabras
+            const topPalabras = Object.entries(frecuencias)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 20);
+            
+            // Categorías comunes
+            const categorias = {
+                'Tipificación': ['tipificación', 'tipifica', 'tipificar', 'clasificación'],
+                'Hold': ['hold', 'espera', 'música', 'pausa'],
+                'Autogestión': ['autogestión', 'portal', 'app', 'aplicación'],
+                'Solución': ['solución', 'resuelve', 'resolver', 'gestión'],
+                'Actitud': ['actitud', 'cordial', 'amable', 'tono'],
+                'Políticas': ['política', 'políticas', 'procedimiento', 'proceso']
+            };
+            
+            const tematicas = {};
+            Object.keys(categorias).forEach(cat => {
+                const count = categorias[cat].reduce((acc, palabra) => {
+                    return acc + (frecuencias[palabra] || 0);
+                }, 0);
+                if (count > 0) {
+                    tematicas[cat] = count;
+                }
+            });
+            
+            const html = `
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-title">Top 20 Palabras Más Frecuentes</div>
+                        <div class="chart-container">
+                            <canvas id="palabrasChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-title">Temáticas Recurrentes</div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Categoría</th>
+                                    <th>Frecuencia</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${Object.entries(tematicas)
+                                    .sort((a, b) => b[1] - a[1])
+                                    .map(([cat, count]) => `
+                                        <tr>
+                                            <td><strong>${cat}</strong></td>
+                                            <td>
+                                                <span class="badge badge-success">${count}</span>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 16px;">
+                    <div class="card-title">Últimos Comentarios</div>
+                    <div class="card-content">
+                        ${agentRecords.slice(0, 5).map(r => `
+                            <div style="padding: 12px; background: #f8fafc; border-radius: 6px; margin-bottom: 8px;">
+                                <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">
+                                    ${r['FECHA DE MONITOREO']} - Score: ${r['QA SCORE']}%
+                                </div>
+                                <div style="font-size: 14px;">
+                                    ${r.COMENTARIOS || 'Sin comentarios'}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('tab-comentarios').innerHTML = html;
+            
+            // Gráfico de palabras
+            const ctx = document.getElementById('palabrasChart');
+            if (charts.palabras) charts.palabras.destroy();
+            
+            charts.palabras = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: topPalabras.map(p => p[0]),
+                    datasets: [{
+                        label: 'Frecuencia',
+                        data: topPalabras.map(p => p[1]),
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 9. PLAN DE ACCIÓN PERSONALIZADO
+        function cargarPlanAccion(agentRecords, allRecords) {
+            // Calcular brechas por criterio
+            const criterios = [];
+            
+            for (let i = 1; i <= 22; i++) {
+                const campo = `Q${i}`;
+                const valores = agentRecords.map(r => parseFloat(r[campo]) || 0);
+                const promedioAgente = valores.reduce((a, b) => a + b, 0) / valores.length;
+                
+                // Promedio general
+                const valoresGeneral = allRecords.map(r => parseFloat(r[campo]) || 0);
+                const promedioGeneral = valoresGeneral.reduce((a, b) => a + b, 0) / valoresGeneral.length;
+                
+                const nombre = getDescripcionCriterio(campo);
+                const puntajeMax = getPuntajeMaximo(campo);
+                
+                const gap = promedioGeneral - promedioAgente;
+                const impacto = puntajeMax; // Mayor puntaje = mayor impacto
+                
+                criterios.push({
+                    id: campo,
+                    nombre: nombre,
+                    nombreCompleto: `${campo} - ${nombre}`,
+                    promedioAgente: promedioAgente,
+                    promedioGeneral: promedioGeneral,
+                    max: puntajeMax,
+                    gap: gap,
+                    impacto: impacto,
+                    prioridad: gap * impacto
+                });
+            }
+            
+            // Top 5 oportunidades (mayor gap con alto impacto)
+            const oportunidades = criterios
+                .filter(c => c.gap > 0)
+                .sort((a, b) => b.prioridad - a.prioridad)
+                .slice(0, 5);
+            
+            const html = `
+                <div class="card">
+                    <div class="card-title">🎯 Top 5 Áreas de Mejora Priorizadas</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="min-width: 250px;">Criterio</th>
+                                <th>Score Actual</th>
+                                <th>Promedio General</th>
+                                <th>Gap</th>
+                                <th>Impacto</th>
+                                <th>Prioridad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${oportunidades.map((c, idx) => `
+                                <tr>
+                                    <td>
+                                        <strong>${idx + 1}. ${c.id}:</strong> ${c.nombre}
+                                    </td>
+                                    <td>${c.promedioAgente.toFixed(2)}</td>
+                                    <td>${c.promedioGeneral.toFixed(2)}</td>
+                                    <td>
+                                        <span class="badge badge-warning">-${c.gap.toFixed(2)}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge ${c.impacto >= 20 ? 'badge-error' : 'badge-warning'}">
+                                            ${c.impacto} pts
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="percentile-bar" style="height: 6px;">
+                                            <div class="percentile-fill" style="width: ${(c.prioridad / Math.max(...oportunidades.map(o => o.prioridad))) * 100}%; background: #ef4444;"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="cards-grid" style="margin-top: 16px;">
+                    ${oportunidades.map((c, idx) => `
+                        <div class="insight-card" style="border-left: 4px solid #ef4444;">
+                            <h4>${idx + 1}. ${c.id}: ${c.nombre}</h4>
+                            <div style="margin-top: 12px;">
+                                <p style="font-size: 14px; color: #64748b; margin: 8px 0;">
+                                    <strong>Situación actual:</strong> ${c.promedioAgente.toFixed(2)}/${c.max} pts 
+                                    (${((c.promedioAgente / c.max) * 100).toFixed(0)}%)
+                                </p>
+                                <p style="font-size: 14px; color: #64748b; margin: 8px 0;">
+                                    <strong>Meta esperada:</strong> ${c.promedioGeneral.toFixed(2)}/${c.max} pts 
+                                    (${((c.promedioGeneral / c.max) * 100).toFixed(0)}%)
+                                </p>
+                                <p style="font-size: 14px; color: #1e293b; margin: 12px 0;">
+                                    <strong>Acción sugerida:</strong> 
+                                    ${generarAccionSugerida(c.nombre)}
+                                </p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="card" style="margin-top: 16px;">
+                    <div class="card-title">📋 Resumen Ejecutivo del Plan</div>
+                    <div class="card-content">
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="padding: 12px; background: #f1f5f9; border-radius: 6px; margin-bottom: 8px;">
+                                <strong>Objetivo principal:</strong> Cerrar brecha en los ${oportunidades.length} criterios prioritarios
+                            </li>
+                            <li style="padding: 12px; background: #f1f5f9; border-radius: 6px; margin-bottom: 8px;">
+                                <strong>Impacto potencial:</strong> +${oportunidades.reduce((acc, c) => acc + c.gap, 0).toFixed(1)} puntos en QA Score
+                            </li>
+                            <li style="padding: 12px; background: #f1f5f9; border-radius: 6px; margin-bottom: 8px;">
+                                <strong>Tiempo estimado:</strong> 4-6 semanas de capacitación y seguimiento
+                            </li>
+                            <li style="padding: 12px; background: #f1f5f9; border-radius: 6px;">
+                                <strong>Siguiente revisión:</strong> ${calcularFechaSeguimiento()}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('tab-accion').innerHTML = html;
+        }
+        
+        // Función auxiliar para generar acción sugerida
+        function generarAccionSugerida(criterio) {
+            const acciones = {
+                'Saludo': 'Reforzar protocolo de apertura. Práctica con role-plays.',
+                'Empatía': 'Capacitación en escucha activa y manejo emocional.',
+                'Sondeo': 'Entrenar técnicas de preguntas abiertas y cerradas.',
+                'Dirección': 'Mejorar estructura de conversación. Uso de guion flexible.',
+                'Solución': 'Reforzar conocimiento de productos y procesos.',
+                'Tipificación': 'Capacitación en sistema de categorización. Casos prácticos.',
+                'Políticas': 'Revisión obligatoria de manual. Evaluación semanal.'
+            };
+            
+            // Buscar coincidencia parcial
+            for (const [key, accion] of Object.entries(acciones)) {
+                if (criterio.toLowerCase().includes(key.toLowerCase())) {
+                    return accion;
+                }
+            }
+            
+            return 'Capacitación específica y seguimiento semanal con supervisor.';
+        }
+        
+        // Función auxiliar para calcular fecha de seguimiento
+        function calcularFechaSeguimiento() {
+            const hoy = new Date();
+            const siguiente = new Date(hoy.getTime() + (30 * 24 * 60 * 60 * 1000)); // +30 días
+            const opciones = { year: 'numeric', month: 'long', day: 'numeric' };
+            return siguiente.toLocaleDateString('es-ES', opciones);
+        }
+        
+        // Funciones auxiliares
+        function calcularPromedio(records, field) {
+            const valores = records.map(r => parseFloat(r[field]) || 0);
+            return valores.reduce((a, b) => a + b, 0) / valores.length;
+        }
+        
+        function agruparPor(records, field) {
+            return records.reduce((acc, r) => {
+                const key = r[field] || 'Sin especificar';
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(r);
+                return acc;
+            }, {});
+        }
+        
+        function contarPor(records, field) {
+            return records.reduce((acc, r) => {
+                const key = r[field] || 'Sin especificar';
+                acc[key] = (acc[key] || 0) + 1;
+                return acc;
+            }, {});
+        }
+    </script>
+</body>
+</html>

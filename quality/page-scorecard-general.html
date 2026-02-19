@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis de Tendencias</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Estilos específicos para esta página */
+
+        /* Al inicio de la sección <style> */
+html, body {
+    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto; /* Permite scroll vertical pero lo oculta visualmente */
+}
+
+/* Ocultar scrollbars en todos los navegadores */
+* {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE y Edge */
+}
+
+*::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 3px solid #e2e8f0;
+        }
+        
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .global-toggle {
+            display: flex;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 8px;
+        }
+        
+        .global-toggle-btn {
+            padding: 8px 20px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            color: #64748b;
+        }
+        
+        .global-toggle-btn:hover {
+            color: #1e293b;
+        }
+        
+        .global-toggle-btn.active {
+            background: white;
+            color: #3b82f6;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dashboard-section {
+            margin-bottom: 40px;
+        }
+        
+        .section-header {
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-top: 16px;
+        }
+        
+        .chart-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chart-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 16px;
+        }
+        
+        .full-width-chart {
+            grid-column: 1 / -1;
+        }
+        
+        /* Gráfico de cuartiles más pequeño */
+        .small-chart {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        @media (max-width: 968px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .stat-box {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 3px solid #3b82f6;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        @media (max-width: 968px) {
+            .summary-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* Estilos específicos para sección General */
+        .general-kpis {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        @media (max-width: 968px) {
+            .general-kpis {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body style="background: transparent; padding: 0;">
+    <div style="padding: 0;">
+        <!-- Header Global con Toggle -->
+        <div class="page-header">
+            <h2 class="page-title">Análisis de Tendencias</h2>
+            <div class="global-toggle">
+                <button class="global-toggle-btn active" onclick="cambiarPeriodoGlobal('semana')">
+                    📅 Por Semana
+                </button>
+                <button class="global-toggle-btn" onclick="cambiarPeriodoGlobal('mes')">
+                    📆 Por Mes
+                </button>
+            </div>
+        </div>
+        
+        <!-- Loading -->
+        <div id="loadingContainer" class="loading">Cargando datos...</div>
+        
+        <!-- Dashboard Principal -->
+        <div id="mainContainer" style="display: none;">
+            
+            <!-- SECCIÓN: TENDENCIA GENERAL -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <div class="section-title">📈 Tendencia General</div>
+                </div>
+                
+                <div class="general-kpis">
+                    <div class="kpi-card" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                        <div class="kpi-label">QA Score Promedio</div>
+                        <div class="kpi-value" id="generalScorePromedio">--</div>
+                        <div class="kpi-change" id="generalScoreTrend">--</div>
+                    </div>
+                    
+                    <div class="kpi-card" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                        <div class="kpi-label">Total Auditorías</div>
+                        <div class="kpi-value" id="generalTotalAuditorias">--</div>
+                        <div class="kpi-change" id="generalAuditoriasTrend">--</div>
+                    </div>
+                    
+                    <div class="kpi-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <div class="kpi-label">Meta (85)</div>
+                        <div class="kpi-value" id="generalGapMeta">--</div>
+                        <div class="kpi-change" id="generalMetaStatus">--</div>
+                    </div>
+                </div>
+                
+                <div class="charts-grid">
+                    <div class="chart-card full-width-chart">
+                        <div class="chart-card-title">Evolución Temporal - QA Score y Volumen</div>
+                        <canvas id="generalTrendChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-card-title">Distribución de Cuartiles</div>
+                        <div class="small-chart">
+                            <canvas id="generalCuartilesChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-card-title">Cumplimiento vs Meta por Periodo</div>
+                        <canvas id="generalMetaChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SECCIÓN: TENDENCIA POR SKILL -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <div class="section-title">📊 Tendencia por Skill</div>
+                </div>
+                
+                <div class="summary-stats" id="skillStats">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+                
+                <div class="charts-grid">
+                    <div class="chart-card full-width-chart">
+                        <div class="chart-card-title">Evolución de QA Score por Skill</div>
+                        <canvas id="skillScoreChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-card-title">Volumen de Auditorías por Skill</div>
+                        <canvas id="skillVolumeChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-card-title">Ranking Actual de Skills</div>
+                        <canvas id="skillRankingChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SECCIÓN: TENDENCIA POR CANAL -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <div class="section-title">📱 Tendencia por Canal</div>
+                </div>
+                
+                <div class="summary-stats" id="canalStats">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+                
+                <div class="charts-grid">
+                    <div class="chart-card full-width-chart">
+                        <div class="chart-card-title">Evolución de QA Score por Canal</div>
+                        <canvas id="canalScoreChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-card-title">Volumen de Auditorías por Canal</div>
+                        <canvas id="canalVolumeChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-card-title">Comparativo Actual de Canales</div>
+                        <canvas id="canalRankingChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SECCIÓN: TENDENCIA POR BPO -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <div class="section-title">🏢 Tendencia por BPO</div>
+                </div>
+                
+                <div class="summary-stats" id="bpoStats">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+                
+                <div class="charts-grid">
+                    <div class="chart-card full-width-chart">
+                        <div class="chart-card-title">Evolución de QA Score por BPO</div>
+                        <canvas id="bpoScoreChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-card-title">Volumen de Auditorías por BPO</div>
+                        <canvas id="bpoVolumeChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-card-title">Score Actual por BPO vs Meta</div>
+                        <canvas id="bpoGapChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    
+    <script>
+        // Variables globales
+        let currentData = null;
+        let currentPeriod = 'semana'; // Global único
+        
+        // Almacenar instancias de gráficos
+        let charts = {
+            generalTrend: null,
+            generalCuartiles: null,
+            generalMeta: null,
+            skillScore: null,
+            skillVolume: null,
+            skillRanking: null,
+            canalScore: null,
+            canalVolume: null,
+            canalRanking: null,
+            bpoScore: null,
+            bpoVolume: null,
+            bpoGap: null
+        };
+        
+        // Paleta de colores para múltiples series
+        const colorPalette = [
+            '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', 
+            '#10b981', '#06b6d4', '#ef4444', '#6366f1',
+            '#14b8a6', '#f97316', '#84cc16', '#a855f7'
+        ];
+        
+        // PATRÓN OBLIGATORIO: Función para notificar altura al padre
+        function notifyHeight() {
+            const height = document.body.scrollHeight;
+            window.parent.postMessage({
+                type: 'RESIZE',
+                height: height
+            }, '*');
+        }
+        
+        // PATRÓN OBLIGATORIO: Escuchar mensajes del padre
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'FILTERED_DATA') {
+                cargarPagina(event.data.data);
+            }
+        });
+        
+        // PATRÓN OBLIGATORIO: Cargar datos si están disponibles
+        if (window.parent.filteredData || window.parent.rawData) {
+            cargarPagina(window.parent.filteredData || window.parent.rawData);
+        }
+        
+        // Función GLOBAL para cambiar periodo (afecta todas las secciones)
+        function cambiarPeriodoGlobal(periodo) {
+            currentPeriod = periodo;
+            
+            // Actualizar botones activos
+            document.querySelectorAll('.global-toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Re-renderizar TODAS las secciones
+            if (currentData) {
+                renderGeneralSection(currentData);
+                renderSkillSection(currentData);
+                renderCanalSection(currentData);
+                renderBPOSection(currentData);
+                setTimeout(notifyHeight, 300);
+            }
+        }
+        
+        // FUNCIÓN PRINCIPAL DE CARGA
+        function cargarPagina(data) {
+            if (!data || !data.base_excel) return;
+            
+            currentData = data.base_excel;
+            
+            // Renderizar todas las secciones
+            renderGeneralSection(currentData);
+            renderSkillSection(currentData);
+            renderCanalSection(currentData);
+            renderBPOSection(currentData);
+            
+            // Mostrar contenedor principal
+            document.getElementById('loadingContainer').style.display = 'none';
+            document.getElementById('mainContainer').style.display = 'block';
+            
+            // IMPORTANTE: Notificar altura después de renderizar
+            setTimeout(notifyHeight, 100);
+            setTimeout(notifyHeight, 500);
+            setTimeout(notifyHeight, 1000);
+            setTimeout(notifyHeight, 2000);
+        }
+        
+        // ============================================
+        // SECCIÓN: GENERAL
+        // ============================================
+        function renderGeneralSection(records) {
+            const campoTemporal = currentPeriod === 'semana' ? 'SEMANA' : 'MES';
+            
+            // Calcular tendencia general
+            const tendencia = calcularTendenciaGeneral(records, campoTemporal);
+            
+            // Renderizar KPIs
+            renderGeneralKPIs(tendencia, records);
+            
+            // Renderizar gráficos
+            renderGeneralTrendChart(tendencia);
+            renderGeneralCuartilesChart(records);
+            renderGeneralMetaChart(tendencia);
+        }
+        
+        function calcularTendenciaGeneral(records, campoTemporal) {
+            const porPeriodo = groupBy(records, campoTemporal);
+            const periodos = ordenarPeriodos(Object.keys(porPeriodo).filter(Boolean), campoTemporal);
+            
+            return periodos.map(periodo => {
+                const recordsPeriodo = porPeriodo[periodo];
+                const scores = recordsPeriodo.map(r => parseFloat(r['QA SCORE']) || 0);
+                const cuartiles = groupBy(recordsPeriodo, 'CUARTIL');
+                
+                return {
+                    periodo,
+                    score: scores.reduce((a, b) => a + b, 0) / scores.length,
+                    cantidad: recordsPeriodo.length,
+                    cuartiles: {
+                        Q1: cuartiles['Q1'] ? cuartiles['Q1'].length : 0,
+                        Q2: cuartiles['Q2'] ? cuartiles['Q2'].length : 0,
+                        Q3: cuartiles['Q3'] ? cuartiles['Q3'].length : 0,
+                        Q4: cuartiles['Q4'] ? cuartiles['Q4'].length : 0
+                    }
+                };
+            });
+        }
+        
+        function renderGeneralKPIs(tendencia, records) {
+            // Score promedio general
+            const scores = records.map(r => parseFloat(r['QA SCORE']) || 0);
+            const scorePromedio = scores.reduce((a, b) => a + b, 0) / scores.length;
+            
+            // Tendencia (último vs primero)
+            const ultimoPeriodo = tendencia[tendencia.length - 1];
+            const primerPeriodo = tendencia[0];
+            const trendScore = ultimoPeriodo.score - primerPeriodo.score;
+            const trendIcon = trendScore >= 0 ? '↗' : '↘';
+            const trendColor = trendScore >= 0 ? '#10b981' : '#ef4444';
+            
+            // Total auditorías
+            const totalAuditorias = records.length;
+            const trendAuditorias = ultimoPeriodo.cantidad - primerPeriodo.cantidad;
+            
+            // Gap vs meta
+            const meta = 85;
+            const gap = scorePromedio - meta;
+            
+            // Actualizar KPIs
+            document.getElementById('generalScorePromedio').textContent = scorePromedio.toFixed(1);
+            document.getElementById('generalScoreTrend').innerHTML = `
+                <span style="color: ${trendColor};">${trendIcon} ${trendScore >= 0 ? '+' : ''}${trendScore.toFixed(1)} pts vs inicio</span>
+            `;
+            
+            document.getElementById('generalTotalAuditorias').textContent = totalAuditorias.toLocaleString();
+            document.getElementById('generalAuditoriasTrend').textContent = 
+                `${trendAuditorias >= 0 ? '+' : ''}${trendAuditorias} vs inicio`;
+            
+            document.getElementById('generalGapMeta').textContent = `${gap >= 0 ? '+' : ''}${gap.toFixed(1)}`;
+            document.getElementById('generalMetaStatus').textContent = 
+                gap >= 0 ? `Sobre meta en ${gap.toFixed(1)} pts` : `Bajo meta en ${Math.abs(gap).toFixed(1)} pts`;
+        }
+        
+        function renderGeneralTrendChart(tendencia) {
+            const ctx = document.getElementById('generalTrendChart');
+            if (charts.generalTrend) charts.generalTrend.destroy();
+            
+            const labels = tendencia.map(t => t.periodo);
+            const dataScores = tendencia.map(t => t.score);
+            const dataCantidad = tendencia.map(t => t.cantidad);
+            const meta = 85;
+            
+            charts.generalTrend = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'QA Score',
+                            data: dataScores,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Cantidad de Auditorías',
+                            data: dataCantidad,
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointHoverRadius: 5,
+                            yAxisID: 'y1'
+                        },
+                        {
+                            label: 'Meta (85)',
+                            data: new Array(labels.length).fill(meta),
+                            borderColor: '#10b981',
+                            borderDash: [5, 5],
+                            borderWidth: 2,
+                            fill: false,
+                            pointRadius: 0,
+                            yAxisID: 'y'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            beginAtZero: false,
+                            min: Math.min(...dataScores, meta) - 5,
+                            max: Math.max(...dataScores, meta) + 5,
+                            title: { display: true, text: 'QA Score' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            beginAtZero: true,
+                            title: { display: true, text: 'Cantidad' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 12, font: { size: 11 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.dataset.label === 'Cantidad de Auditorías') {
+                                        return `${context.dataset.label}: ${context.parsed.y}`;
+                                    }
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function renderGeneralCuartilesChart(records) {
+            const ctx = document.getElementById('generalCuartilesChart');
+            if (charts.generalCuartiles) charts.generalCuartiles.destroy();
+            
+            const cuartiles = groupBy(records, 'CUARTIL');
+            const labels = ['Q1', 'Q2', 'Q3', 'Q4'];
+            const data = labels.map(q => cuartiles[q] ? cuartiles[q].length : 0);
+            const total = records.length;
+            const percentages = data.map(v => ((v / total) * 100).toFixed(1));
+            
+            charts.generalCuartiles = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.map((label, i) => `${label} (${percentages[i]}%)`),
+                    datasets: [{
+                        data: data,
+                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 10, font: { size: 10 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.parsed} auditorías`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function renderGeneralMetaChart(tendencia) {
+            const ctx = document.getElementById('generalMetaChart');
+            if (charts.generalMeta) charts.generalMeta.destroy();
+            
+            const labels = tendencia.map(t => t.periodo);
+            const scores = tendencia.map(t => t.score);
+            const meta = 85;
+            
+            charts.generalMeta = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'QA Score',
+                            data: scores,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: 'Meta (85)',
+                            data: new Array(labels.length).fill(meta),
+                            borderColor: '#10b981',
+                            borderWidth: 3,
+                            fill: false,
+                            pointRadius: 0,
+                            borderDash: [0] // Línea sólida
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 12, font: { size: 11 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.dataset.label === 'QA Score') {
+                                        const score = context.parsed.y;
+                                        const cumple = score >= meta ? '✓ Cumple' : '✗ No cumple';
+                                        return `Score: ${score.toFixed(1)} ${cumple}`;
+                                    }
+                                    return `Meta: ${context.parsed.y}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: Math.min(...scores, meta) - 5,
+                            max: Math.max(...scores, meta) + 5,
+                            title: { display: true, text: 'QA Score' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // ============================================
+        // SECCIÓN: SKILL
+        // ============================================
+        function renderSkillSection(records) {
+            const campoTemporal = currentPeriod === 'semana' ? 'SEMANA' : 'MES';
+            
+            // Calcular métricas
+            const metrics = calcularTendenciaPorDimension(records, 'DATA_SKILL', campoTemporal);
+            
+            // Renderizar stats
+            renderSummaryStats('skillStats', metrics.summary);
+            
+            // Renderizar gráficos
+            renderLineChart('skillScoreChart', charts, 'skillScore', metrics.tendencias, 'QA Score', true);
+            renderStackedBarChart('skillVolumeChart', charts, 'skillVolume', metrics.tendencias, 'Auditorías');
+            renderBarChart('skillRankingChart', charts, 'skillRanking', metrics.ranking, 'Score Promedio');
+        }
+        
+        // ============================================
+        // SECCIÓN: CANAL
+        // ============================================
+        function renderCanalSection(records) {
+            const campoTemporal = currentPeriod === 'semana' ? 'SEMANA' : 'MES';
+            
+            // Calcular métricas
+            const metrics = calcularTendenciaPorDimension(records, 'DATA_CANAL', campoTemporal);
+            
+            // Renderizar stats
+            renderSummaryStats('canalStats', metrics.summary);
+            
+            // Renderizar gráficos
+            renderLineChart('canalScoreChart', charts, 'canalScore', metrics.tendencias, 'QA Score', true);
+            renderStackedBarChart('canalVolumeChart', charts, 'canalVolume', metrics.tendencias, 'Auditorías');
+            renderBarChart('canalRankingChart', charts, 'canalRanking', metrics.ranking, 'Score Promedio');
+        }
+        
+        // ============================================
+        // SECCIÓN: BPO
+        // ============================================
+        function renderBPOSection(records) {
+            const campoTemporal = currentPeriod === 'semana' ? 'SEMANA' : 'MES';
+            
+            // Calcular métricas
+            const metrics = calcularTendenciaPorDimension(records, 'BPO', campoTemporal);
+            
+            // Renderizar stats
+            renderSummaryStats('bpoStats', metrics.summary);
+            
+            // Renderizar gráficos
+            renderLineChart('bpoScoreChart', charts, 'bpoScore', metrics.tendencias, 'QA Score', true);
+            renderStackedBarChart('bpoVolumeChart', charts, 'bpoVolume', metrics.tendencias, 'Auditorías');
+            renderBPOComparisonChart('bpoGapChart', charts, 'bpoGap', metrics.ranking);
+        }
+        
+        // ============================================
+        // FUNCIONES DE CÁLCULO
+        // ============================================
+        function calcularTendenciaPorDimension(records, dimension, campoTemporal) {
+            // Agrupar por dimensión
+            const porDimension = groupBy(records, dimension);
+            const dimensiones = Object.keys(porDimension).filter(d => d && d !== 'Sin especificar');
+            
+            // Obtener todos los periodos únicos y ordenarlos
+            const todosLosPeriodos = [...new Set(records.map(r => r[campoTemporal]))].filter(Boolean);
+            const periodosOrdenados = ordenarPeriodos(todosLosPeriodos, campoTemporal);
+            
+            // Calcular tendencias por cada dimensión
+            const tendencias = {};
+            dimensiones.forEach((dim, idx) => {
+                tendencias[dim] = {
+                    color: colorPalette[idx % colorPalette.length],
+                    data: periodosOrdenados.map(periodo => {
+                        const recordsPeriodo = porDimension[dim].filter(r => r[campoTemporal] === periodo);
+                        if (recordsPeriodo.length === 0) return { periodo, score: null, cantidad: 0 };
+                        
+                        const scores = recordsPeriodo.map(r => parseFloat(r['QA SCORE']) || 0);
+                        return {
+                            periodo,
+                            score: scores.reduce((a, b) => a + b, 0) / scores.length,
+                            cantidad: recordsPeriodo.length
+                        };
+                    })
+                };
+            });
+            
+            // Calcular ranking actual (último periodo)
+            const ranking = dimensiones.map(dim => {
+                const recordsDim = porDimension[dim];
+                const scores = recordsDim.map(r => parseFloat(r['QA SCORE']) || 0);
+                return {
+                    dimension: dim,
+                    score: scores.reduce((a, b) => a + b, 0) / scores.length,
+                    cantidad: recordsDim.length
+                };
+            }).sort((a, b) => b.score - a.score);
+            
+            // Calcular summary stats
+            const summary = {
+                total: dimensiones.length,
+                mejor: ranking[0],
+                peor: ranking[ranking.length - 1],
+                promedio: ranking.reduce((sum, r) => sum + r.score, 0) / ranking.length
+            };
+            
+            return { tendencias, ranking, summary, periodos: periodosOrdenados };
+        }
+        
+        function ordenarPeriodos(periodos, campo) {
+            if (campo === 'SEMANA') {
+                return periodos.sort((a, b) => {
+                    const numA = parseInt(a.replace('SEM ', '')) || 0;
+                    const numB = parseInt(b.replace('SEM ', '')) || 0;
+                    return numA - numB;
+                });
+            } else {
+                // MES
+                const ordenMeses = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                return periodos.sort((a, b) => {
+                    const [mesA, yearA] = a.split('-');
+                    const [mesB, yearB] = b.split('-');
+                    if (yearA !== yearB) return yearA - yearB;
+                    return ordenMeses.indexOf(mesA) - ordenMeses.indexOf(mesB);
+                });
+            }
+        }
+        
+        function groupBy(records, field) {
+            return records.reduce((acc, r) => {
+                const key = r[field] || 'Sin especificar';
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(r);
+                return acc;
+            }, {});
+        }
+        
+        // ============================================
+        // FUNCIONES DE RENDERIZADO
+        // ============================================
+        function renderSummaryStats(containerId, summary) {
+            const html = `
+                <div class="stat-box">
+                    <div class="stat-label">Total Categorías</div>
+                    <div class="stat-value">${summary.total}</div>
+                </div>
+                <div class="stat-box" style="border-left-color: #10b981;">
+                    <div class="stat-label">Mejor Performance</div>
+                    <div class="stat-value">${summary.mejor.dimension}</div>
+                    <div class="stat-label">${summary.mejor.score.toFixed(1)} pts</div>
+                </div>
+                <div class="stat-box" style="border-left-color: #ef4444;">
+                    <div class="stat-label">Menor Performance</div>
+                    <div class="stat-value">${summary.peor.dimension}</div>
+                    <div class="stat-label">${summary.peor.score.toFixed(1)} pts</div>
+                </div>
+                <div class="stat-box" style="border-left-color: #8b5cf6;">
+                    <div class="stat-label">Promedio General</div>
+                    <div class="stat-value">${summary.promedio.toFixed(1)}</div>
+                </div>
+            `;
+            document.getElementById(containerId).innerHTML = html;
+        }
+        
+        function renderLineChart(canvasId, chartsObj, chartKey, tendencias, label, showMeta = false) {
+            const ctx = document.getElementById(canvasId);
+            if (chartsObj[chartKey]) chartsObj[chartKey].destroy();
+            
+            const dimensiones = Object.keys(tendencias);
+            const periodos = tendencias[dimensiones[0]].data.map(d => d.periodo);
+            
+            const datasets = dimensiones.map(dim => ({
+                label: dim,
+                data: tendencias[dim].data.map(d => d.score),
+                borderColor: tendencias[dim].color,
+                backgroundColor: tendencias[dim].color + '20',
+                tension: 0.4,
+                fill: false,
+                pointRadius: 3,
+                pointHoverRadius: 5
+            }));
+            
+            // Agregar línea de meta si es necesario
+            if (showMeta) {
+                datasets.push({
+                    label: 'Meta (85)',
+                    data: new Array(periodos.length).fill(85),
+                    borderColor: '#10b981',
+                    borderDash: [5, 5],
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 0
+                });
+            }
+            
+            chartsObj[chartKey] = new Chart(ctx, {
+                type: 'line',
+                data: { labels: periodos, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 12, font: { size: 11 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y ? context.parsed.y.toFixed(1) : 'N/A'}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: { display: true, text: label }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function renderStackedBarChart(canvasId, chartsObj, chartKey, tendencias, label) {
+            const ctx = document.getElementById(canvasId);
+            if (chartsObj[chartKey]) chartsObj[chartKey].destroy();
+            
+            const dimensiones = Object.keys(tendencias);
+            const periodos = tendencias[dimensiones[0]].data.map(d => d.periodo);
+            
+            const datasets = dimensiones.map(dim => ({
+                label: dim,
+                data: tendencias[dim].data.map(d => d.cantidad),
+                backgroundColor: tendencias[dim].color,
+                borderRadius: 4
+            }));
+            
+            chartsObj[chartKey] = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: periodos, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 12, font: { size: 11 } }
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true },
+                        y: { 
+                            stacked: true,
+                            beginAtZero: true,
+                            title: { display: true, text: label }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function renderBarChart(canvasId, chartsObj, chartKey, ranking, label) {
+            const ctx = document.getElementById(canvasId);
+            if (chartsObj[chartKey]) chartsObj[chartKey].destroy();
+            
+            const labels = ranking.map(r => r.dimension);
+            const data = ranking.map(r => r.score);
+            const colors = ranking.map((r, idx) => {
+                if (idx === 0) return '#10b981'; // Mejor
+                if (idx === ranking.length - 1) return '#ef4444'; // Peor
+                return '#3b82f6'; // Resto
+            });
+            
+            chartsObj[chartKey] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label,
+                        data,
+                        backgroundColor: colors,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Score: ${context.parsed.x.toFixed(1)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: false,
+                            min: 60,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+        
+       // Gráfico mejorado para BPO - SIN plugin externo, usando datasets nativos
+function renderBPOComparisonChart(canvasId, chartsObj, chartKey, ranking) {
+    const ctx = document.getElementById(canvasId);
+    
+    // IMPORTANTE: Destruir gráfico anterior correctamente
+    if (chartsObj[chartKey]) {
+        chartsObj[chartKey].destroy();
+        chartsObj[chartKey] = null;
+    }
+    
+    // Validar que hay datos
+    if (!ranking || ranking.length === 0) {
+        console.warn('No hay datos de BPO para mostrar');
+        return;
+    }
+    
+    const labels = ranking.map(r => r.dimension);
+    const scores = ranking.map(r => r.score);
+    const meta = 85;
+    const colors = scores.map(score => score >= meta ? '#10b981' : '#ef4444');
+    
+    // Crear dataset con las barras de scores
+    const datasets = [
+        {
+            label: 'QA Score Actual',
+            data: scores,
+            backgroundColor: colors,
+            borderRadius: 6,
+            barThickness: 30
+        }
+    ];
+    
+    chartsObj[chartKey] = new Chart(ctx, {
+        type: 'bar',
+        data: { labels, datasets },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const score = context.parsed.x;
+                            const gap = score - meta;
+                            return [
+                                `Score: ${score.toFixed(1)}`,
+                                `Meta: ${meta}`,
+                                `Gap: ${gap >= 0 ? '+' : ''}${gap.toFixed(1)} pts`,
+                                gap >= 0 ? '✓ Cumple meta' : '✗ No cumple meta'
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,  // ← CAMBIO: Ahora empieza en 0
+                    min: 0,             // ← CAMBIO: Cambió de 60 a 0
+                    max: 100,
+                    title: { display: true, text: 'QA Score' },
+                    grid: {
+                        color: function(context) {
+                            // Línea verde gruesa en x=85 (meta)
+                            if (context.tick && context.tick.value === 85) {
+                                return '#10b981';
+                            }
+                            return 'rgba(0, 0, 0, 0.1)';
+                        },
+                        lineWidth: function(context) {
+                            if (context.tick && context.tick.value === 85) {
+                                return 3;
+                            }
+                            return 1;
+                        }
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            // Agregar etiqueta "META" en el tick de 85
+                            if (value === 85) {
+                                return '← META ' + value;
+                            }
+                            return value;
+                        },
+                        color: function(context) {
+                            // Validar que context.tick existe
+                            if (context.tick && context.tick.value === 85) {
+                                return '#10b981';
+                            }
+                            return '#666';
+                        },
+                        font: function(context) {
+                            // Validar que context.tick existe
+                            if (context.tick && context.tick.value === 85) {
+                                return { weight: 'bold', size: 12 };
+                            }
+                            return { size: 11 };
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+    
+    </script>
+</body>
+</html>

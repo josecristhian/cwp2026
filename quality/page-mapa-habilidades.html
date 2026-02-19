@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Atributos</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Estilos específicos para el heatmap */
+        .heatmap-container {
+            overflow-x: auto;
+            margin: 24px 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .heatmap-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 800px;
+        }
+
+        .heatmap-table th {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        .heatmap-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .heatmap-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .cumplimiento-cell {
+            font-weight: 600;
+            border-radius: 4px;
+            padding: 6px 10px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .top-bottom-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin: 24px 0;
+        }
+
+        @media (max-width: 768px) {
+            .top-bottom-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .strength-item, .gap-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            background: #f8fafc;
+            border-left: 4px solid;
+        }
+
+        .strength-item {
+            border-left-color: #10b981;
+        }
+
+        .gap-item {
+            border-left-color: #ef4444;
+        }
+
+        .criteria-name {
+            flex: 1;
+            font-weight: 500;
+            color: #1e293b;
+            font-size: 13px;
+        }
+
+        .criteria-code {
+            display: inline-block;
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #475569;
+            margin-right: 8px;
+        }
+
+        .criteria-percent {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0 12px;
+        }
+
+        .criteria-icon {
+            font-size: 20px;
+        }
+
+        .impact-matrix {
+            overflow-x: auto;
+        }
+
+        .impact-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            min-width: 700px;
+        }
+
+        .impact-table th {
+            background: #f1f5f9;
+            font-weight: 600;
+            color: #1e293b;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .impact-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .impact-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .impact-table td:first-child {
+            text-align: left;
+            font-size: 12px;
+        }
+
+        .impact-indicator {
+            font-size: 20px;
+            display: inline-block;
+        }
+
+        .impact-yes {
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .impact-no {
+            color: #cbd5e1;
+        }
+
+        /* Estilos para Mapa de Calor de Indicadores */
+        .indicators-heatmap {
+            margin: 24px 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        .indicators-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        .indicators-table th {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .indicators-table td {
+            padding: 16px 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .indicators-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .indicator-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .indicator-icon {
+            font-size: 24px;
+        }
+
+        .criteria-count {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 400;
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 24px;
+            background: #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 12px;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .progress-percent {
+            font-size: 18px;
+            font-weight: 700;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .brecha-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .brecha-negative {
+            color: #ef4444;
+        }
+
+        /* NUEVOS ESTILOS PARA EVOLUCIÓN TEMPORAL */
+        .temporal-evolution {
+            margin: 24px 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .temporal-header {
+            padding: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .temporal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .toggle-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn.active {
+            background: white;
+            color: #3b82f6;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .toggle-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.5);
+        }
+
+        .temporal-table-container {
+            overflow-x: auto;
+            max-height: 600px;
+        }
+
+        .temporal-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .temporal-table thead th {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 12px;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        .temporal-table thead th:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 30;
+            text-align: left;
+            min-width: 200px;
+            max-width: 250px;
+        }
+
+        .temporal-table tbody td {
+            padding: 10px 8px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            min-width: 80px;
+        }
+
+        .temporal-table tbody td:first-child {
+            position: sticky;
+            left: 0;
+            background: white;
+            font-weight: 600;
+            text-align: left;
+            z-index: 10;
+            border-right: 2px solid #cbd5e1;
+            font-size: 12px;
+            padding-right: 12px;
+        }
+
+        .temporal-table tbody tr:hover td:first-child {
+            background: #f8fafc;
+        }
+
+        .temporal-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .temporal-value {
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .temporal-trend {
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .trend-up {
+            color: #10b981;
+        }
+
+        .trend-down {
+            color: #ef4444;
+        }
+
+        .trend-stable {
+            color: #64748b;
+        }
+
+        .temporal-table tbody tr:hover {
+            background: #f8fafc;
+        }
+    </style>
+</head>
+<body style="background: transparent; padding: 0;">
+    <div style="padding: 0;">
+        <h2 style="margin-bottom: 24px; color: var(--text-primary);">Mapa de Atributos</h2>
+        
+        <!-- KPIs Resumen -->
+        <div id="kpiContainer" class="kpi-grid"></div>
+
+        <!-- Mapa de Calor de Indicadores de Negocio -->
+        <div class="indicators-heatmap">
+            <table class="indicators-table">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Indicador</th>
+                        <th style="width: 10%; text-align: center;">Criterios</th>
+                        <th style="width: 40%;">% Cumplimiento Promedio</th>
+                        <th style="width: 15%; text-align: center;">Estado</th>
+                        <th style="width: 10%; text-align: center;">Brecha</th>
+                    </tr>
+                </thead>
+                <tbody id="indicatorsBody">
+                    <!-- Se llenará con JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- NUEVA SECCIÓN: Evolución Temporal -->
+        <div class="temporal-evolution">
+            <div class="temporal-header">
+                <div class="temporal-title">📈 Evolución Temporal de Cumplimiento</div>
+                <div class="view-toggle">
+                    <button class="toggle-btn active" data-view="semanal" onclick="cambiarVista('semanal')">
+                        Semanal
+                    </button>
+                    <button class="toggle-btn" data-view="mensual" onclick="cambiarVista('mensual')">
+                        Mensual
+                    </button>
+                </div>
+            </div>
+            <div class="temporal-table-container">
+                <table class="temporal-table" id="temporalTable">
+                    <thead id="temporalTableHead">
+                        <!-- Se llenará con JavaScript -->
+                    </thead>
+                    <tbody id="temporalTableBody">
+                        <!-- Se llenará con JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Top Fortalezas y Brechas -->
+        <div class="top-bottom-grid">
+            <div class="card">
+                <div class="card-title" style="color: #10b981;">✓ Top 5 Fortalezas</div>
+                <div class="card-content" id="fortalezasContainer">
+                    <div class="loading">Cargando...</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title" style="color: #ef4444;">⚠️ Top 5 Brechas</div>
+                <div class="card-content" id="brechasContainer">
+                    <div class="loading">Cargando...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de Barras - Ranking de Criterios -->
+        <div class="chart-container">
+            <div class="chart-title">Ranking de Criterios por % de Cumplimiento</div>
+            <canvas id="rankingChart"></canvas>
+        </div>
+
+        <!-- Tabla Heatmap -->
+        <div class="heatmap-container">
+            <table class="heatmap-table" id="heatmapTable">
+                <thead>
+                    <tr>
+                        <th>Criterio</th>
+                        <th style="min-width: 250px;">Descripción</th>
+                        <th>% Cumplimiento</th>
+                        <th>Total Auditorías</th>
+                        <th>Cumplieron</th>
+                        <th>No Cumplieron</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="heatmapBody">
+                    <tr><td colspan="7" class="loading">Cargando datos...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Matriz de Impacto -->
+        <div class="card" style="margin-top: 24px;">
+            <div class="card-title">Matriz de Impacto - Criterios vs Indicadores de Negocio</div>
+            <div class="card-content">
+                <div class="impact-matrix">
+                    <table class="impact-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40%;">Criterio</th>
+                                <th>NPS</th>
+                                <th>AHT</th>
+                                <th>FCR</th>
+                                <th>Ventas</th>
+                                <th>Negocio</th>
+                            </tr>
+                        </thead>
+                        <tbody id="impactBody">
+                            <!-- Se llenará con JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN GLOBAL
+        const CRITERIA_IMPACT = {
+            NPS: ['Q1', 'Q2', 'Q4', 'Q5', 'Q6', 'Q8', 'Q11', 'Q14', 'Q16', 'Q17', 'Q18', 'Q22'],
+            AHT: ['Q2', 'Q3', 'Q4', 'Q7', 'Q8', 'Q9', 'Q10', 'Q11', 'Q17'],
+            FCR: ['Q6', 'Q13', 'Q21'],
+            Ventas: ['Q4', 'Q8', 'Q11'],
+            Negocio: ['Q19', 'Q20']
+        };
+
+        const INDICATOR_ICONS = {
+            NPS: '📊',
+            AHT: '⏱️',
+            FCR: '✅',
+            Ventas: '💰',
+            Negocio: '📈'
+        };
+
+        let rankingChartInstance = null;
+        let currentView = 'semanal'; // 'semanal' o 'mensual'
+        let globalData = null; // Guardar datos para cambio de vista
+        let columnasMetadata = [];
+
+        // PATRÓN OBLIGATORIO: Función para notificar altura al padre
+        function notifyHeight() {
+            const height = document.body.scrollHeight;
+            window.parent.postMessage({
+                type: 'RESIZE',
+                height: height
+            }, '*');
+        }
+        
+        // PATRÓN OBLIGATORIO: Escuchar mensajes del padre
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'FILTERED_DATA') {
+                cargarPagina(event.data.data);
+            }
+        });
+        
+        // PATRÓN OBLIGATORIO: Cargar datos si están disponibles
+        if (window.parent.filteredData || window.parent.rawData) {
+            cargarPagina(window.parent.filteredData || window.parent.rawData);
+        }
+
+        // Función para cambiar vista temporal
+        function cambiarVista(vista) {
+            currentView = vista;
+            
+            // Actualizar botones
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                if (btn.dataset.view === vista) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // Re-renderizar tabla temporal
+            if (globalData) {
+                renderTemporalEvolution(globalData);
+            }
+        }
+        
+        // FUNCIÓN PRINCIPAL DE CARGA
+        function cargarPagina(data) {
+            console.log('=== INICIANDO CARGA DE PÁGINA ===');
+            
+            if (!data || !data.base_excel) {
+                console.error('No hay datos disponibles');
+                return;
+            }
+            
+            globalData = data; // Guardar datos globalmente
+            const records = data.base_excel;
+            console.log('Total de registros:', records.length);
+            
+            // Buscar descripción de columnas
+            if (data.columnas && Array.isArray(data.columnas)) {
+                columnasMetadata = data.columnas;
+            } else if (data.atributos_evaluacion && Array.isArray(data.atributos_evaluacion)) {
+                columnasMetadata = data.atributos_evaluacion;
+            }
+            
+            console.log('Metadata encontrada:', columnasMetadata.length, 'columnas');
+            
+            // Identificar criterios Q1-Q22
+            const criterios = [];
+            for (let i = 1; i <= 22; i++) {
+                const qKey = `Q${i}`;
+                if (records[0] && records[0].hasOwnProperty(qKey)) {
+                    criterios.push(qKey);
+                }
+            }
+
+            console.log('Criterios encontrados:', criterios);
+
+            // Función para obtener descripción del criterio
+            function getCriterioDescripcion(qKey) {
+                const metadata = columnasMetadata.find(col => {
+                    return col.columna === qKey || 
+                           col.nombre === qKey || 
+                           col.campo === qKey ||
+                           col.id === qKey;
+                });
+                
+                if (metadata) {
+                    const desc = metadata.descripcion || metadata.nombre || metadata.titulo || '';
+                    return desc ? `${qKey} - ${desc}` : qKey;
+                }
+                
+                return qKey;
+            }
+
+            // Calcular estadísticas por criterio
+            const criteriaStats = criterios.map(qKey => {
+                const valores = records.map(r => parseFloat(r[qKey]) || 0);
+                
+                if (valores.length === 0) {
+                    return {
+                        criterio: qKey,
+                        descripcion: getCriterioDescripcion(qKey),
+                        cumplimiento: 0,
+                        totalAuditorias: 0,
+                        cumplieron: 0,
+                        noCumplieron: 0
+                    };
+                }
+
+                const maximo = Math.max(...valores);
+                const cumplieron = valores.filter(v => v > 0 && v === maximo).length;
+                const noCumplieron = valores.length - cumplieron;
+                const cumplimiento = (cumplieron / valores.length) * 100;
+
+                return {
+                    criterio: qKey,
+                    descripcion: getCriterioDescripcion(qKey),
+                    cumplimiento: cumplimiento,
+                    totalAuditorias: valores.length,
+                    cumplieron: cumplieron,
+                    noCumplieron: noCumplieron
+                };
+            });
+
+            console.log('Stats calculadas:', criteriaStats.length, 'criterios');
+
+            // Renderizar componentes
+            renderKPIs(criteriaStats);
+            renderIndicatorsHeatmap(criteriaStats);
+            renderTemporalEvolution(data);
+            renderTopBottom(criteriaStats);
+            renderRankingChart(criteriaStats);
+            renderHeatmap(criteriaStats);
+            renderImpactMatrix(criteriaStats);
+
+            // Notificar altura múltiples veces
+            setTimeout(notifyHeight, 100);
+            setTimeout(notifyHeight, 500);
+            setTimeout(notifyHeight, 1000);
+            setTimeout(notifyHeight, 2000);
+            setTimeout(notifyHeight, 3000);
+        }
+
+        // Función para obtener color según % cumplimiento
+        function getCumplimientoColor(cumplimiento) {
+            if (cumplimiento >= 90) return '#10b981';
+            if (cumplimiento >= 70) return '#f59e0b';
+            return '#ef4444';
+        }
+
+        function getCumplimientoBgColor(cumplimiento) {
+            if (cumplimiento >= 90) return 'rgba(16, 185, 129, 0.1)';
+            if (cumplimiento >= 70) return 'rgba(245, 158, 11, 0.1)';
+            return 'rgba(239, 68, 68, 0.1)';
+        }
+
+        // Renderizar KPIs
+        function renderKPIs(stats) {
+            const container = document.getElementById('kpiContainer');
+            
+            if (stats.length === 0) {
+                container.innerHTML = '<div class="loading">No hay datos suficientes</div>';
+                return;
+            }
+            
+            const cumplimientoPromedio = stats.reduce((a, b) => a + b.cumplimiento, 0) / stats.length;
+            const criteriosExcelentes = stats.filter(s => s.cumplimiento >= 90).length;
+            const criteriosCriticos = stats.filter(s => s.cumplimiento < 70).length;
+            const totalAuditorias = stats[0].totalAuditorias;
+
+            container.innerHTML = `
+                <div class="kpi-card" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                    <div class="kpi-label">% Cumplimiento Promedio</div>
+                    <div class="kpi-value">${cumplimientoPromedio.toFixed(1)}%</div>
+                    <div class="kpi-change">Todos los criterios</div>
+                </div>
+                <div class="kpi-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <div class="kpi-label">Criterios Excelentes</div>
+                    <div class="kpi-value">${criteriosExcelentes}</div>
+                    <div class="kpi-change">≥ 90% cumplimiento</div>
+                </div>
+                <div class="kpi-card" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                    <div class="kpi-label">Criterios Críticos</div>
+                    <div class="kpi-value">${criteriosCriticos}</div>
+                    <div class="kpi-change">< 70% cumplimiento</div>
+                </div>
+                <div class="kpi-card" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                    <div class="kpi-label">Total Auditorías</div>
+                    <div class="kpi-value">${totalAuditorias.toLocaleString()}</div>
+                    <div class="kpi-change">Registros analizados</div>
+                </div>
+            `;
+        }
+
+        // Renderizar Mapa de Calor de Indicadores
+        function renderIndicatorsHeatmap(stats) {
+            console.log('=== RENDERIZANDO MAPA DE CALOR DE INDICADORES ===');
+            const tbody = document.getElementById('indicatorsBody');
+            
+            if (!tbody || !stats || stats.length === 0) {
+                console.error('No hay datos para renderizar indicadores');
+                return;
+            }
+
+            const indicatorData = Object.keys(CRITERIA_IMPACT).map(indicator => {
+                const criteriosAsociados = CRITERIA_IMPACT[indicator];
+                const statsAsociadas = stats.filter(s => criteriosAsociados.includes(s.criterio));
+                
+                if (statsAsociadas.length === 0) {
+                    return {
+                        nombre: indicator,
+                        criteriosCount: 0,
+                        cumplimientoPromedio: 0,
+                        brecha: 0
+                    };
+                }
+
+                const cumplimientoPromedio = statsAsociadas.reduce((a, b) => a + b.cumplimiento, 0) / statsAsociadas.length;
+                const brecha = 100 - cumplimientoPromedio;
+
+                return {
+                    nombre: indicator,
+                    criteriosCount: criteriosAsociados.length,
+                    cumplimientoPromedio: cumplimientoPromedio,
+                    brecha: brecha
+                };
+            });
+
+            indicatorData.sort((a, b) => b.cumplimientoPromedio - a.cumplimientoPromedio);
+
+            const rows = indicatorData.map(ind => {
+                const color = getCumplimientoColor(ind.cumplimientoPromedio);
+                const estado = ind.cumplimientoPromedio >= 90 ? 'success' : ind.cumplimientoPromedio >= 70 ? 'warning' : 'error';
+                const estadoText = ind.cumplimientoPromedio >= 90 ? 'Excelente' : ind.cumplimientoPromedio >= 70 ? 'Bueno' : 'Crítico';
+
+                return `
+                    <tr>
+                        <td>
+                            <div class="indicator-name">
+                                <span class="indicator-icon">${INDICATOR_ICONS[ind.nombre]}</span>
+                                <div>
+                                    <div>${ind.nombre}</div>
+                                    <div class="criteria-count">${ind.criteriosCount} criterios asociados</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="text-align: center; font-weight: 600; color: #64748b;">
+                            ${ind.criteriosCount}
+                        </td>
+                        <td>
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${ind.cumplimientoPromedio}%; background: ${color};">
+                                        ${ind.cumplimientoPromedio >= 20 ? ind.cumplimientoPromedio.toFixed(1) + '%' : ''}
+                                    </div>
+                                </div>
+                                <div class="progress-percent" style="color: ${color};">
+                                    ${ind.cumplimientoPromedio.toFixed(1)}%
+                                </div>
+                            </div>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="badge badge-${estado}">${estadoText}</span>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="brecha-value brecha-negative">-${ind.brecha.toFixed(1)}%</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            tbody.innerHTML = rows;
+            console.log('Mapa de calor de indicadores renderizado');
+            setTimeout(notifyHeight, 300);
+        }
+
+        // NUEVA FUNCIÓN: Renderizar Evolución Temporal
+        function renderTemporalEvolution(data) {
+            console.log('=== RENDERIZANDO EVOLUCIÓN TEMPORAL ===');
+            
+            if (!data || !data.base_excel) {
+                console.error('No hay datos para evolución temporal');
+                return;
+            }
+
+            const records = data.base_excel;
+            const periodoField = currentView === 'semanal' ? 'SEMANA' : 'MES';
+            
+            // Obtener todos los períodos únicos y ordenarlos
+            const periodosSet = new Set();
+            records.forEach(r => {
+                if (r[periodoField]) {
+                    periodosSet.add(r[periodoField]);
+                }
+            });
+            
+            let periodos = Array.from(periodosSet).sort();
+            console.log('Períodos encontrados:', periodos);
+
+            if (periodos.length === 0) {
+                document.getElementById('temporalTableHead').innerHTML = '<tr><th colspan="2">No hay datos de período disponibles</th></tr>';
+                document.getElementById('temporalTableBody').innerHTML = '';
+                return;
+            }
+
+            // Identificar criterios Q1-Q22
+            const criterios = [];
+            for (let i = 1; i <= 22; i++) {
+                const qKey = `Q${i}`;
+                if (records[0] && records[0].hasOwnProperty(qKey)) {
+                    criterios.push(qKey);
+                }
+            }
+
+            // Función para obtener descripción del criterio
+            function getCriterioDescripcion(qKey) {
+                const metadata = columnasMetadata.find(col => {
+                    return col.columna === qKey || col.nombre === qKey || col.campo === qKey || col.id === qKey;
+                });
+                
+                if (metadata) {
+                    const desc = metadata.descripcion || metadata.nombre || metadata.titulo || '';
+                    return desc ? `${qKey} - ${desc}` : qKey;
+                }
+                
+                return qKey;
+            }
+
+            // Calcular cumplimiento por criterio y período
+            const temporalData = {};
+            
+            criterios.forEach(criterio => {
+                temporalData[criterio] = {
+                    descripcion: getCriterioDescripcion(criterio),
+                    periodos: {}
+                };
+
+                periodos.forEach(periodo => {
+                    const registrosPeriodo = records.filter(r => r[periodoField] === periodo);
+                    const valores = registrosPeriodo.map(r => parseFloat(r[criterio]) || 0);
+                    
+                    if (valores.length > 0) {
+                        const maximo = Math.max(...valores);
+                        const cumplieron = valores.filter(v => v > 0 && v === maximo).length;
+                        const cumplimiento = (cumplieron / valores.length) * 100;
+                        
+                        temporalData[criterio].periodos[periodo] = cumplimiento;
+                    } else {
+                        temporalData[criterio].periodos[periodo] = 0;
+                    }
+                });
+            });
+
+            // Renderizar encabezado de tabla
+            const thead = document.getElementById('temporalTableHead');
+            const headerRow = `
+                <tr>
+                    <th>Criterio</th>
+                    ${periodos.map(p => `<th>${p}</th>`).join('')}
+                </tr>
+            `;
+            thead.innerHTML = headerRow;
+
+            // Renderizar cuerpo de tabla
+            const tbody = document.getElementById('temporalTableBody');
+            const bodyRows = criterios.map(criterio => {
+                const data = temporalData[criterio];
+                const descripcionLimpia = data.descripcion.includes(' - ') 
+                    ? data.descripcion.split(' - ').slice(1).join(' - ')
+                    : data.descripcion;
+                
+                const cells = periodos.map((periodo, index) => {
+                    const valor = data.periodos[periodo] || 0;
+                    const color = getCumplimientoColor(valor);
+                    const bgColor = getCumplimientoBgColor(valor);
+                    
+                    // Calcular tendencia (comparar con período anterior)
+                    let trendHTML = '';
+                    if (index > 0) {
+                        const periodoAnterior = periodos[index - 1];
+                        const valorAnterior = data.periodos[periodoAnterior] || 0;
+                        const diferencia = valor - valorAnterior;
+                        
+                        if (Math.abs(diferencia) < 0.5) {
+                            trendHTML = `<span class="temporal-trend trend-stable">—</span>`;
+                        } else if (diferencia > 0) {
+                            trendHTML = `<span class="temporal-trend trend-up">↑ ${diferencia.toFixed(1)}%</span>`;
+                        } else {
+                            trendHTML = `<span class="temporal-trend trend-down">↓ ${Math.abs(diferencia).toFixed(1)}%</span>`;
+                        }
+                    }
+                    
+                    return `
+                        <td style="background: ${bgColor};">
+                            <div class="temporal-cell">
+                                <span class="temporal-value" style="color: ${color};">${valor.toFixed(1)}%</span>
+                                ${trendHTML}
+                            </div>
+                        </td>
+                    `;
+                }).join('');
+
+                return `
+                    <tr>
+                        <td>
+                            <span class="criteria-code">${criterio}</span>
+                            ${descripcionLimpia}
+                        </td>
+                        ${cells}
+                    </tr>
+                `;
+            }).join('');
+
+            tbody.innerHTML = bodyRows;
+            console.log('Evolución temporal renderizada');
+            setTimeout(notifyHeight, 500);
+        }
+
+        // Renderizar Top 5 Fortalezas y Brechas
+        function renderTopBottom(stats) {
+            const sorted = [...stats].sort((a, b) => b.cumplimiento - a.cumplimiento);
+            
+            const fortalezas = sorted.slice(0, 5);
+            const brechas = sorted.slice(-5).reverse();
+
+            const fortalezasHTML = fortalezas.map(s => {
+                const descripcionLimpia = s.descripcion.includes(' - ') 
+                    ? s.descripcion.split(' - ').slice(1).join(' - ')
+                    : s.descripcion;
+                
+                return `
+                    <div class="strength-item">
+                        <span class="criteria-name">
+                            <span class="criteria-code">${s.criterio}</span>
+                            ${descripcionLimpia}
+                        </span>
+                        <span class="criteria-percent" style="color: #10b981;">${s.cumplimiento.toFixed(1)}%</span>
+                        <span class="criteria-icon">✓</span>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('fortalezasContainer').innerHTML = fortalezasHTML || '<p>No hay datos</p>';
+
+            const brechasHTML = brechas.map(s => {
+                const descripcionLimpia = s.descripcion.includes(' - ') 
+                    ? s.descripcion.split(' - ').slice(1).join(' - ')
+                    : s.descripcion;
+                
+                return `
+                    <div class="gap-item">
+                        <span class="criteria-name">
+                            <span class="criteria-code">${s.criterio}</span>
+                            ${descripcionLimpia}
+                        </span>
+                        <span class="criteria-percent" style="color: #ef4444;">${s.cumplimiento.toFixed(1)}%</span>
+                        <span class="criteria-icon">⚠️</span>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('brechasContainer').innerHTML = brechasHTML || '<p>No hay datos</p>';
+        }
+
+        // Renderizar Gráfico de Barras Horizontales
+        function renderRankingChart(stats) {
+            const sorted = [...stats].sort((a, b) => b.cumplimiento - a.cumplimiento);
+            
+            const ctx = document.getElementById('rankingChart');
+            
+            if (rankingChartInstance) {
+                rankingChartInstance.destroy();
+            }
+            
+            rankingChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(s => s.descripcion),
+                    datasets: [{
+                        label: '% Cumplimiento',
+                        data: sorted.map(s => s.cumplimiento),
+                        backgroundColor: sorted.map(s => getCumplimientoColor(s.cumplimiento)),
+                        borderRadius: 6,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const stat = sorted[context.dataIndex];
+                                    return [
+                                        `Cumplimiento: ${stat.cumplimiento.toFixed(1)}%`,
+                                        `Cumplieron: ${stat.cumplieron.toLocaleString()}`,
+                                        `No cumplieron: ${stat.noCumplieron.toLocaleString()}`,
+                                        `Total: ${stat.totalAuditorias.toLocaleString()}`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: '#e2e8f0' },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Renderizar Heatmap
+        function renderHeatmap(stats) {
+            const tbody = document.getElementById('heatmapBody');
+            
+            const rows = stats.map(s => {
+                const estado = s.cumplimiento >= 90 ? 'success' : s.cumplimiento >= 70 ? 'warning' : 'error';
+                const estadoText = s.cumplimiento >= 90 ? 'Excelente' : s.cumplimiento >= 70 ? 'Aceptable' : 'Crítico';
+                
+                const descripcionLimpia = s.descripcion.includes(' - ') 
+                    ? s.descripcion.split(' - ').slice(1).join(' - ')
+                    : s.descripcion;
+                
+                return `
+                    <tr>
+                        <td><strong>${s.criterio}</strong></td>
+                        <td>${descripcionLimpia}</td>
+                        <td class="cumplimiento-cell" style="background: ${getCumplimientoBgColor(s.cumplimiento)}; color: ${getCumplimientoColor(s.cumplimiento)};">
+                            ${s.cumplimiento.toFixed(1)}%
+                        </td>
+                        <td style="text-align: center;">${s.totalAuditorias.toLocaleString()}</td>
+                        <td style="text-align: center; color: #10b981; font-weight: 600;">${s.cumplieron.toLocaleString()}</td>
+                        <td style="text-align: center; color: #ef4444; font-weight: 600;">${s.noCumplieron.toLocaleString()}</td>
+                        <td style="text-align: center;">
+                            <span class="badge badge-${estado}">${estadoText}</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            tbody.innerHTML = rows;
+            setTimeout(notifyHeight, 200);
+        }
+
+        // Renderizar Matriz de Impacto
+        function renderImpactMatrix(stats) {
+            console.log('=== RENDERIZANDO MATRIZ DE IMPACTO ===');
+            const tbody = document.getElementById('impactBody');
+            
+            if (!tbody) {
+                console.error('No se encontró el elemento impactBody');
+                return;
+            }
+            
+            if (!stats || stats.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">No hay datos para mostrar</td></tr>';
+                setTimeout(notifyHeight, 300);
+                return;
+            }
+            
+            try {
+                const rows = stats.map(s => {
+                    const hasNPS = CRITERIA_IMPACT.NPS.includes(s.criterio);
+                    const hasAHT = CRITERIA_IMPACT.AHT.includes(s.criterio);
+                    const hasFCR = CRITERIA_IMPACT.FCR.includes(s.criterio);
+                    const hasVentas = CRITERIA_IMPACT.Ventas.includes(s.criterio);
+                    const hasNegocio = CRITERIA_IMPACT.Negocio.includes(s.criterio);
+
+                    const descripcionLimpia = s.descripcion.includes(' - ') 
+                        ? s.descripcion.split(' - ').slice(1).join(' - ')
+                        : s.descripcion;
+
+                    return `
+                        <tr>
+                            <td style="text-align: left;">
+                                <strong>${s.criterio}</strong> - ${descripcionLimpia}
+                            </td>
+                            <td><span class="impact-indicator ${hasNPS ? 'impact-yes' : 'impact-no'}">${hasNPS ? '●' : '○'}</span></td>
+                            <td><span class="impact-indicator ${hasAHT ? 'impact-yes' : 'impact-no'}">${hasAHT ? '●' : '○'}</span></td>
+                            <td><span class="impact-indicator ${hasFCR ? 'impact-yes' : 'impact-no'}">${hasFCR ? '●' : '○'}</span></td>
+                            <td><span class="impact-indicator ${hasVentas ? 'impact-yes' : 'impact-no'}">${hasVentas ? '●' : '○'}</span></td>
+                            <td><span class="impact-indicator ${hasNegocio ? 'impact-yes' : 'impact-no'}">${hasNegocio ? '●' : '○'}</span></td>
+                        </tr>
+                    `;
+                }).join('');
+
+                tbody.innerHTML = rows;
+                console.log('Matriz renderizada exitosamente con', stats.length, 'filas');
+                
+            } catch (error) {
+                console.error('Error al renderizar matriz de impacto:', error);
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px; color: #ef4444;">Error: ${error.message}</td></tr>`;
+            }
+            
+            setTimeout(notifyHeight, 300);
+            setTimeout(notifyHeight, 1000);
+            setTimeout(notifyHeight, 2000);
+        }
+    </script>
+</body>
+</html>

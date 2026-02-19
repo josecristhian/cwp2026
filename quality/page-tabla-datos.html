@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabla de Datos</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Estilos específicos para la tabla de datos */
+        .table-controls {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .filter-group select {
+            padding: 10px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 150px;
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .columns-btn {
+            padding: 10px 20px;
+            background: white;
+            color: #3b82f6;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .columns-btn:hover {
+            background: #3b82f6;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .table-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+
+        .table-info span {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .table-info strong {
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .table-wrapper {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .data-table-enhanced {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .data-table-enhanced thead {
+            position: sticky;
+            top: 0;
+            background: #f8fafc;
+            z-index: 10;
+        }
+
+        .data-table-enhanced th {
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #475569;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        .data-table-enhanced th:hover {
+            background: #e2e8f0;
+        }
+
+        .data-table-enhanced th.sortable::after {
+            content: ' ⇅';
+            opacity: 0.3;
+            font-size: 12px;
+        }
+
+        .data-table-enhanced th.sort-asc::after {
+            content: ' ▲';
+            opacity: 1;
+            color: #3b82f6;
+        }
+
+        .data-table-enhanced th.sort-desc::after {
+            content: ' ▼';
+            opacity: 1;
+            color: #3b82f6;
+        }
+
+        .data-table-enhanced tbody tr {
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.15s;
+            cursor: pointer;
+        }
+
+        .data-table-enhanced tbody tr:hover {
+            background: #f0f9ff;
+            box-shadow: inset 0 0 0 1px #3b82f6;
+        }
+
+        .data-table-enhanced td {
+            padding: 12px;
+            color: #334155;
+        }
+
+        .score-cell {
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        /* 4 niveles de score - Q1 */
+        .score-q1 {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        /* Q2 */
+        .score-q2 {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        /* Q3 */
+        .score-q3 {
+            background: #fecaca;
+            color: #7f1d1d;
+        }
+
+        /* Q4 */
+        .score-q4 {
+            background: #dc2626;
+            color: #ffffff;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 48px;
+            color: #94a3b8;
+        }
+
+        .no-results svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .export-btn {
+            padding: 10px 20px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .export-btn:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Modal de selección de columnas */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #1e293b;
+            font-size: 20px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #64748b;
+            padding: 4px 8px;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: #1e293b;
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .modal-actions {
+            padding: 16px 24px;
+            border-top: 2px solid #e2e8f0;
+            display: flex;
+            gap: 12px;
+            justify-content: space-between;
+        }
+
+        .columns-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 12px;
+        }
+
+        .column-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .column-item:hover {
+            background: #e2e8f0;
+        }
+
+        .column-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .column-item label {
+            cursor: pointer;
+            user-select: none;
+            flex: 1;
+            font-size: 14px;
+            color: #334155;
+        }
+
+        .modal-btn {
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            border: none;
+        }
+
+        .modal-btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .modal-btn-secondary {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .modal-btn-secondary:hover {
+            background: #cbd5e1;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .quick-btn {
+            padding: 8px 16px;
+            background: #e2e8f0;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #475569;
+        }
+
+        .quick-btn:hover {
+            background: #cbd5e1;
+        }
+
+        /* Modal de detalle de registro */
+        .detail-modal .modal-content {
+            max-width: 900px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .detail-item {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .detail-value {
+            font-size: 15px;
+            color: #1e293b;
+            font-weight: 500;
+        }
+
+        .detail-value.score {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .detail-section {
+            margin-bottom: 24px;
+        }
+
+        .detail-section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .questions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+        }
+
+        .question-item {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .question-label {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .question-value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .comentarios-section {
+            background: #fffbeb;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .comentarios-section .detail-label {
+            color: #92400e;
+        }
+
+        .comentarios-section .detail-value {
+            color: #78350f;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        /* Badges con 4 niveles */
+        .badge-q1 {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-q2 {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-q3 {
+            background: #fecaca;
+            color: #7f1d1d;
+        }
+
+        .badge-q4 {
+            background: #dc2626;
+            color: #ffffff;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .table-controls {
+                flex-direction: column;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .filter-group {
+                width: 100%;
+            }
+
+            .filter-group select {
+                width: 100%;
+            }
+
+            .columns-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                max-height: 90vh;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .questions-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body style="background: transparent; padding: 0;">
+    <div style="padding: 0;">
+        <h2 style="margin-bottom: 24px; color: var(--text-primary);">Tabla de Datos Completa</h2>
+        
+        <!-- Controles de búsqueda y filtros -->
+        <div class="table-controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 Buscar en todos los campos...">
+            </div>
+            
+            <div class="filter-group">
+                <select id="filterCanal">
+                    <option value="">Todos los Canales</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <select id="filterSkill">
+                    <option value="">Todos los Skills</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <select id="filterBPO">
+                    <option value="">Todos los BPOs</option>
+                </select>
+            </div>
+
+            <button class="columns-btn" onclick="abrirModalColumnas()">
+                ⚙️ Columnas
+            </button>
+
+            <button class="export-btn" onclick="exportarCSV()">📥 Exportar</button>
+        </div>
+
+        <!-- Información de la tabla -->
+        <div class="table-info">
+            <span>Mostrando <strong id="countVisible">0</strong> de <strong id="countTotal">0</strong> registros</span>
+            <span id="filterStatus"></span>
+        </div>
+
+        <!-- Contenedor de la tabla -->
+        <div id="contenidoPrincipal">
+            <div class="loading">Cargando datos...</div>
+        </div>
+    </div>
+
+    <!-- Modal de selección de columnas -->
+    <div id="modalColumnas" class="modal-overlay" onclick="cerrarModalSiFueraClick(event, 'modalColumnas')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Seleccionar Columnas</h3>
+                <button class="modal-close" onclick="cerrarModalColumnas()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="quick-actions">
+                    <button class="quick-btn" onclick="seleccionarTodasColumnas()">✓ Todas</button>
+                    <button class="quick-btn" onclick="deseleccionarTodasColumnas()">✗ Ninguna</button>
+                    <button class="quick-btn" onclick="seleccionarColumnasEsenciales()">⭐ Esenciales</button>
+                </div>
+                <div id="columnasGrid" class="columns-grid">
+                    <!-- Se genera dinámicamente -->
+                </div>
+            </div>
+            <div class="modal-actions">
+                <div>
+                    <span id="columnasSeleccionadas" style="color: #64748b; font-size: 14px;"></span>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button class="modal-btn modal-btn-secondary" onclick="cerrarModalColumnas()">Cancelar</button>
+                    <button class="modal-btn modal-btn-primary" onclick="aplicarSeleccionColumnas()">Aplicar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de detalle de registro -->
+    <div id="modalDetalle" class="modal-overlay detail-modal" onclick="cerrarModalSiFueraClick(event, 'modalDetalle')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Detalle del Registro</h3>
+                <button class="modal-close" onclick="cerrarModalDetalle()">×</button>
+            </div>
+            <div class="modal-body" id="detalleContenido">
+                <!-- Se genera dinámicamente -->
+            </div>
+            <div class="modal-actions">
+                <div></div>
+                <button class="modal-btn modal-btn-primary" onclick="cerrarModalDetalle()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let allData = [];
+        let filteredData = [];
+        let currentSort = { column: null, direction: 'asc' };
+        let allColumns = [];
+        let visibleColumns = [];
+        let columnasEsenciales = [
+            'ID_INTERACCIÓN', '📅 INTERACCIÓN', 'DATA_CANAL', 'DATA_SKILL', 
+            'AGENTE', 'SUPERVISOR', 'BPO', '📅 MONITOREO', 'QA SCORE', 'MES'
+        ];
+
+        // Mapeo de nombres de columnas (para abreviar fechas)
+        const columnMapping = {
+            'FECHA DE INTERACCIÓN': '📅 INTERACCIÓN',
+            'FECHA DE MONITOREO': '📅 MONITOREO'
+        };
+
+        // Mapeo inverso
+        const reverseColumnMapping = {};
+        Object.keys(columnMapping).forEach(key => {
+            reverseColumnMapping[columnMapping[key]] = key;
+        });
+
+        // PATRÓN OBLIGATORIO: Función para notificar altura al padre
+        function notifyHeight() {
+            const height = document.body.scrollHeight;
+            window.parent.postMessage({
+                type: 'RESIZE',
+                height: height
+            }, '*');
+        }
+        
+        // PATRÓN OBLIGATORIO: Escuchar mensajes del padre
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'FILTERED_DATA') {
+                cargarPagina(event.data.data);
+            }
+        });
+        
+        // PATRÓN OBLIGATORIO: Cargar datos si están disponibles
+        if (window.parent.filteredData || window.parent.rawData) {
+            cargarPagina(window.parent.filteredData || window.parent.rawData);
+        }
+        
+        // Obtener nombre real de columna
+        function getRealColumnName(displayName) {
+            return reverseColumnMapping[displayName] || displayName;
+        }
+
+        // Obtener nombre para mostrar
+        function getDisplayColumnName(realName) {
+            return columnMapping[realName] || realName;
+        }
+
+        // Función para obtener clase de score según rangos de 4 niveles
+        function getScoreClass(score) {
+            if (score >= 85) return 'score-q1';
+            if (score >= 75) return 'score-q2';
+            if (score >= 65) return 'score-q3';
+            return 'score-q4';
+        }
+
+        // Función para obtener clase de cuartil
+        function getCuartilClass(cuartil) {
+            if (cuartil === 'Q1') return 'badge-q1';
+            if (cuartil === 'Q2') return 'badge-q2';
+            if (cuartil === 'Q3') return 'badge-q3';
+            if (cuartil === 'Q4') return 'badge-q4';
+            return 'badge';
+        }
+
+        // FUNCIÓN PRINCIPAL DE CARGA
+        function cargarPagina(data) {
+            if (!data || !data.base_excel || data.base_excel.length === 0) return;
+            
+            // Guardar datos globales
+            allData = data.base_excel;
+            filteredData = [...allData];
+            
+            // Obtener todas las columnas del primer registro y mapear nombres
+            const rawColumns = Object.keys(allData[0]);
+            allColumns = rawColumns.map(col => getDisplayColumnName(col));
+            
+            // Inicializar columnas visibles con las esenciales
+            visibleColumns = [...columnasEsenciales];
+            
+            // Inicializar filtros
+            inicializarFiltros();
+            
+            // Renderizar tabla inicial
+            renderizarTabla();
+            
+            // Configurar eventos
+            configurarEventos();
+            
+            // Actualizar contadores
+            actualizarContadores();
+            
+            // IMPORTANTE: Notificar altura después de renderizar
+            setTimeout(notifyHeight, 100);
+            setTimeout(notifyHeight, 500);
+            setTimeout(notifyHeight, 1000);
+        }
+
+        // Inicializar opciones de filtros
+        function inicializarFiltros() {
+            const canales = [...new Set(allData.map(r => r.DATA_CANAL).filter(Boolean))].sort();
+            const skills = [...new Set(allData.map(r => r.DATA_SKILL).filter(Boolean))].sort();
+            const bpos = [...new Set(allData.map(r => r.BPO).filter(Boolean))].sort();
+
+            llenarSelect('filterCanal', canales);
+            llenarSelect('filterSkill', skills);
+            llenarSelect('filterBPO', bpos);
+        }
+
+        // Llenar un selector con opciones
+        function llenarSelect(id, options) {
+            const select = document.getElementById(id);
+            options.forEach(opt => {
+                const option = document.createElement('option');
+                option.value = opt;
+                option.textContent = opt;
+                select.appendChild(option);
+            });
+        }
+
+        // Configurar eventos de búsqueda y filtros
+        function configurarEventos() {
+            document.getElementById('searchInput').addEventListener('input', aplicarFiltros);
+            document.getElementById('filterCanal').addEventListener('change', aplicarFiltros);
+            document.getElementById('filterSkill').addEventListener('change', aplicarFiltros);
+            document.getElementById('filterBPO').addEventListener('change', aplicarFiltros);
+        }
+
+        // Aplicar filtros de búsqueda y selección
+        function aplicarFiltros() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const canalFilter = document.getElementById('filterCanal').value;
+            const skillFilter = document.getElementById('filterSkill').value;
+            const bpoFilter = document.getElementById('filterBPO').value;
+
+            filteredData = allData.filter(record => {
+                // Búsqueda general en todas las columnas
+                const matchSearch = !searchTerm || 
+                    Object.values(record).some(value => 
+                        value && value.toString().toLowerCase().includes(searchTerm)
+                    );
+
+                // Filtros de selección
+                const matchCanal = !canalFilter || record.DATA_CANAL === canalFilter;
+                const matchSkill = !skillFilter || record.DATA_SKILL === skillFilter;
+                const matchBPO = !bpoFilter || record.BPO === bpoFilter;
+
+                return matchSearch && matchCanal && matchSkill && matchBPO;
+            });
+
+            renderizarTabla();
+            actualizarContadores();
+            setTimeout(notifyHeight, 100);
+        }
+
+        // Renderizar tabla con datos filtrados
+        function renderizarTabla() {
+            const container = document.getElementById('contenidoPrincipal');
+            
+            if (filteredData.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3>No se encontraron resultados</h3>
+                        <p>Intenta ajustar tus filtros de búsqueda</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Construir HTML de la tabla
+            let html = `
+                <div class="table-wrapper">
+                    <div class="table-scroll">
+                        <table class="data-table-enhanced">
+                            <thead>
+                                <tr>
+            `;
+
+            // Agregar encabezados de columnas visibles
+            visibleColumns.forEach(column => {
+                html += `<th class="sortable" onclick="ordenar('${column}')">${column}</th>`;
+            });
+
+            html += `
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            // Agregar filas
+            filteredData.forEach((record, index) => {
+                html += `<tr onclick="mostrarDetalle(${index})">`;
+                
+                visibleColumns.forEach(column => {
+                    const realColumn = getRealColumnName(column);
+                    let value = record[realColumn] || '-';
+                    let cellContent = value;
+
+                    // Formatear según el tipo de columna
+                    if (realColumn === 'QA SCORE') {
+                        const score = parseFloat(value) || 0;
+                        const scoreClass = getScoreClass(score);
+                        cellContent = `<span class="score-cell ${scoreClass}">${score.toFixed(1)}</span>`;
+                    } else if (realColumn.startsWith('Q') && realColumn.length <= 3 && !isNaN(realColumn.substring(1))) {
+                        // Columnas Q1-Q22
+                        const val = parseInt(value) || 0;
+                        const badgeClass = val === 3 ? 'badge-success' : val === 2 ? 'badge-warning' : 'badge-error';
+                        cellContent = `<span class="badge ${badgeClass}">${value}</span>`;
+                    } else if (realColumn === 'DATA_CANAL') {
+                        cellContent = `<span class="badge badge-info">${value}</span>`;
+                    } else if (realColumn === 'CUARTIL') {
+                        const badgeClass = getCuartilClass(value);
+                        cellContent = `<span class="badge ${badgeClass}">${value}</span>`;
+                    } else if (realColumn === 'BPO') {
+                        cellContent = `<span class="badge">${value}</span>`;
+                    }
+
+                    html += `<td>${cellContent}</td>`;
+                });
+
+                html += '</tr>';
+            });
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+            actualizarIndicadoresOrden();
+        }
+
+        // Mostrar detalle de un registro
+        function mostrarDetalle(index) {
+            const record = filteredData[index];
+            const container = document.getElementById('detalleContenido');
+
+            // Construir HTML del detalle
+            let html = '';
+
+            // Sección: Información General
+            html += `
+                <div class="detail-section">
+                    <div class="detail-section-title">📋 Información General</div>
+                    <div class="detail-grid">
+            `;
+
+            const camposGenerales = [
+                'ID_INTERACCIÓN', 'FECHA DE INTERACCIÓN', 'FECHA DE MONITOREO', 
+                'TIPO DE MONITOREO', 'DATA_CANAL', 'DATA_SKILL', 'DATA_SUB_SKILL'
+            ];
+
+            camposGenerales.forEach(campo => {
+                if (record[campo] !== undefined) {
+                    html += `
+                        <div class="detail-item">
+                            <div class="detail-label">${campo}</div>
+                            <div class="detail-value">${record[campo] || '-'}</div>
+                        </div>
+                    `;
+                }
+            });
+
+            html += `</div></div>`;
+
+            // Sección: Personal
+            html += `
+                <div class="detail-section">
+                    <div class="detail-section-title">👥 Personal</div>
+                    <div class="detail-grid">
+            `;
+
+            const camposPersonal = [
+                'ID AGENTE', 'AGENTE', 'SUPERVISOR', 'ANALISTA', 'BPO'
+            ];
+
+            camposPersonal.forEach(campo => {
+                if (record[campo] !== undefined) {
+                    html += `
+                        <div class="detail-item">
+                            <div class="detail-label">${campo}</div>
+                            <div class="detail-value">${record[campo] || '-'}</div>
+                        </div>
+                    `;
+                }
+            });
+
+            html += `</div></div>`;
+
+            // Sección: Resultados
+            html += `
+                <div class="detail-section">
+                    <div class="detail-section-title">📊 Resultados</div>
+                    <div class="detail-grid">
+            `;
+
+            const score = parseFloat(record['QA SCORE']) || 0;
+            const scoreClass = getScoreClass(score);
+
+            html += `
+                <div class="detail-item">
+                    <div class="detail-label">QA SCORE</div>
+                    <div class="detail-value score"><span class="score-cell ${scoreClass}">${score.toFixed(1)}</span></div>
+                </div>
+            `;
+
+            const camposResultados = [
+                'CUARTIL', 'MES', 'SEMANA', 'AÑO', 
+                'CUMPLE PROCESO', 'RECONTACTO', 'POLITICAS'
+            ];
+
+            camposResultados.forEach(campo => {
+                if (record[campo] !== undefined) {
+                    let value = record[campo] || '-';
+                    if (campo === 'CUARTIL' && value !== '-') {
+                        const badgeClass = getCuartilClass(value);
+                        value = `<span class="badge ${badgeClass}">${value}</span>`;
+                    }
+                    html += `
+                        <div class="detail-item">
+                            <div class="detail-label">${campo}</div>
+                            <div class="detail-value">${value}</div>
+                        </div>
+                    `;
+                }
+            });
+
+            html += `</div></div>`;
+
+            // Sección: Evaluación (Q1-Q22)
+            html += `
+                <div class="detail-section">
+                    <div class="detail-section-title">✅ Evaluación por Pregunta</div>
+                    <div class="questions-grid">
+            `;
+
+            for (let i = 1; i <= 22; i++) {
+                const qKey = `Q${i}`;
+                if (record[qKey] !== undefined) {
+                    const val = parseInt(record[qKey]) || 0;
+                    const badgeClass = val === 3 ? 'badge-success' : val === 2 ? 'badge-warning' : 'badge-error';
+                    html += `
+                        <div class="question-item">
+                            <div class="question-label">${qKey}</div>
+                            <div class="question-value">
+                                <span class="badge ${badgeClass}">${val}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            html += `</div></div>`;
+
+            // Sección: Comentarios
+            if (record.COMENTARIOS) {
+                html += `
+                    <div class="detail-section">
+                        <div class="comentarios-section">
+                            <div class="detail-label">💬 Comentarios</div>
+                            <div class="detail-value">${record.COMENTARIOS}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Insertar HTML en el modal
+            container.innerHTML = html;
+
+            // Mostrar modal
+            document.getElementById('modalDetalle').classList.add('active');
+            setTimeout(notifyHeight, 100);
+        }
+
+        // Cerrar modal de detalle
+        function cerrarModalDetalle() {
+            document.getElementById('modalDetalle').classList.remove('active');
+            setTimeout(notifyHeight, 100);
+        }
+
+        // Función para ordenar columnas
+        function ordenar(column) {
+            if (currentSort.column === column) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = column;
+                currentSort.direction = 'asc';
+            }
+
+            const realColumn = getRealColumnName(column);
+
+            filteredData.sort((a, b) => {
+                let valA = a[realColumn] || '';
+                let valB = b[realColumn] || '';
+
+                const numA = parseFloat(valA);
+                const numB = parseFloat(valB);
+                
+                if (!isNaN(numA) && !isNaN(numB)) {
+                    valA = numA;
+                    valB = numB;
+                }
+
+                if (valA < valB) return currentSort.direction === 'asc' ? -1 : 1;
+                if (valA > valB) return currentSort.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            renderizarTabla();
+            setTimeout(notifyHeight, 100);
+        }
+
+        // Actualizar indicadores visuales de ordenamiento
+        function actualizarIndicadoresOrden() {
+            document.querySelectorAll('.data-table-enhanced th').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+            });
+
+            if (currentSort.column) {
+                const headers = document.querySelectorAll('.data-table-enhanced th');
+                const index = visibleColumns.indexOf(currentSort.column);
+                
+                if (index >= 0 && headers[index]) {
+                    headers[index].classList.add(currentSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+                }
+            }
+        }
+
+        // Actualizar contadores
+        function actualizarContadores() {
+            document.getElementById('countVisible').textContent = filteredData.length;
+            document.getElementById('countTotal').textContent = allData.length;
+
+            const searchTerm = document.getElementById('searchInput').value;
+            const canalFilter = document.getElementById('filterCanal').value;
+            const skillFilter = document.getElementById('filterSkill').value;
+            const bpoFilter = document.getElementById('filterBPO').value;
+
+            const activeFilters = [];
+            if (searchTerm) activeFilters.push('Búsqueda activa');
+            if (canalFilter) activeFilters.push(`Canal: ${canalFilter}`);
+            if (skillFilter) activeFilters.push(`Skill: ${skillFilter}`);
+            if (bpoFilter) activeFilters.push(`BPO: ${bpoFilter}`);
+
+            document.getElementById('filterStatus').textContent = 
+                activeFilters.length > 0 ? `Filtros: ${activeFilters.join(', ')}` : '';
+        }
+
+        // Abrir modal de columnas
+        function abrirModalColumnas() {
+            const grid = document.getElementById('columnasGrid');
+            grid.innerHTML = '';
+
+            // Crear checkbox para cada columna
+            allColumns.forEach(column => {
+                const isChecked = visibleColumns.includes(column);
+                const div = document.createElement('div');
+                div.className = 'column-item';
+                div.innerHTML = `
+                    <input type="checkbox" id="col_${column}" ${isChecked ? 'checked' : ''} 
+                           onchange="actualizarContadorColumnas()">
+                    <label for="col_${column}">${column}</label>
+                `;
+                grid.appendChild(div);
+            });
+
+            actualizarContadorColumnas();
+            document.getElementById('modalColumnas').classList.add('active');
+            setTimeout(notifyHeight, 100);
+        }
+
+        // Cerrar modal
+        function cerrarModalColumnas() {
+            document.getElementById('modalColumnas').classList.remove('active');
+            setTimeout(notifyHeight, 100);
+        }
+
+        // Cerrar modal si se hace clic fuera
+        function cerrarModalSiFueraClick(event, modalId) {
+            if (event.target.id === modalId) {
+                if (modalId === 'modalColumnas') {
+                    cerrarModalColumnas();
+                } else if (modalId === 'modalDetalle') {
+                    cerrarModalDetalle();
+                }
+            }
+        }
+
+        // Seleccionar todas las columnas
+        function seleccionarTodasColumnas() {
+            document.querySelectorAll('#columnasGrid input[type="checkbox"]').forEach(cb => {
+                cb.checked = true;
+            });
+            actualizarContadorColumnas();
+        }
+
+        // Deseleccionar todas las columnas
+        function deseleccionarTodasColumnas() {
+            document.querySelectorAll('#columnasGrid input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+            actualizarContadorColumnas();
+        }
+
+        // Seleccionar solo columnas esenciales
+        function seleccionarColumnasEsenciales() {
+            document.querySelectorAll('#columnasGrid input[type="checkbox"]').forEach(cb => {
+                const columnName = cb.id.replace('col_', '');
+                cb.checked = columnasEsenciales.includes(columnName);
+            });
+            actualizarContadorColumnas();
+        }
+
+        // Actualizar contador de columnas seleccionadas
+        function actualizarContadorColumnas() {
+            const checked = document.querySelectorAll('#columnasGrid input[type="checkbox"]:checked').length;
+            document.getElementById('columnasSeleccionadas').textContent = 
+                `${checked} de ${allColumns.length} columnas seleccionadas`;
+        }
+
+        // Aplicar selección de columnas
+        function aplicarSeleccionColumnas() {
+            visibleColumns = [];
+            
+            // Mantener el orden original de las columnas
+            allColumns.forEach(column => {
+                const checkbox = document.getElementById(`col_${column}`);
+                if (checkbox && checkbox.checked) {
+                    visibleColumns.push(column);
+                }
+            });
+
+            if (visibleColumns.length === 0) {
+                alert('Debes seleccionar al menos una columna');
+                return;
+            }
+
+            cerrarModalColumnas();
+            renderizarTabla();
+            setTimeout(notifyHeight, 100);
+        }
+
+        // Exportar a CSV
+        function exportarCSV() {
+            if (filteredData.length === 0) {
+                alert('No hay datos para exportar');
+                return;
+            }
+
+            // Usar nombres reales de columnas para exportar
+            const realColumns = visibleColumns.map(col => getRealColumnName(col));
+            let csv = realColumns.join(',') + '\n';
+            
+            filteredData.forEach(record => {
+                const row = realColumns.map(col => {
+                    let value = record[col] || '';
+                    if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+                        value = `"${value.replace(/"/g, '""')}"`;
+                    }
+                    return value;
+                });
+                csv += row.join(',') + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `datos_calidad_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>

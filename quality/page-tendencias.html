@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tendencias y Proyecciones Temporales</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ===== PERIOD TOGGLE ===== */
+        .period-toggle-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+        .period-toggle-bar .toggle-label {
+            font-size: .85rem;
+            font-weight: 600;
+            color: #475569;
+        }
+        .toggle-group {
+            display: inline-flex;
+            background: #e2e8f0;
+            border-radius: 8px;
+            padding: 3px;
+            gap: 2px;
+        }
+        .toggle-btn {
+            padding: 7px 18px;
+            border: none;
+            border-radius: 6px;
+            font-size: .82rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: transparent;
+            color: #64748b;
+            transition: all .2s;
+        }
+        .toggle-btn.active {
+            background: #fff;
+            color: #3b82f6;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .toggle-btn:hover:not(.active) { color: #334155; }
+
+        /* ===== KPI ROW ===== */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+        .kpi-box {
+            background: #fff;
+            border-radius: 12px;
+            padding: 18px 16px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            transition: box-shadow .2s;
+        }
+        .kpi-box:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .kpi-box .label {
+            font-size: .73rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .kpi-box .value {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: #1e293b;
+            line-height: 1.2;
+        }
+        .kpi-box .sub {
+            font-size: .78rem;
+            margin-top: 3px;
+            font-weight: 600;
+        }
+        .kpi-box .sub.positive { color: #10b981; }
+        .kpi-box .sub.negative { color: #ef4444; }
+        .kpi-box .sub.neutral  { color: #64748b; }
+
+        /* ===== CHART WRAPPERS ===== */
+        .chart-wrap {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 24px;
+        }
+        .chart-wrap .chart-heading {
+            font-size: .95rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
+        }
+        .chart-wrap canvas { max-height: 380px; }
+
+        /* ===== GRIDS ===== */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        @media (max-width: 860px) {
+            .two-col { grid-template-columns: 1fr; }
+        }
+
+        /* ===== TABLES ===== */
+        .tend-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .84rem;
+        }
+        .tend-table th {
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 700;
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 2px solid #e2e8f0;
+            font-size: .76rem;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+            position: sticky;
+            top: 0;
+        }
+        .tend-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+        }
+        .tend-table tbody tr:hover { background: #f8fafc; }
+        .outlier-high { background: #ecfdf5 !important; }
+        .outlier-low  { background: #fef2f2 !important; }
+
+        .badge-sm {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: .72rem;
+            font-weight: 700;
+        }
+        .badge-green  { background: #d1fae5; color: #065f46; }
+        .badge-red    { background: #fee2e2; color: #991b1b; }
+        .badge-yellow { background: #fef3c7; color: #92400e; }
+
+        /* ===== BPO SUMMARY ===== */
+        .bpo-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .bpo-card {
+            border-radius: 8px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .bpo-card.kn { background: #eff6ff; border: 1px solid #bfdbfe; }
+        .bpo-card.at { background: #fffbeb; border: 1px solid #fde68a; }
+        .bpo-card .bpo-name { font-weight: 800; font-size: 1.1rem; }
+        .bpo-card.kn .bpo-name { color: #2563eb; }
+        .bpo-card.at .bpo-name { color: #d97706; }
+        .bpo-card .bpo-stats { font-size: .8rem; color: #475569; line-height: 1.5; }
+        .bpo-card .bpo-stats strong { color: #1e293b; }
+
+        .disclaimer {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: .82rem;
+            color: #92400e;
+            margin-top: 12px;
+        }
+
+        .table-scroll {
+            max-height: 420px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        .tend-section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary, #1e293b);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @media (max-width: 600px) {
+            .kpi-row { grid-template-columns: 1fr 1fr; }
+            .kpi-box .value { font-size: 1.3rem; }
+            .bpo-summary { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body style="background: transparent; padding: 0;">
+    <div style="padding: 0;">
+        <h2 style="margin-bottom: 24px; color: var(--text-primary, #1e293b);">📈 Tendencias y Proyecciones Temporales</h2>
+        <div id="contenidoPrincipal">
+            <div class="loading">Cargando datos...</div>
+        </div>
+    </div>
+
+    <script>
+        // ========================================================
+        // ESTADO GLOBAL
+        // ========================================================
+        let chartInstances = [];
+        let currentData = null;
+        let currentPeriod = 'semana';
+
+        function destroyCharts() {
+            chartInstances.forEach(c => c.destroy());
+            chartInstances = [];
+        }
+
+        // ========================================================
+        // COMUNICACIÓN CON PADRE
+        // ========================================================
+        function notifyHeight() {
+            window.parent.postMessage({ type: 'RESIZE', height: document.body.scrollHeight }, '*');
+        }
+
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'FILTERED_DATA') {
+                currentData = event.data.data;
+                cargarPagina(currentData);
+            }
+        });
+
+        if (window.parent.filteredData || window.parent.rawData) {
+            currentData = window.parent.filteredData || window.parent.rawData;
+            cargarPagina(currentData);
+        }
+
+        // ========================================================
+        // UTILIDADES
+        // ========================================================
+        function groupBy(records, field) {
+            return records.reduce((acc, r) => {
+                const key = r[field] || 'Sin especificar';
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(r);
+                return acc;
+            }, {});
+        }
+
+        function avg(arr) {
+            if (!arr.length) return 0;
+            return arr.reduce((a, b) => a + b, 0) / arr.length;
+        }
+
+        function stdDev(arr) {
+            const m = avg(arr);
+            return Math.sqrt(arr.reduce((s, v) => s + Math.pow(v - m, 2), 0) / arr.length);
+        }
+
+        function linearRegression(xArr, yArr) {
+            const n = xArr.length;
+            if (n < 2) return { slope: 0, intercept: yArr[0] || 0, r2: 0 };
+            const sumX = xArr.reduce((a, b) => a + b, 0);
+            const sumY = yArr.reduce((a, b) => a + b, 0);
+            const sumXY = xArr.reduce((s, x, i) => s + x * yArr[i], 0);
+            const sumX2 = xArr.reduce((s, x) => s + x * x, 0);
+            const denom = n * sumX2 - sumX * sumX;
+            if (denom === 0) return { slope: 0, intercept: sumY / n, r2: 0 };
+            const slope = (n * sumXY - sumX * sumY) / denom;
+            const intercept = (sumY - slope * sumX) / n;
+            const yMean = sumY / n;
+            const ssTot = yArr.reduce((s, y) => s + Math.pow(y - yMean, 2), 0);
+            const ssRes = yArr.reduce((s, y, i) => s + Math.pow(y - (slope * xArr[i] + intercept), 2), 0);
+            const r2 = ssTot === 0 ? 0 : 1 - ssRes / ssTot;
+            return { slope, intercept, r2 };
+        }
+
+        function sortSemanas(keys) {
+            return keys.sort((a, b) => {
+                const na = parseInt(a.replace(/\D/g, '')) || 0;
+                const nb = parseInt(b.replace(/\D/g, '')) || 0;
+                return na - nb;
+            });
+        }
+
+        function sortMeses(keys) {
+            const mMap = { 'Jan':1,'Feb':2,'Mar':3,'Apr':4,'May':5,'Jun':6,'Jul':7,'Aug':8,'Sep':9,'Oct':10,'Nov':11,'Dec':12 };
+            return keys.sort((a, b) => {
+                const [mA, yA] = a.split('-');
+                const [mB, yB] = b.split('-');
+                const ya = parseInt(yA) || 0, yb = parseInt(yB) || 0;
+                if (ya !== yb) return ya - yb;
+                return (mMap[mA] || 0) - (mMap[mB] || 0);
+            });
+        }
+
+        function pctCumple(records, field) {
+            if (!records.length) return 0;
+            return (records.filter(r => String(r[field]) === '1').length / records.length) * 100;
+        }
+
+        // ========================================================
+        // TOGGLE
+        // ========================================================
+        function setPeriod(period) {
+            currentPeriod = period;
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.period === period);
+            });
+            if (currentData) cargarPagina(currentData);
+        }
+
+        // ========================================================
+        // FUNCIÓN PRINCIPAL
+        // ========================================================
+        function cargarPagina(data) {
+            if (!data || !data.base_excel) return;
+            destroyCharts();
+
+            const records = data.base_excel;
+            const container = document.getElementById('contenidoPrincipal');
+            const isSemanal = currentPeriod === 'semana';
+
+            // ---------- AGRUPACIÓN ----------
+            const periodField = isSemanal ? 'SEMANA' : 'MES';
+            const byPeriod = groupBy(records, periodField);
+            const periodos = isSemanal
+                ? sortSemanas(Object.keys(byPeriod))
+                : sortMeses(Object.keys(byPeriod));
+            const pLabel = isSemanal ? 'Semana' : 'Mes';
+            const pLabelPlural = isSemanal ? 'Semanas' : 'Meses';
+
+            // Métricas por periodo
+            const metricsPorPeriodo = periodos.map(p => {
+                const recs = byPeriod[p];
+                const scores = recs.map(r => parseFloat(r['QA SCORE']) || 0);
+                return {
+                    periodo: p,
+                    score: avg(scores),
+                    count: recs.length,
+                    std: stdDev(scores),
+                    pctCumple: pctCumple(recs, 'CUMPLE PROCESO'),
+                    pctRecontacto: pctCumple(recs, 'RECONTACTO')
+                };
+            });
+
+            // ---------- KPIs ----------
+            const last = metricsPorPeriodo[metricsPorPeriodo.length - 1] || null;
+            const prev = metricsPorPeriodo.length > 1 ? metricsPorPeriodo[metricsPorPeriodo.length - 2] : null;
+            const cambio = (last && prev) ? last.score - prev.score : 0;
+            const cambioPct = prev && prev.score ? ((cambio / prev.score) * 100) : 0;
+
+            const xAll = metricsPorPeriodo.map((_, i) => i);
+            const yAll = metricsPorPeriodo.map(s => s.score);
+            const regAll = linearRegression(xAll, yAll);
+
+            let tendLabel = 'Estable', tendClass = 'neutral';
+            if (regAll.slope > 0.3) { tendLabel = 'Mejorando ↗'; tendClass = 'positive'; }
+            else if (regAll.slope < -0.3) { tendLabel = 'Deteriorando ↘'; tendClass = 'negative'; }
+
+            const nBase = isSemanal ? 8 : 4;
+            const lastN = metricsPorPeriodo.slice(-nBase);
+            const regLN = linearRegression(lastN.map((_, i) => i), lastN.map(s => s.score));
+
+            // ---------- HTML ----------
+            let html = '';
+
+            // TOGGLE
+            html += `<div class="period-toggle-bar">
+                <span class="toggle-label">Agrupar por:</span>
+                <div class="toggle-group">
+                    <button class="toggle-btn ${isSemanal ? 'active' : ''}" data-period="semana" onclick="setPeriod('semana')">📅 Semanal</button>
+                    <button class="toggle-btn ${!isSemanal ? 'active' : ''}" data-period="mes" onclick="setPeriod('mes')">🗓️ Mensual</button>
+                </div>
+                <span style="font-size:.78rem; color:#94a3b8; margin-left:8px;">${records.length.toLocaleString()} auditorías · ${periodos.length} ${pLabelPlural.toLowerCase()}</span>
+            </div>`;
+
+            // KPIs
+            html += `<div class="kpi-row">
+                <div class="kpi-box">
+                    <div class="label">Score Último ${pLabel}</div>
+                    <div class="value">${last ? last.score.toFixed(1) : '—'}</div>
+                    <div class="sub neutral">${last ? last.periodo : ''}</div>
+                </div>
+                <div class="kpi-box">
+                    <div class="label">Score ${pLabel} Anterior</div>
+                    <div class="value">${prev ? prev.score.toFixed(1) : '—'}</div>
+                    <div class="sub neutral">${prev ? prev.periodo : ''}</div>
+                </div>
+                <div class="kpi-box">
+                    <div class="label">Cambio</div>
+                    <div class="value" style="color:${cambio >= 0 ? '#10b981' : '#ef4444'}">${cambio >= 0 ? '↗' : '↘'} ${Math.abs(cambio).toFixed(1)}</div>
+                    <div class="sub ${cambio >= 0 ? 'positive' : 'negative'}">${cambioPct >= 0 ? '+' : ''}${cambioPct.toFixed(1)}%</div>
+                </div>
+                <div class="kpi-box">
+                    <div class="label">Tendencia General</div>
+                    <div class="value" style="font-size:1.15rem;">${tendLabel}</div>
+                    <div class="sub ${tendClass}">R² = ${regAll.r2.toFixed(2)}</div>
+                </div>
+                <div class="kpi-box">
+                    <div class="label">Velocidad de Cambio</div>
+                    <div class="value" style="color:${regAll.slope >= 0 ? '#10b981' : '#ef4444'}">${regAll.slope >= 0 ? '+' : ''}${regAll.slope.toFixed(2)}</div>
+                    <div class="sub neutral">puntos / ${pLabel.toLowerCase()}</div>
+                </div>
+            </div>`;
+
+            // CHART 1: Score + Proyección
+            html += `<div class="chart-wrap">
+                <div class="chart-heading">Evolución del QA Score por ${pLabel} (con Proyección)</div>
+                <canvas id="chartScore"></canvas>
+                <div class="disclaimer">⚠️ La proyección (línea punteada) se basa en la tendencia lineal de los últimos ${nBase} ${pLabelPlural.toLowerCase()}. Es orientativa, no predictiva.</div>
+            </div>`;
+
+            // CHART 2: Volumen
+            html += `<div class="chart-wrap">
+                <div class="chart-heading">Volumen de Auditorías por ${pLabel}</div>
+                <canvas id="chartVolumen"></canvas>
+            </div>`;
+
+            // CHART 3 & 4: Cumple Proceso + Recontacto
+            html += `<div class="two-col">
+                <div class="chart-wrap">
+                    <div class="chart-heading">📋 % Cumple Proceso por ${pLabel}</div>
+                    <canvas id="chartCumple"></canvas>
+                </div>
+                <div class="chart-wrap">
+                    <div class="chart-heading">🔄 % Recontacto Cumplido por ${pLabel}</div>
+                    <canvas id="chartRecontacto"></canvas>
+                </div>
+            </div>`;
+
+            // CHART 5: KN vs AT
+            html += `<div class="chart-wrap">
+                <div class="chart-heading">Comparativo KN vs AT — Evolución por ${pLabel}</div>
+                <canvas id="chartBPO"></canvas>
+                <div id="bpoSummary"></div>
+            </div>`;
+
+            // CHART 6: Cuartiles
+            html += `<div class="chart-wrap">
+                <div class="chart-heading">Evolución de Distribución de Cuartiles por ${pLabel}</div>
+                <canvas id="chartCuartiles"></canvas>
+            </div>`;
+
+            // TABLAS: Periodos críticos
+            html += `<div style="margin-bottom:32px">
+                <div class="tend-section-title"><span>🏆</span> ${pLabelPlural} Críticos</div>
+                <div class="two-col">
+                    <div class="chart-wrap" style="margin-bottom:0">
+                        <div class="chart-heading" style="color:#10b981">✅ Top 5 Mejores</div>
+                        <div id="tablaMejores"></div>
+                    </div>
+                    <div class="chart-wrap" style="margin-bottom:0">
+                        <div class="chart-heading" style="color:#ef4444">⚠️ Top 5 Peores</div>
+                        <div id="tablaPeores"></div>
+                    </div>
+                </div>
+            </div>`;
+
+            // TABLA: Estacionalidad
+            html += `<div class="chart-wrap">
+                <div class="chart-heading">Análisis de Estacionalidad por ${pLabel}</div>
+                <div class="table-scroll" id="tablaEstacionalidad"></div>
+            </div>`;
+
+            container.innerHTML = html;
+
+            // ========================================================
+            // GRÁFICOS
+            // ========================================================
+            const scores = metricsPorPeriodo.map(s => parseFloat(s.score.toFixed(1)));
+
+            // --- 1. Score + Proyección ---
+            const nProy = isSemanal ? 4 : 2;
+            const proyLabels = [];
+            const proyVals = [];
+            const lastNumStr = periodos[periodos.length - 1] || '';
+            const lastNum = parseInt(lastNumStr.replace(/\D/g, '')) || 0;
+            for (let i = 1; i <= nProy; i++) {
+                proyLabels.push(isSemanal ? `SEM ${lastNum + i} (P)` : `Proy +${i}`);
+                proyVals.push(parseFloat((regLN.slope * (lastN.length - 1 + i) + regLN.intercept).toFixed(1)));
+            }
+
+            const allLabels = [...periodos, ...proyLabels];
+            const pad = Array(nProy).fill(null);
+            const realPad = [...scores, ...pad];
+            const upPad = [...metricsPorPeriodo.map(s => parseFloat((s.score + s.std).toFixed(1))), ...pad];
+            const loPad = [...metricsPorPeriodo.map(s => parseFloat((s.score - s.std).toFixed(1))), ...pad];
+            const proyPad = [...Array(periodos.length - 1).fill(null), scores[scores.length - 1], ...proyVals];
+
+            chartInstances.push(new Chart(document.getElementById('chartScore'), {
+                type: 'line',
+                data: {
+                    labels: allLabels,
+                    datasets: [
+                        { label: 'Score Promedio', data: realPad, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.08)', fill: true, tension: 0.3, pointRadius: 4, pointBackgroundColor: '#3b82f6', borderWidth: 2.5 },
+                        { label: '+1σ', data: upPad, borderColor: 'rgba(59,130,246,0.18)', backgroundColor: 'rgba(59,130,246,0.04)', fill: '+1', borderDash: [4, 4], borderWidth: 1, pointRadius: 0 },
+                        { label: '-1σ', data: loPad, borderColor: 'rgba(59,130,246,0.18)', fill: false, borderDash: [4, 4], borderWidth: 1, pointRadius: 0 },
+                        { label: `Proyección (${nProy})`, data: proyPad, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.06)', fill: true, borderDash: [6, 4], borderWidth: 2, pointRadius: 3, pointStyle: 'triangle', pointBackgroundColor: '#f59e0b' },
+                        { label: 'Meta (85)', data: allLabels.map(() => 85), borderColor: 'rgba(239,68,68,0.45)', borderDash: [8, 4], borderWidth: 1.5, pointRadius: 0, fill: false }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: true,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 14, font: { size: 11 } } },
+                        tooltip: { callbacks: { label: ctx => ctx.parsed.y != null ? `${ctx.dataset.label}: ${ctx.parsed.y}` : null } }
+                    },
+                    scales: {
+                        y: { min: 50, max: 100, ticks: { stepSize: 5 }, grid: { color: '#f1f5f9' } },
+                        x: { ticks: { font: { size: 10 }, maxRotation: 45 }, grid: { display: false } }
+                    }
+                }
+            }));
+
+            // --- 2. Volumen ---
+            const metaVol = isSemanal ? 100 : 300;
+            chartInstances.push(new Chart(document.getElementById('chartVolumen'), {
+                type: 'bar',
+                data: {
+                    labels: periodos,
+                    datasets: [{ label: 'Auditorías', data: metricsPorPeriodo.map(s => s.count), backgroundColor: metricsPorPeriodo.map(s => s.count >= metaVol ? 'rgba(16,185,129,0.7)' : 'rgba(245,158,11,0.7)'), borderRadius: 6 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: true,
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { afterLabel: ctx => ctx.raw >= metaVol ? '✅ Cumple meta' : '⚠️ Bajo meta' } } },
+                    scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { ticks: { font: { size: 10 }, maxRotation: 45 }, grid: { display: false } } }
+                }
+            }));
+
+            // --- 3. % Cumple Proceso ---
+            buildPctChart('chartCumple', metricsPorPeriodo.map(s => parseFloat(s.pctCumple.toFixed(1))), periodos, '% Cumple Proceso', '#8b5cf6', 90);
+
+            // --- 4. % Recontacto ---
+            buildPctChart('chartRecontacto', metricsPorPeriodo.map(s => parseFloat(s.pctRecontacto.toFixed(1))), periodos, '% Recontacto', '#06b6d4', 95);
+
+            // --- 5. KN vs AT (MEJORADO) ---
+            renderBPOChart(records, periodos, periodField, pLabelPlural);
+
+            // --- 6. Cuartiles ---
+            const cuartilColors = { 'Q1': '#ef4444', 'Q2': '#f59e0b', 'Q3': '#3b82f6', 'Q4': '#10b981' };
+            const cuartilData = {};
+            ['Q1', 'Q2', 'Q3', 'Q4'].forEach(q => {
+                cuartilData[q] = periodos.map(p => {
+                    const items = byPeriod[p];
+                    const count = items.filter(r => r['CUARTIL'] === q).length;
+                    return items.length ? parseFloat(((count / items.length) * 100).toFixed(1)) : 0;
+                });
+            });
+
+            chartInstances.push(new Chart(document.getElementById('chartCuartiles'), {
+                type: 'bar',
+                data: {
+                    labels: periodos,
+                    datasets: ['Q4', 'Q3', 'Q2', 'Q1'].map(q => ({ label: q, data: cuartilData[q], backgroundColor: cuartilColors[q] }))
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: true,
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 14, font: { size: 11 } } }, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y}%` } } },
+                    scales: { y: { stacked: true, max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#f1f5f9' } }, x: { stacked: true, ticks: { font: { size: 10 }, maxRotation: 45 }, grid: { display: false } } }
+                }
+            }));
+
+            // ========================================================
+            // TABLAS
+            // ========================================================
+            const sorted = [...metricsPorPeriodo].sort((a, b) => b.score - a.score);
+            const top5 = sorted.slice(0, 5);
+            const bot5 = sorted.slice(-5).reverse();
+
+            function buildCritTable(items, type) {
+                const cls = type === 'best' ? 'badge-green' : 'badge-red';
+                let t = `<table class="tend-table"><thead><tr><th>${pLabel}</th><th>Score</th><th>N</th><th>%C.Proc</th><th>%Recont.</th></tr></thead><tbody>`;
+                items.forEach(it => {
+                    t += `<tr><td><span class="badge-sm ${cls}">${it.periodo}</span></td><td><strong>${it.score.toFixed(1)}</strong></td><td>${it.count}</td><td>${it.pctCumple.toFixed(0)}%</td><td>${it.pctRecontacto.toFixed(0)}%</td></tr>`;
+                });
+                return t + `</tbody></table>`;
+            }
+            document.getElementById('tablaMejores').innerHTML = buildCritTable(top5, 'best');
+            document.getElementById('tablaPeores').innerHTML = buildCritTable(bot5, 'worst');
+
+            // Estacionalidad
+            const avgG = avg(yAll);
+            const stdG = stdDev(yAll);
+            let estH = `<table class="tend-table"><thead><tr><th>${pLabel}</th><th>Score</th><th>N</th><th>%C.Proc</th><th>%Recont.</th><th>Desviación</th><th>Outlier</th></tr></thead><tbody>`;
+            metricsPorPeriodo.forEach(it => {
+                const desv = it.score - avgG;
+                const z = stdG ? Math.abs(desv) / stdG : 0;
+                const isOut = z > 2;
+                const rCls = isOut ? (desv > 0 ? 'outlier-high' : 'outlier-low') : '';
+                const outBadge = isOut ? (desv > 0 ? '<span class="badge-sm badge-green">↑ Pico +</span>' : '<span class="badge-sm badge-red">↓ Pico −</span>') : '<span style="color:#94a3b8;">Normal</span>';
+                const dCol = desv >= 0 ? '#10b981' : '#ef4444';
+                estH += `<tr class="${rCls}"><td><strong>${it.periodo}</strong></td><td>${it.score.toFixed(1)}</td><td>${it.count}</td><td>${it.pctCumple.toFixed(0)}%</td><td>${it.pctRecontacto.toFixed(0)}%</td><td style="color:${dCol};font-weight:600;">${desv >= 0 ? '+' : ''}${desv.toFixed(1)} pts</td><td>${outBadge}</td></tr>`;
+            });
+            document.getElementById('tablaEstacionalidad').innerHTML = estH + `</tbody></table>`;
+
+            setTimeout(notifyHeight, 150);
+            setTimeout(notifyHeight, 600);
+            setTimeout(notifyHeight, 1500);
+        }
+
+        // ========================================================
+        // HELPER: Gráfico de porcentaje con línea de meta
+        // ========================================================
+        function buildPctChart(canvasId, data, labels, label, color, metaVal) {
+            chartInstances.push(new Chart(document.getElementById(canvasId), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: label, data: data, borderColor: color, backgroundColor: color + '14', fill: true, tension: 0.3, pointRadius: 4, pointBackgroundColor: color, borderWidth: 2.5 },
+                        { label: `Meta (${metaVal}%)`, data: labels.map(() => metaVal), borderColor: 'rgba(239,68,68,0.4)', borderDash: [6, 4], borderWidth: 1.5, pointRadius: 0, fill: false }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: true,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 12, font: { size: 11 } } },
+                        tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y}%` } }
+                    },
+                    scales: {
+                        y: { min: 0, max: 100, ticks: { callback: v => v + '%', stepSize: 10 }, grid: { color: '#f1f5f9' } },
+                        x: { ticks: { font: { size: 10 }, maxRotation: 45 }, grid: { display: false } }
+                    }
+                }
+            }));
+        }
+
+        // ========================================================
+        // HELPER: Gráfico KN vs AT mejorado
+        // ========================================================
+        function renderBPOChart(records, periodos, periodField, pLabelPlural) {
+            const byBPO = groupBy(records, 'BPO');
+            const bpoKeys = Object.keys(byBPO).filter(k => k === 'KN' || k === 'AT');
+            const bpoColors = { 'KN': '#3b82f6', 'AT': '#f59e0b' };
+            const bpoNames = { 'KN': 'Konecta (KN)', 'AT': 'Atlantic (AT)' };
+            const bpoSeries = {};
+            const bpoStats = {};
+
+            bpoKeys.forEach(bpo => {
+                const recs = byBPO[bpo];
+                const byP = groupBy(recs, periodField);
+                const allS = recs.map(r => parseFloat(r['QA SCORE']) || 0);
+                bpoStats[bpo] = { total: recs.length, avgScore: avg(allS), periodos: Object.keys(byP).length };
+                bpoSeries[bpo] = periodos.map(p => {
+                    const items = byP[p] || [];
+                    if (!items.length) return null;
+                    return parseFloat(avg(items.map(r => parseFloat(r['QA SCORE']) || 0)).toFixed(1));
+                });
+            });
+
+            // Rango Y dinámico que incluya ambas series
+            const allVals = bpoKeys.flatMap(b => (bpoSeries[b] || []).filter(v => v !== null));
+            let yMin = allVals.length ? Math.floor(Math.min(...allVals) / 5) * 5 - 5 : 40;
+            let yMax = allVals.length ? Math.ceil(Math.max(...allVals) / 5) * 5 + 5 : 100;
+            yMin = Math.max(0, yMin);
+            yMax = Math.min(100, yMax);
+
+            const datasets = bpoKeys.map(bpo => ({
+                label: bpoNames[bpo] || bpo,
+                data: bpoSeries[bpo] || [],
+                borderColor: bpoColors[bpo],
+                backgroundColor: bpoColors[bpo] + '15',
+                fill: false,
+                tension: 0.3,
+                pointRadius: 5,
+                pointBackgroundColor: bpoColors[bpo],
+                borderWidth: 2.5,
+                spanGaps: false
+            }));
+
+            chartInstances.push(new Chart(document.getElementById('chartBPO'), {
+                type: 'line',
+                data: { labels: periodos, datasets: datasets },
+                options: {
+                    responsive: true, maintainAspectRatio: true,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16, font: { size: 12, weight: 'bold' } } },
+                        tooltip: { callbacks: { label: ctx => ctx.parsed.y != null ? `${ctx.dataset.label}: ${ctx.parsed.y}` : null } }
+                    },
+                    scales: {
+                        y: { min: yMin, max: yMax, ticks: { stepSize: 5 }, grid: { color: '#f1f5f9' } },
+                        x: { ticks: { font: { size: 10 }, maxRotation: 45 }, grid: { display: false } }
+                    }
+                }
+            }));
+
+            // Summary cards
+            let summaryHtml = '<div class="bpo-summary">';
+            bpoKeys.forEach(bpo => {
+                const s = bpoStats[bpo];
+                const cls = bpo === 'KN' ? 'kn' : 'at';
+                const name = bpo === 'KN' ? 'Konecta' : 'Atlantic';
+                summaryHtml += `<div class="bpo-card ${cls}">
+                    <div class="bpo-name">${name}</div>
+                    <div class="bpo-stats">Score Prom: <strong>${s.avgScore.toFixed(1)}</strong> · Auditorías: <strong>${s.total.toLocaleString()}</strong> · ${pLabelPlural}: <strong>${s.periodos}</strong></div>
+                </div>`;
+            });
+            summaryHtml += '</div>';
+            document.getElementById('bpoSummary').innerHTML = summaryHtml;
+        }
+    </script>
+</body>
+</html>

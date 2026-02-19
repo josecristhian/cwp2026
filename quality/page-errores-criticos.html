@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Errores Críticos y Fatales</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ── Estilos específicos de esta subpágina ── */
+        .kpi-grid-errores {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .kpi-card-err {
+            border-radius: 12px;
+            padding: 20px 18px;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 14px rgba(0,0,0,.08);
+            transition: transform .2s, box-shadow .2s;
+        }
+        .kpi-card-err:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.13); }
+        .kpi-card-err .kpi-icon { font-size: 28px; margin-bottom: 8px; }
+        .kpi-card-err .kpi-label { font-size: 12px; opacity: .85; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+        .kpi-card-err .kpi-value { font-size: 32px; font-weight: 700; line-height: 1.1; }
+        .kpi-card-err .kpi-sub { font-size: 12px; opacity: .75; margin-top: 6px; }
+
+        /* Gradientes KPI */
+        .kpi-fatal   { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
+        .kpi-warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .kpi-orange  { background: linear-gradient(135deg, #f97316 0%, #c2410c 100%); }
+        .kpi-blue    { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+
+        /* Sección con tarjeta */
+        .section-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 10px rgba(0,0,0,.06);
+        }
+        .section-card h3 {
+            margin: 0 0 18px 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Tablas */
+        .err-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 13px;
+        }
+        .err-table thead th {
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: .4px;
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            white-space: nowrap;
+        }
+        .err-table thead th:first-child { border-radius: 8px 0 0 0; }
+        .err-table thead th:last-child  { border-radius: 0 8px 0 0; }
+        .err-table tbody tr { transition: background .15s; }
+        .err-table tbody tr:nth-child(even) { background: #f8fafc; }
+        .err-table tbody tr:hover { background: #eef2ff; }
+        .err-table tbody td {
+            padding: 11px 14px;
+            color: #334155;
+            border-bottom: 1px solid #f1f5f9;
+            white-space: nowrap;
+        }
+        .err-table tbody td.num { text-align: center; font-variant-numeric: tabular-nums; }
+
+        /* Semáforo */
+        .sem { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .sem-green  { background: #d1fae5; color: #065f46; }
+        .sem-yellow { background: #fef3c7; color: #92400e; }
+        .sem-red    { background: #fee2e2; color: #991b1b; }
+
+        /* Badge BPO */
+        .bpo-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: .3px; }
+        .bpo-kn { background: #dbeafe; color: #1e40af; }
+        .bpo-at { background: #fce7f3; color: #9d174d; }
+        .bpo-equal { background: #f1f5f9; color: #64748b; }
+
+        /* Worst highlight */
+        .worst-cell { background: #fef2f2 !important; }
+
+        /* Grid dos columnas para gráficos */
+        .charts-duo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 28px;
+        }
+        @media (max-width: 900px) {
+            .charts-duo { grid-template-columns: 1fr; }
+            .kpi-grid-errores { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+        }
+
+        .chart-wrap { position: relative; width: 100%; }
+        .chart-wrap canvas { width: 100% !important; }
+
+        .no-data-msg {
+            text-align: center;
+            padding: 48px 20px;
+            color: #94a3b8;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body style="background: transparent; padding: 0;">
+    <div style="padding: 0;">
+        <h2 style="margin-bottom: 24px; color: var(--text-primary, #1e293b);">
+            🚨 Errores Críticos y Fatales
+        </h2>
+
+        <div id="contenidoPrincipal">
+            <div class="loading">Cargando datos...</div>
+        </div>
+    </div>
+
+    <script>
+    /* ================================================================
+       COMUNICACIÓN CON EL PADRE (PATRÓN OBLIGATORIO)
+       ================================================================ */
+    function notifyHeight() {
+        const height = document.body.scrollHeight;
+        window.parent.postMessage({ type: 'RESIZE', height: height }, '*');
+    }
+
+    /* ================================================================
+       CONSTANTES Y UTILIDADES
+       ================================================================ */
+    // Referencias a instancias de Chart.js para destruirlas en re-renders
+    var chartInstances = [];
+    function destroyCharts() {
+        chartInstances.forEach(c => c.destroy());
+        chartInstances = [];
+    }
+
+    const ERRORES_CONFIG = [
+        { key: 'Q4',  label: 'Dirección de Conversación', max: 19, tipo: 'critico' },
+        { key: 'Q11', label: 'Solución',                  max: 30, tipo: 'critico' },
+        { key: 'Q20', label: 'Tipificación',              max: 20, tipo: 'critico' },
+        { key: 'Q12', label: 'Recontacto',                max: 1,  tipo: 'fatal'   },
+        { key: 'Q15', label: 'Políticas',                 max: 1,  tipo: 'fatal'   }
+    ];
+
+    function val(record, field) {
+        return parseFloat(record[field]) || 0;
+    }
+
+    function pct(num, den) {
+        return den === 0 ? 0 : (num / den * 100);
+    }
+
+    function fmtPct(v) {
+        return v.toFixed(1) + '%';
+    }
+
+    function semaforo(porcentaje) {
+        if (porcentaje < 5)  return '<span class="sem sem-green">'  + fmtPct(porcentaje) + '</span>';
+        if (porcentaje <= 10) return '<span class="sem sem-yellow">' + fmtPct(porcentaje) + '</span>';
+        return '<span class="sem sem-red">' + fmtPct(porcentaje) + '</span>';
+    }
+
+    function bpoBadge(bpo) {
+        if (bpo === 'KN') return '<span class="bpo-badge bpo-kn">KN</span>';
+        if (bpo === 'AT') return '<span class="bpo-badge bpo-at">AT</span>';
+        return '<span class="bpo-badge bpo-equal">—</span>';
+    }
+
+    /** Detecta si un registro tiene error en un criterio dado */
+    function tieneError(record, cfg) {
+        return val(record, cfg.key) < cfg.max;
+    }
+
+    /** Detecta si un registro tiene al menos un error fatal */
+    function tieneErrorFatal(record) {
+        return val(record, 'Q12') !== 1 || val(record, 'Q15') !== 1;
+    }
+
+    /* ================================================================
+       FUNCIÓN PRINCIPAL
+       ================================================================ */
+    function cargarPagina(data) {
+        if (!data || !data.base_excel) return;
+
+        destroyCharts();
+
+        const records = data.base_excel;
+        const total = records.length;
+
+        if (total === 0) {
+            document.getElementById('contenidoPrincipal').innerHTML =
+                '<div class="no-data-msg">No hay datos disponibles con los filtros seleccionados.</div>';
+            setTimeout(notifyHeight, 100);
+            return;
+        }
+
+        /* ── Pre-cálculos globales ── */
+        const conFatal = records.filter(tieneErrorFatal);
+        const totalFatal = conFatal.length;
+        const pctFatal = pct(totalFatal, total);
+
+        const errQ4  = records.filter(r => tieneError(r, ERRORES_CONFIG[0])).length;
+        const errQ11 = records.filter(r => tieneError(r, ERRORES_CONFIG[1])).length;
+        const errQ20 = records.filter(r => tieneError(r, ERRORES_CONFIG[2])).length;
+
+        /* ── Análisis por error para tabla principal ── */
+        const analisisErrores = ERRORES_CONFIG.map(cfg => {
+            const casosError = records.filter(r => tieneError(r, cfg));
+            const totalCasos = casosError.length;
+            const incidencia = pct(totalCasos, total);
+            const ptosPerdidos = casosError.reduce((sum, r) => sum + (cfg.max - val(r, cfg.key)), 0);
+
+            // BPO más afectado
+            const porBPO = {};
+            casosError.forEach(r => {
+                const b = r.BPO || 'N/A';
+                porBPO[b] = (porBPO[b] || 0) + 1;
+            });
+            let peorBPO = '—';
+            let peorBPOCount = 0;
+            Object.entries(porBPO).forEach(([b, c]) => {
+                if (c > peorBPOCount) { peorBPO = b; peorBPOCount = c; }
+            });
+
+            return { ...cfg, totalCasos, incidencia, ptosPerdidos, peorBPO };
+        }).sort((a, b) => b.incidencia - a.incidencia);
+
+        /* ── Top 10 agentes con más errores fatales ── */
+        const fatalesPorAgente = {};
+        records.forEach(r => {
+            const nombre = r.AGENTE || 'Sin nombre';
+            if (!fatalesPorAgente[nombre]) fatalesPorAgente[nombre] = 0;
+            if (tieneErrorFatal(r)) fatalesPorAgente[nombre]++;
+        });
+        const top10Agentes = Object.entries(fatalesPorAgente)
+            .filter(([, c]) => c > 0)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10);
+
+        /* ── Evolución semanal de errores fatales ── */
+        const porSemana = {};
+        records.forEach(r => {
+            const sem = r.SEMANA || 'N/A';
+            if (!porSemana[sem]) porSemana[sem] = { total: 0, q12: 0, q15: 0 };
+            porSemana[sem].total++;
+            if (val(r, 'Q12') !== 1) porSemana[sem].q12++;
+            if (val(r, 'Q15') !== 1) porSemana[sem].q15++;
+        });
+        // Ordenar semanas numéricamente
+        const semanasOrdenadas = Object.keys(porSemana).sort((a, b) => {
+            const na = parseInt(a.replace(/\D/g, '')) || 0;
+            const nb = parseInt(b.replace(/\D/g, '')) || 0;
+            return na - nb;
+        });
+
+        /* ── Pareto ── */
+        const paretoData = analisisErrores
+            .slice()
+            .sort((a, b) => b.totalCasos - a.totalCasos);
+        const totalErroresPareto = paretoData.reduce((s, e) => s + e.totalCasos, 0);
+
+        /* ── Comparativo BPO ── */
+        const recKN = records.filter(r => r.BPO === 'KN');
+        const recAT = records.filter(r => r.BPO === 'AT');
+
+        const comparativoBPO = ERRORES_CONFIG.map(cfg => {
+            const knErr = recKN.filter(r => tieneError(r, cfg)).length;
+            const atErr = recAT.filter(r => tieneError(r, cfg)).length;
+            const knPct = pct(knErr, recKN.length);
+            const atPct = pct(atErr, recAT.length);
+            let peor = 'equal';
+            if (knPct > atPct) peor = 'KN';
+            else if (atPct > knPct) peor = 'AT';
+            return { ...cfg, knErr, knPct, atErr, atPct, peor };
+        });
+
+        /* ================================================================
+           RENDER
+           ================================================================ */
+        let html = '';
+
+        /* ── 1. KPIs ── */
+        html += `
+        <div class="kpi-grid-errores">
+            <div class="kpi-card-err kpi-fatal">
+                <div class="kpi-icon">⛔</div>
+                <div class="kpi-label">Auditorías con Error Fatal</div>
+                <div class="kpi-value">${totalFatal}</div>
+                <div class="kpi-sub">${fmtPct(pctFatal)} del total (${total})</div>
+            </div>
+            <div class="kpi-card-err kpi-fatal">
+                <div class="kpi-icon">📊</div>
+                <div class="kpi-label">% Auditorías con Error Fatal</div>
+                <div class="kpi-value">${fmtPct(pctFatal)}</div>
+                <div class="kpi-sub">Q12 ≠ 1 ó Q15 ≠ 1</div>
+            </div>
+            <div class="kpi-card-err kpi-warning">
+                <div class="kpi-icon">🗣️</div>
+                <div class="kpi-label">Errores en Dirección (Q4)</div>
+                <div class="kpi-value">${errQ4}</div>
+                <div class="kpi-sub">${fmtPct(pct(errQ4, total))} — Max 19 pts</div>
+            </div>
+            <div class="kpi-card-err kpi-orange">
+                <div class="kpi-icon">🔧</div>
+                <div class="kpi-label">Errores en Solución (Q11)</div>
+                <div class="kpi-value">${errQ11}</div>
+                <div class="kpi-sub">${fmtPct(pct(errQ11, total))} — Max 30 pts</div>
+            </div>
+            <div class="kpi-card-err kpi-blue">
+                <div class="kpi-icon">🏷️</div>
+                <div class="kpi-label">Errores en Tipificación (Q20)</div>
+                <div class="kpi-value">${errQ20}</div>
+                <div class="kpi-sub">${fmtPct(pct(errQ20, total))} — Max 20 pts</div>
+            </div>
+        </div>`;
+
+        /* ── 2. Tabla Análisis de Errores Críticos ── */
+        html += `
+        <div class="section-card">
+            <h3>📋 Análisis de Errores Críticos</h3>
+            <div style="overflow-x:auto;">
+            <table class="err-table">
+                <thead>
+                    <tr>
+                        <th>Criterio</th>
+                        <th>Descripción</th>
+                        <th>Puntos Max</th>
+                        <th>Casos con Error</th>
+                        <th>% Incidencia</th>
+                        <th>Puntos Perdidos</th>
+                        <th>BPO más Afectado</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+        analisisErrores.forEach(e => {
+            const tipoTag = e.tipo === 'fatal'
+                ? '<span class="sem sem-red" style="font-size:10px;">FATAL</span>'
+                : '<span class="sem sem-yellow" style="font-size:10px;">CRÍTICO</span>';
+            html += `
+                    <tr>
+                        <td><strong>${e.key}</strong> ${tipoTag}</td>
+                        <td>${e.label}</td>
+                        <td class="num">${e.max === 1 ? 'Fatal (1)' : e.max}</td>
+                        <td class="num">${e.totalCasos}</td>
+                        <td class="num">${semaforo(e.incidencia)}</td>
+                        <td class="num">${e.ptosPerdidos.toLocaleString()}</td>
+                        <td class="num">${bpoBadge(e.peorBPO)}</td>
+                    </tr>`;
+        });
+
+        html += `
+                </tbody>
+            </table>
+            </div>
+        </div>`;
+
+        /* ── 3 & 4. Gráficos Top Agentes + Evolución Semanal ── */
+        html += `
+        <div class="charts-duo">
+            <div class="section-card">
+                <h3>👤 Top 10 Agentes con Más Errores Fatales</h3>
+                <div class="chart-wrap"><canvas id="chartTopAgentes"></canvas></div>
+            </div>
+            <div class="section-card">
+                <h3>📈 Evolución Semanal de Errores Fatales</h3>
+                <div class="chart-wrap"><canvas id="chartEvolucion"></canvas></div>
+            </div>
+        </div>`;
+
+        /* ── 5. Pareto ── */
+        html += `
+        <div class="section-card">
+            <h3>📊 Análisis de Pareto — 80/20 de Errores</h3>
+            <div class="chart-wrap" style="max-width:700px;margin:0 auto;"><canvas id="chartPareto"></canvas></div>
+        </div>`;
+
+        /* ── 6. Comparativo BPO ── */
+        html += `
+        <div class="section-card">
+            <h3>🏢 Comparativo por BPO</h3>
+            <div style="overflow-x:auto;">
+            <table class="err-table">
+                <thead>
+                    <tr>
+                        <th>Error</th>
+                        <th>KN (casos)</th>
+                        <th>KN (%)</th>
+                        <th>AT (casos)</th>
+                        <th>AT (%)</th>
+                        <th>Peor</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+        comparativoBPO.forEach(e => {
+            const knClass = e.peor === 'KN' ? ' class="worst-cell"' : '';
+            const atClass = e.peor === 'AT' ? ' class="worst-cell"' : '';
+            html += `
+                    <tr>
+                        <td><strong>${e.key}</strong> — ${e.label}</td>
+                        <td${knClass} class="num">${e.knErr}</td>
+                        <td${knClass} class="num">${semaforo(e.knPct)}</td>
+                        <td${atClass} class="num">${e.atErr}</td>
+                        <td${atClass} class="num">${semaforo(e.atPct)}</td>
+                        <td class="num">${bpoBadge(e.peor === 'equal' ? '' : e.peor)}</td>
+                    </tr>`;
+        });
+
+        html += `
+                </tbody>
+            </table>
+            </div>
+        </div>`;
+
+        document.getElementById('contenidoPrincipal').innerHTML = html;
+
+        /* ================================================================
+           CHART.JS — GRÁFICOS
+           ================================================================ */
+
+        /* ── Chart: Top 10 Agentes ── */
+        if (top10Agentes.length > 0) {
+            const ctxAgentes = document.getElementById('chartTopAgentes').getContext('2d');
+            const labels = top10Agentes.map(([n]) => n.length > 22 ? n.substring(0, 20) + '…' : n);
+            chartInstances.push(new Chart(ctxAgentes, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Errores Fatales',
+                        data: top10Agentes.map(([, c]) => c),
+                        backgroundColor: 'rgba(239,68,68,.8)',
+                        borderColor: '#ef4444',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        maxBarThickness: 38
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: (items) => top10Agentes[items[0].dataIndex][0]
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f1f5f9' } },
+                        y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+                    }
+                }
+            }));
+        }
+
+        /* ── Chart: Evolución Semanal ── */
+        if (semanasOrdenadas.length > 0) {
+            const ctxEvo = document.getElementById('chartEvolucion').getContext('2d');
+            chartInstances.push(new Chart(ctxEvo, {
+                type: 'line',
+                data: {
+                    labels: semanasOrdenadas,
+                    datasets: [
+                        {
+                            label: 'Recontacto (Q12)',
+                            data: semanasOrdenadas.map(s => pct(porSemana[s].q12, porSemana[s].total)),
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239,68,68,.12)',
+                            fill: true,
+                            tension: .35,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#ef4444'
+                        },
+                        {
+                            label: 'Políticas (Q15)',
+                            data: semanasOrdenadas.map(s => pct(porSemana[s].q15, porSemana[s].total)),
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245,158,11,.12)',
+                            fill: true,
+                            tension: .35,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#f59e0b'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16 } },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '%'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: v => v + '%' },
+                            grid: { color: '#f1f5f9' }
+                        },
+                        x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+                    }
+                }
+            }));
+        }
+
+        /* ── Chart: Pareto ── */
+        if (paretoData.length > 0 && totalErroresPareto > 0) {
+            const ctxPareto = document.getElementById('chartPareto').getContext('2d');
+            let acumulado = 0;
+            const acumulados = paretoData.map(e => {
+                acumulado += e.totalCasos;
+                return pct(acumulado, totalErroresPareto);
+            });
+
+            // Índice donde se cruza el 80 %
+            const idx80 = acumulados.findIndex(v => v >= 80);
+
+            chartInstances.push(new Chart(ctxPareto, {
+                type: 'bar',
+                data: {
+                    labels: paretoData.map(e => e.key + ' – ' + e.label),
+                    datasets: [
+                        {
+                            label: 'Frecuencia',
+                            data: paretoData.map(e => e.totalCasos),
+                            backgroundColor: paretoData.map((_, i) => i <= idx80 ? 'rgba(239,68,68,.75)' : 'rgba(148,163,184,.5)'),
+                            borderRadius: 6,
+                            yAxisID: 'y',
+                            order: 2
+                        },
+                        {
+                            label: '% Acumulado',
+                            data: acumulados,
+                            type: 'line',
+                            borderColor: '#1e293b',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            pointRadius: 5,
+                            pointBackgroundColor: acumulados.map((_, i) => i === idx80 ? '#10b981' : '#1e293b'),
+                            pointBorderColor: acumulados.map((_, i) => i === idx80 ? '#10b981' : '#1e293b'),
+                            pointBorderWidth: acumulados.map((_, i) => i === idx80 ? 3 : 1),
+                            yAxisID: 'y1',
+                            order: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16 } },
+                        tooltip: {
+                            callbacks: {
+                                afterLabel: (ctx) => {
+                                    if (ctx.datasetIndex === 1) return '';
+                                    return '% Acumulado: ' + acumulados[ctx.dataIndex].toFixed(1) + '%';
+                                }
+                            }
+                        },
+                        annotation: undefined // no plugin needed, we use point styling
+                    },
+                    scales: {
+                        y:  { beginAtZero: true, position: 'left',  ticks: { precision: 0 }, grid: { color: '#f1f5f9' }, title: { display: true, text: 'Frecuencia' } },
+                        y1: { beginAtZero: true, position: 'right', min: 0, max: 105, ticks: { callback: v => v + '%' }, grid: { drawOnChartArea: false }, title: { display: true, text: '% Acumulado' } },
+                        x:  { grid: { display: false }, ticks: { font: { size: 11 }, maxRotation: 25 } }
+                    }
+                }
+            }));
+        }
+
+        /* ── Notificar altura ── */
+        setTimeout(notifyHeight, 100);
+        setTimeout(notifyHeight, 500);
+        setTimeout(notifyHeight, 1000);
+    }
+
+    /* ================================================================
+       INICIALIZACIÓN — Escuchar mensajes y cargar datos
+       ================================================================ */
+    window.addEventListener('message', (event) => {
+        if (event.data.type === 'FILTERED_DATA') {
+            cargarPagina(event.data.data);
+        }
+    });
+
+    if (window.parent.filteredData || window.parent.rawData) {
+        cargarPagina(window.parent.filteredData || window.parent.rawData);
+    }
+    </script>
+</body>
+</html>
