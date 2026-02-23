@@ -36,7 +36,7 @@
         
         .agent-selector select:focus {
             outline: none;
-            border-color: #3b82f6;
+            border-color: #1b98e0;
         }
         
         .scorecard-container {
@@ -165,7 +165,7 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            background: linear-gradient(135deg, #1b98e0 0%, #2563eb 100%);
             color: white;
             padding: 8px 16px;
             border-radius: 6px;
@@ -183,7 +183,7 @@
         
         .percentile-fill {
             height: 100%;
-            background: linear-gradient(90deg, #10b981 0%, #3b82f6 100%);
+            background: linear-gradient(90deg, #10b981 0%, #1b98e0 100%);
             transition: width 0.5s ease;
         }
         
@@ -214,12 +214,12 @@
         }
         
         .tab-button:hover {
-            color: #3b82f6;
+            color: #1b98e0;
         }
         
         .tab-button.active {
-            color: #3b82f6;
-            border-bottom-color: #3b82f6;
+            color: #1b98e0;
+            border-bottom-color: #1b98e0;
         }
         
         .tab-content {
@@ -291,7 +291,7 @@
 </head>
 <body style="background: transparent; padding: 0;">
     <div style="padding: 0;">
-        <h2 style="margin-bottom: 24px; color: var(--text-primary);">Análisis de Agentes</h2>
+        <h2 style="margin-bottom: 32px; font-family: var(--font-display); font-size: 32px; font-weight: 700; background: linear-gradient(135deg, var(--color-navy) 0%, var(--color-electric) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -0.5px;">Análisis de Agentes</h2>
         
         <!-- Selector de Agente -->
         <div class="agent-selector">
@@ -520,7 +520,7 @@
                     
                     <div class="scorecard-metric">
                         <div class="label">Total Auditorías</div>
-                        <div class="value" style="color: #3b82f6">${totalAuditorias}</div>
+                        <div class="value" style="color: #1b98e0">${totalAuditorias}</div>
                         <div class="comparison">
                             ${Object.keys(cuartilesCount).map(c => `${c}: ${cuartilesCount[c]}`).join(' | ')}
                         </div>
@@ -590,7 +590,7 @@
                     datasets: [{
                         label: 'QA Score',
                         data: scores,
-                        borderColor: '#3b82f6',
+                        borderColor: '#1b98e0',
                         backgroundColor: 'rgba(59, 130, 246, 0.1)',
                         borderWidth: 3,
                         tension: 0.4,
@@ -627,7 +627,7 @@
             const colores = {
                 'Q1': '#ef4444',
                 'Q2': '#f59e0b',
-                'Q3': '#3b82f6',
+                'Q3': '#1b98e0',
                 'Q4': '#10b981'
             };
             
@@ -1055,7 +1055,7 @@
                         </div>
                         <div>
                             <div style="font-size: 13px; color: #64748b;">Score</div>
-                            <div style="font-size: 24px; font-weight: 700; color: #3b82f6;">
+                            <div style="font-size: 24px; font-weight: 700; color: #1b98e0;">
                                 ${ranking[posicion - 1].score.toFixed(1)}%
                             </div>
                         </div>
@@ -1154,7 +1154,7 @@
             
             const html = `
                 <div class="kpi-grid">
-                    <div class="kpi-card" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                    <div class="kpi-card" style="background: linear-gradient(135deg, #1b98e0 0%, #2563eb 100%);">
                         <div class="kpi-label">Desviación Estándar</div>
                         <div class="kpi-value">${desviacion.toFixed(2)}</div>
                         <div class="kpi-change">
@@ -1234,7 +1234,7 @@
                             type: 'line',
                             label: 'Score Promedio',
                             data: scoresPorMes,
-                            borderColor: '#3b82f6',
+                            borderColor: '#1b98e0',
                             backgroundColor: 'transparent',
                             borderWidth: 3,
                             tension: 0.4,
@@ -1405,9 +1405,9 @@
                         label: 'Score del Agente',
                         data: Object.values(scores).map(s => s.porcentaje),
                         backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                        borderColor: '#3b82f6',
+                        borderColor: '#1b98e0',
                         borderWidth: 2,
-                        pointBackgroundColor: '#3b82f6'
+                        pointBackgroundColor: '#1b98e0'
                     }]
                 },
                 options: {
@@ -1540,7 +1540,7 @@
                     datasets: [{
                         label: 'Frecuencia',
                         data: topPalabras.map(p => p[1]),
-                        backgroundColor: '#3b82f6',
+                        backgroundColor: '#1b98e0',
                         borderRadius: 6
                     }]
                 },

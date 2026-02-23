@@ -88,7 +88,7 @@ Crea un nuevo archivo siguiendo el patrón: `page-[nombre].html`
 </head>
 <body style="background: transparent; padding: 0;">
     <div style="padding: 0;">
-        <h2 style="margin-bottom: 24px; color: var(--text-primary);">Título de Mi Página</h2>
+        <h2 style="margin-bottom: 32px; font-family: var(--font-display); font-size: 32px; font-weight: 700; background: linear-gradient(135deg, var(--color-navy) 0%, var(--color-electric) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -0.5px;">Título de Mi Página</h2>
         
         <!-- Tu contenido aquí -->
         <div id="contenido">
@@ -282,7 +282,7 @@ const chart = new Chart(ctx, {
         datasets: [{
             label: 'Mi Dataset',
             data: [12, 19, 3],
-            backgroundColor: '#3b82f6',
+            backgroundColor: '#1b98e0',
             borderRadius: 6
         }]
     },
@@ -296,7 +296,7 @@ const chart = new Chart(ctx, {
 ## 🎨 Variables CSS Disponibles
 
 ```css
---primary-color: #3b82f6
+--primary-color: #1b98e0
 --primary-hover: #2563eb
 --secondary-color: #64748b
 --background: #f8fafc
@@ -331,7 +331,7 @@ Para modificar el esquema de colores, edita las variables en `styles.css`:
 
 ```css
 :root {
-    --primary-color: #3b82f6;  /* Cambia a tu color principal */
+    --primary-color: #1b98e0;  /* Cambia a tu color principal */
     --background: #f8fafc;      /* Cambia el color de fondo */
     /* ... otras variables ... */
 }

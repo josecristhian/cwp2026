@@ -53,7 +53,7 @@ Toda subpágina DEBE seguir esta estructura exacta:
 </head>
 <body style="background: transparent; padding: 0;">
     <div style="padding: 0;">
-        <h2 style="margin-bottom: 24px; color: var(--text-primary);">[Título de la Página]</h2>
+        <h2 style="margin-bottom: 32px; font-family: var(--font-display); font-size: 32px; font-weight: 700; background: linear-gradient(135deg, var(--color-navy) 0%, var(--color-electric) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -0.5px;">[Título de la Página]</h2>
         
         <!-- CONTENIDO AQUÍ -->
         <div id="contenidoPrincipal">
@@ -105,7 +105,7 @@ Toda subpágina DEBE seguir esta estructura exacta:
 ### 2. ESTILO VISUAL OBLIGATORIO
 
 **Paleta de Colores (Moderno y Minimalista):**
-- Primary: `#3b82f6` (azul)
+- Primary: `#1b98e0` (azul)
 - Success: `#10b981` (verde)
 - Warning: `#f59e0b` (naranja)
 - Error: `#ef4444` (rojo)
@@ -133,7 +133,7 @@ Toda subpágina DEBE seguir esta estructura exacta:
 **KPIs:**
 ```html
 <div class="kpi-grid">
-    <div class="kpi-card" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+    <div class="kpi-card" style="background: linear-gradient(135deg, #1b98e0 0%, #2563eb 100%);">
         <div class="kpi-label">Etiqueta</div>
         <div class="kpi-value">100</div>
         <div class="kpi-change">Descripción</div>
@@ -228,7 +228,7 @@ const chart = new Chart(ctx, {
         datasets: [{
             label: 'Mi Dataset',
             data: [12, 19, 3],
-            backgroundColor: '#3b82f6',
+            backgroundColor: '#1b98e0',
             borderRadius: 6
         }]
     },

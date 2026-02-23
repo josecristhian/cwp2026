@@ -24,7 +24,7 @@
         }
 
         .heatmap-table th {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            background: linear-gradient(135deg, #1b98e0 0%, #2563eb 100%);
             color: white;
             padding: 12px 8px;
             text-align: left;
@@ -307,7 +307,7 @@
 
         .toggle-btn.active {
             background: white;
-            color: #3b82f6;
+            color: #1b98e0;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
@@ -327,7 +327,7 @@
         }
 
         .temporal-table thead th {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            background: linear-gradient(135deg, #1b98e0 0%, #2563eb 100%);
             color: white;
             padding: 12px 8px;
             text-align: center;
@@ -409,7 +409,7 @@
 </head>
 <body style="background: transparent; padding: 0;">
     <div style="padding: 0;">
-        <h2 style="margin-bottom: 24px; color: var(--text-primary);">Mapa de Atributos</h2>
+        <h2 style="margin-bottom: 32px; font-family: var(--font-display); font-size: 32px; font-weight: 700; background: linear-gradient(135deg, var(--color-navy) 0%, var(--color-electric) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -0.5px;">Mapa de Atributos</h2>
         
         <!-- KPIs Resumen -->
         <div id="kpiContainer" class="kpi-grid"></div>
@@ -714,7 +714,7 @@
             const totalAuditorias = stats[0].totalAuditorias;
 
             container.innerHTML = `
-                <div class="kpi-card" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                <div class="kpi-card" style="background: linear-gradient(135deg, #1b98e0 0%, #2563eb 100%);">
                     <div class="kpi-label">% Cumplimiento Promedio</div>
                     <div class="kpi-value">${cumplimientoPromedio.toFixed(1)}%</div>
                     <div class="kpi-change">Todos los criterios</div>

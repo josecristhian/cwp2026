@@ -27,6 +27,13 @@ html, body {
 }
 
 
+.kpi-card {
+    background: var(--surface);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
         .page-header {
             display: flex;
             justify-content: space-between;
@@ -68,7 +75,7 @@ html, body {
         
         .global-toggle-btn.active {
             background: white;
-            color: #3b82f6;
+            color: #1b98e0;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         
@@ -142,7 +149,7 @@ html, body {
             background: #f8fafc;
             padding: 12px;
             border-radius: 6px;
-            border-left: 3px solid #3b82f6;
+            border-left: 3px solid #1b98e0;
         }
         
         .stat-label {
@@ -206,7 +213,7 @@ html, body {
                 </div>
                 
                 <div class="general-kpis">
-                    <div class="kpi-card" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                    <div class="kpi-card" style="background: linear-gradient(135deg, #1b98e0 0%, #2563eb 100%);">
                         <div class="kpi-label">QA Score Promedio</div>
                         <div class="kpi-value" id="generalScorePromedio">--</div>
                         <div class="kpi-change" id="generalScoreTrend">--</div>
@@ -355,7 +362,7 @@ html, body {
         
         // Paleta de colores para múltiples series
         const colorPalette = [
-            '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', 
+            '#1b98e0', '#8b5cf6', '#ec4899', '#f59e0b', 
             '#10b981', '#06b6d4', '#ef4444', '#6366f1',
             '#14b8a6', '#f97316', '#84cc16', '#a855f7'
         ];
@@ -517,7 +524,7 @@ html, body {
                         {
                             label: 'QA Score',
                             data: dataScores,
-                            borderColor: '#3b82f6',
+                            borderColor: '#1b98e0',
                             backgroundColor: 'rgba(59, 130, 246, 0.1)',
                             fill: true,
                             tension: 0.4,
@@ -606,7 +613,7 @@ html, body {
                     labels: labels.map((label, i) => `${label} (${percentages[i]}%)`),
                     datasets: [{
                         data: data,
-                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'],
+                        backgroundColor: ['#10b981', '#1b98e0', '#f59e0b', '#ef4444'],
                         borderWidth: 0
                     }]
                 },
@@ -646,7 +653,7 @@ html, body {
                         {
                             label: 'QA Score',
                             data: scores,
-                            borderColor: '#3b82f6',
+                            borderColor: '#1b98e0',
                             backgroundColor: 'rgba(59, 130, 246, 0.1)',
                             fill: true,
                             tension: 0.4,
@@ -966,7 +973,7 @@ html, body {
             const colors = ranking.map((r, idx) => {
                 if (idx === 0) return '#10b981'; // Mejor
                 if (idx === ranking.length - 1) return '#ef4444'; // Peor
-                return '#3b82f6'; // Resto
+                return '#1b98e0'; // Resto
             });
             
             chartsObj[chartKey] = new Chart(ctx, {

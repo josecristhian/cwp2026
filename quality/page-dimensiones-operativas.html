@@ -39,7 +39,7 @@
         }
         .dim-tab.active {
             background: #fff;
-            color: #3b82f6;
+            color: #1b98e0;
             box-shadow: 0 1px 4px rgba(0,0,0,0.08);
         }
         .dim-section {
@@ -318,7 +318,16 @@
 
         <!-- Contenido principal -->
         <div id="contenidoPrincipal">
-            <div class="loading">Cargando datos...</div>
+            <div class="loading" style="display: flex; align-items: center; justify-content: center; gap: 12px; padding: 48px; color: var(--text-secondary);">
+    <div style="width: 20px; height: 20px; border: 3px solid var(--color-pearl); border-top-color: var(--color-electric); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+    <span style="font-family: var(--font-body); font-weight: 500;">Cargando datos...</span>
+</div>
+
+<style>
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
         </div>
     </div>
 
@@ -412,7 +421,7 @@
         }
 
         /** Paleta de colores para gráficos */
-        const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1'];
+        const COLORS = ['#1b98e0', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1'];
 
         /** Ordenar semanas cronológicamente */
         function sortSemanas(a, b) {
@@ -648,7 +657,7 @@
                     <td><strong>${t}</strong></td>
                     <td class="num">${recs.length}</td>
                     <td class="num">${statusBadge(sc)}</td>
-                    <td class="num"><div class="cell-bar"><span>${pct.toFixed(1)}%</span><div class="cell-bar-track"><div class="cell-bar-fill" style="width:${pct}%;background:#3b82f6"></div></div></div></td>
+                    <td class="num"><div class="cell-bar"><span>${pct.toFixed(1)}%</span><div class="cell-bar-track"><div class="cell-bar-fill" style="width:${pct}%;background:#1b98e0"></div></div></div></td>
                 </tr>`;
             });
             html += `</tbody></table></div>`;
@@ -769,7 +778,7 @@
                             {
                                 label: 'Score Promedio',
                                 data: canales.map(c => avg(canalGroup[c], 'QA SCORE')),
-                                backgroundColor: '#3b82f6',
+                                backgroundColor: '#1b98e0',
                                 borderRadius: 6,
                                 yAxisID: 'y'
                             },
@@ -837,7 +846,7 @@
             // --- SKILL: Barras apiladas 100% ---
             const ctxSkillStacked = document.getElementById('chartSkillStacked');
             if (ctxSkillStacked) {
-                const cuartilColors = { Q1: '#10b981', Q2: '#3b82f6', Q3: '#f59e0b', Q4: '#ef4444' };
+                const cuartilColors = { Q1: '#10b981', Q2: '#1b98e0', Q3: '#f59e0b', Q4: '#ef4444' };
                 const c3 = new Chart(ctxSkillStacked, {
                     type: 'bar',
                     data: {

@@ -48,7 +48,7 @@
         }
         .filtro-grupo select:focus {
             outline: none;
-            border-color: #3b82f6;
+            border-color: #1b98e0;
             box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
         }
 
@@ -162,7 +162,7 @@
             gap: 8px;
         }
         .tabla-panel-header.top {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            background: linear-gradient(135deg, #1b98e0, #2563eb);
         }
         .tabla-panel-header.bottom {
             background: linear-gradient(135deg, #ef4444, #dc2626);
@@ -375,7 +375,7 @@
             width: 36px;
             height: 36px;
             border: 3px solid #e2e8f0;
-            border-top-color: #3b82f6;
+            border-top-color: #1b98e0;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
             margin: 0 auto 16px;
@@ -482,7 +482,7 @@
         /** Devuelve color según score */
         function colorScore(score) {
             if (score >= 90) return '#10b981';
-            if (score >= 80) return '#3b82f6';
+            if (score >= 80) return '#1b98e0';
             if (score >= 70) return '#f59e0b';
             return '#ef4444';
         }
@@ -673,7 +673,7 @@
                             Score ≥ 90
                         </div>
                         <div class="scatter-legend-item">
-                            <div class="scatter-legend-dot" style="background:#3b82f6;"></div>
+                            <div class="scatter-legend-dot" style="background:#1b98e0;"></div>
                             Score 80-89
                         </div>
                         <div class="scatter-legend-item">
@@ -771,7 +771,7 @@
         // =====================================================
         function renderKPIs(kpis) {
             document.getElementById('kpiGrid').innerHTML = `
-                <div class="kpi-card-custom" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+                <div class="kpi-card-custom" style="background: linear-gradient(135deg, #1b98e0, #1d4ed8);">
                     <div class="kpi-label-custom">Total Agentes</div>
                     <div class="kpi-value-custom">${kpis.totalAgentes}</div>
                     <div class="kpi-sub">Agentes únicos evaluados</div>
@@ -825,7 +825,7 @@
                 { label: '50-60', min: 50, max: 60, color: '#f97316' },
                 { label: '60-70', min: 60, max: 70, color: '#f59e0b' },
                 { label: '70-80', min: 70, max: 80, color: '#eab308' },
-                { label: '80-90', min: 80, max: 90, color: '#3b82f6' },
+                { label: '80-90', min: 80, max: 90, color: '#1b98e0' },
                 { label: '90-100', min: 90, max: 101, color: '#10b981' }
             ];
 

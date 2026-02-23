@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Calidad</title>
+    <title>Insights de Calidad</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%231b98e0'/><path d='M30 50 L45 65 L70 35' stroke='white' stroke-width='8' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -31,13 +32,45 @@
                 </div>
             </div>
             
-            <button class="filter-toggle" id="filterToggle">
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <button class="btn-home" id="btnHome" title="Volver al inicio y limpiar filtros">
+                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 10L10 3L17 10M4 9V17H7V13H13V17H16V9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Inicio
+                </button>
+                
+                <button class="btn-share" id="btnShare" title="Copiar enlace con filtros actuales">
+                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                        <circle cx="5" cy="10" r="2" stroke="currentColor" stroke-width="1.5"/>
+                        <circle cx="15" cy="6" r="2" stroke="currentColor" stroke-width="1.5"/>
+                        <circle cx="15" cy="14" r="2" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M7 9L13 7M7 11L13 13" stroke="currentColor" stroke-width="1.5"/>
+                    </svg>
+                    Compartir
+                </button>
+                
+                <button class="filter-toggle" id="filterToggle">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                     <path d="M2.5 5.83333H17.5M5 10H15M7.5 14.1667H12.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
                 Filtros
+                <span class="filter-badge" id="filterBadge" style="display: none;">0</span>
             </button>
+            </div>
         </header>
+
+        <!-- Contador de registros filtrados -->
+        <div id="filterCounter" style="display: none; background: var(--surface); border-radius: var(--radius-lg); padding: 12px 20px; margin-bottom: 16px; box-shadow: var(--shadow-sm); border: 2px solid var(--color-electric);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink: 0;">
+                    <path d="M3 4H17M6 10H14M9 16H11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">
+                    Mostrando <span id="filteredCount" style="color: var(--color-electric); font-size: 16px;">0</span> de <span id="totalCount" style="font-size: 16px;">0</span> registros
+                </span>
+            </div>
+        </div>
 
         <!-- Filtros Colapsables -->
         <div class="filters-container" id="filtersContainer" style="display: none;">
@@ -122,6 +155,14 @@
                         <option value="">Todos</option>
                     </select>
                 </div>
+                
+                <div class="filter-group" style="grid-column: 1 / -1;">
+                    <label for="filterComentarios">Búsqueda en Comentarios</label>
+                    <input type="text" id="filterComentarios" placeholder='Ejemplo: "error AND sistema" o "tipificación OR tiempo"'>
+                    <small style="display: block; margin-top: 4px; color: var(--text-tertiary); font-size: 12px;">
+                        Usa AND para palabras que deben estar juntas, OR para cualquiera de las palabras
+                    </small>
+                </div>
             </div>
             
             <div class="filter-actions">
@@ -131,30 +172,34 @@
         </div>
 
         <!-- Navigation Menu (cargado desde menu.html) -->
-        <div id="menuContainer"></div>
+        <div id="menuContainer">
+            <div class="menu-loading" style="text-align: center; padding: 16px; color: var(--text-secondary); font-size: 14px;">
+                <span style="display: inline-block; animation: pulse 1.5s ease-in-out infinite;">⏳ Cargando menú...</span>
+            </div>
+        </div>
 
         <!-- Content Area -->
         <main class="content" id="contentArea" style="min-height: auto; height: auto;">
             <!-- Página de Bienvenida -->
             <div class="welcome-page">
                 <div class="welcome-card">
-                    <h2>Bienvenido al Sistema de Monitoreo de Calidad</h2>
-                    <p class="welcome-subtitle">Panel de análisis y seguimiento de interacciones</p>
+                    <h2>Plataforma de Insights de Calidad</h2>
+                    <p class="welcome-subtitle">Transforma datos en decisiones estratégicas con análisis en tiempo real</p>
                     
                     <div class="welcome-stats">
                         <div class="stat-card">
-                            <div class="stat-icon">📊</div>
+                            <div class="stat-icon">📞</div>
                             <div class="stat-content">
                                 <div class="stat-value" id="totalInteracciones">-</div>
-                                <div class="stat-label">Total Interacciones</div>
+                                <div class="stat-label">Interacciones</div>
                             </div>
                         </div>
                         
                         <div class="stat-card">
-                            <div class="stat-icon">👥</div>
+                            <div class="stat-icon">🎧</div>
                             <div class="stat-content">
                                 <div class="stat-value" id="totalAgentes">-</div>
-                                <div class="stat-label">Agentes Monitoreados</div>
+                                <div class="stat-label">Agentes</div>
                             </div>
                         </div>
                         
@@ -168,19 +213,21 @@
                     </div>
                     
                     <div class="welcome-info">
-                        <h3>Funcionalidades Disponibles</h3>
-                        <ul>
-                            <li><strong>Dashboard:</strong> Visualización de métricas clave y tendencias generales</li>
-                            <li><strong>Agentes:</strong> Análisis detallado del desempeño por agente</li>
-                            <li><strong>Tendencias:</strong> Evolución temporal de indicadores de calidad</li>
-                        </ul>
-                        
-                        <p class="welcome-tip">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="vertical-align: middle; margin-right: 8px;">
-                                <path d="M8 1.33334V14.6667M8 1.33334C4.31812 1.33334 1.33334 4.31811 1.33334 8M8 1.33334C11.6819 1.33334 14.6667 4.31811 14.6667 8M8 14.6667C11.6819 14.6667 14.6667 11.682 14.6667 8M8 14.6667C4.31812 14.6667 1.33334 11.682 1.33334 8M14.6667 8H1.33334" stroke="#3b82f6" stroke-width="1.5"/>
-                            </svg>
-                            <strong>Consejo:</strong> Utiliza los filtros para segmentar la información y obtener análisis más específicos
+                        <h3>Insights Accionables en Tiempo Real</h3>
+                        <p style="font-size: 16px; line-height: 1.8; color: var(--text-secondary); margin-bottom: var(--space-xl);">
+                            Nuestra plataforma de análisis de calidad te permite identificar patrones, detectar oportunidades de mejora y tomar decisiones basadas en datos concretos. Diseñada específicamente para operaciones de contact center, integra métricas de rendimiento, tendencias temporales y análisis predictivo en un solo lugar.
                         </p>
+                        
+                        <div class="welcome-tip">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink: 0;">
+                                <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2"/>
+                                <path d="M10 6v4M10 14h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            <div>
+                                <strong style="color: var(--text-primary); display: block; margin-bottom: 4px;">Comienza a Explorar</strong>
+                                <span>Usa los filtros para segmentar datos y navega entre las diferentes vistas para obtener insights específicos sobre tu operación.</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -189,6 +236,245 @@
 
     <script src="app.js"></script>
     <script>
+        // ==================== FUNCIONES DE URL PARAMETERS ====================
+        
+        // Obtener parámetros de la URL
+        function getURLParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                page: params.get('page') || 'bienvenida',
+                interaccion: params.get('interaccion') || '',
+                fechaIntDesde: params.get('fechaIntDesde') || '',
+                fechaIntHasta: params.get('fechaIntHasta') || '',
+                tipoMonitoreo: params.get('tipoMonitoreo') || '',
+                canal: params.get('canal') || '',
+                skill: params.get('skill') || '',
+                subSkill: params.get('subSkill') || '',
+                bpo: params.get('bpo') || '',
+                fechaMonDesde: params.get('fechaMonDesde') || '',
+                fechaMonHasta: params.get('fechaMonHasta') || '',
+                agente: params.get('agente') || '',
+                supervisor: params.get('supervisor') || '',
+                analista: params.get('analista') || '',
+                comentarios: params.get('comentarios') || ''
+            };
+        }
+        
+        // Aplicar parámetros de URL a los filtros
+        function applyURLParamsToFilters(params) {
+            if (params.interaccion) document.getElementById('filterInteraccion').value = params.interaccion;
+            if (params.fechaIntDesde) document.getElementById('filterFechaInteraccionDesde').value = params.fechaIntDesde;
+            if (params.fechaIntHasta) document.getElementById('filterFechaInteraccionHasta').value = params.fechaIntHasta;
+            if (params.tipoMonitoreo) document.getElementById('filterTipoMonitoreo').value = params.tipoMonitoreo;
+            if (params.canal) document.getElementById('filterCanal').value = params.canal;
+            if (params.skill) document.getElementById('filterSkill').value = params.skill;
+            if (params.subSkill) document.getElementById('filterSubSkill').value = params.subSkill;
+            if (params.bpo) document.getElementById('filterBPO').value = params.bpo;
+            if (params.fechaMonDesde) document.getElementById('filterFechaMonitoreoDesde').value = params.fechaMonDesde;
+            if (params.fechaMonHasta) document.getElementById('filterFechaMonitoreoHasta').value = params.fechaMonHasta;
+            if (params.agente) document.getElementById('filterAgente').value = params.agente;
+            if (params.supervisor) document.getElementById('filterSupervisor').value = params.supervisor;
+            if (params.analista) document.getElementById('filterAnalista').value = params.analista;
+            if (params.comentarios) document.getElementById('filterComentarios').value = params.comentarios;
+        }
+        
+        // Generar URL con parámetros actuales
+        function generateShareURL() {
+            const baseURL = window.location.origin + window.location.pathname;
+            const params = new URLSearchParams();
+            
+            // Página activa
+            const activePage = getActiveMenuPage();
+            if (activePage !== 'bienvenida') {
+                params.set('page', activePage);
+            }
+            
+            // Filtros activos
+            const interaccion = document.getElementById('filterInteraccion')?.value.trim();
+            if (interaccion) params.set('interaccion', interaccion);
+            
+            const fechaIntDesde = document.getElementById('filterFechaInteraccionDesde')?.value;
+            if (fechaIntDesde) params.set('fechaIntDesde', fechaIntDesde);
+            
+            const fechaIntHasta = document.getElementById('filterFechaInteraccionHasta')?.value;
+            if (fechaIntHasta) params.set('fechaIntHasta', fechaIntHasta);
+            
+            const tipoMonitoreo = document.getElementById('filterTipoMonitoreo')?.value;
+            if (tipoMonitoreo) params.set('tipoMonitoreo', tipoMonitoreo);
+            
+            const canal = document.getElementById('filterCanal')?.value;
+            if (canal) params.set('canal', canal);
+            
+            const skill = document.getElementById('filterSkill')?.value;
+            if (skill) params.set('skill', skill);
+            
+            const subSkill = document.getElementById('filterSubSkill')?.value;
+            if (subSkill) params.set('subSkill', subSkill);
+            
+            const bpo = document.getElementById('filterBPO')?.value;
+            if (bpo) params.set('bpo', bpo);
+            
+            const fechaMonDesde = document.getElementById('filterFechaMonitoreoDesde')?.value;
+            if (fechaMonDesde) params.set('fechaMonDesde', fechaMonDesde);
+            
+            const fechaMonHasta = document.getElementById('filterFechaMonitoreoHasta')?.value;
+            if (fechaMonHasta) params.set('fechaMonHasta', fechaMonHasta);
+            
+            const agente = document.getElementById('filterAgente')?.value;
+            if (agente) params.set('agente', agente);
+            
+            const supervisor = document.getElementById('filterSupervisor')?.value;
+            if (supervisor) params.set('supervisor', supervisor);
+            
+            const analista = document.getElementById('filterAnalista')?.value;
+            if (analista) params.set('analista', analista);
+            
+            const comentarios = document.getElementById('filterComentarios')?.value.trim();
+            if (comentarios) params.set('comentarios', comentarios);
+            
+            const queryString = params.toString();
+            return queryString ? `${baseURL}?${queryString}` : baseURL;
+        }
+        
+        // Actualizar URL con los filtros activos
+        function updateURLWithFilters() {
+            const url = new URL(window.location);
+            
+            // NO eliminar 'page' - solo limpiar filtros
+            // Limpiar solo parámetros de filtros
+            url.searchParams.delete('interaccion');
+            url.searchParams.delete('fechaIntDesde');
+            url.searchParams.delete('fechaIntHasta');
+            url.searchParams.delete('tipoMonitoreo');
+            url.searchParams.delete('canal');
+            url.searchParams.delete('skill');
+            url.searchParams.delete('subSkill');
+            url.searchParams.delete('bpo');
+            url.searchParams.delete('fechaMonDesde');
+            url.searchParams.delete('fechaMonHasta');
+            url.searchParams.delete('agente');
+            url.searchParams.delete('supervisor');
+            url.searchParams.delete('analista');
+            url.searchParams.delete('comentarios');
+            
+            // Agregar filtros activos
+            const interaccion = document.getElementById('filterInteraccion')?.value.trim();
+            if (interaccion) url.searchParams.set('interaccion', interaccion);
+            
+            const fechaIntDesde = document.getElementById('filterFechaInteraccionDesde')?.value;
+            if (fechaIntDesde) url.searchParams.set('fechaIntDesde', fechaIntDesde);
+            
+            const fechaIntHasta = document.getElementById('filterFechaInteraccionHasta')?.value;
+            if (fechaIntHasta) url.searchParams.set('fechaIntHasta', fechaIntHasta);
+            
+            const tipoMonitoreo = document.getElementById('filterTipoMonitoreo')?.value;
+            if (tipoMonitoreo) url.searchParams.set('tipoMonitoreo', tipoMonitoreo);
+            
+            const canal = document.getElementById('filterCanal')?.value;
+            if (canal) url.searchParams.set('canal', canal);
+            
+            const skill = document.getElementById('filterSkill')?.value;
+            if (skill) url.searchParams.set('skill', skill);
+            
+            const subSkill = document.getElementById('filterSubSkill')?.value;
+            if (subSkill) url.searchParams.set('subSkill', subSkill);
+            
+            const bpo = document.getElementById('filterBPO')?.value;
+            if (bpo) url.searchParams.set('bpo', bpo);
+            
+            const fechaMonDesde = document.getElementById('filterFechaMonitoreoDesde')?.value;
+            if (fechaMonDesde) url.searchParams.set('fechaMonDesde', fechaMonDesde);
+            
+            const fechaMonHasta = document.getElementById('filterFechaMonitoreoHasta')?.value;
+            if (fechaMonHasta) url.searchParams.set('fechaMonHasta', fechaMonHasta);
+            
+            const agente = document.getElementById('filterAgente')?.value;
+            if (agente) url.searchParams.set('agente', agente);
+            
+            const supervisor = document.getElementById('filterSupervisor')?.value;
+            if (supervisor) url.searchParams.set('supervisor', supervisor);
+            
+            const analista = document.getElementById('filterAnalista')?.value;
+            if (analista) url.searchParams.set('analista', analista);
+            
+            const comentarios = document.getElementById('filterComentarios')?.value.trim();
+            if (comentarios) url.searchParams.set('comentarios', comentarios);
+            
+            // Actualizar URL sin agregar al historial (usar replaceState)
+            window.history.replaceState({}, '', url);
+        }
+        
+        // Ir al inicio (limpiar filtros y volver a bienvenida)
+        function goHome() {
+            // Limpiar URL manteniendo el dominio base
+            const url = new URL(window.location);
+            url.search = ''; // Elimina todos los parámetros
+            window.history.pushState({}, '', url);
+            
+            // Limpiar filtros
+            clearFilters();
+            
+            // Navegar a bienvenida
+            const bienvenidaItem = document.querySelector('.menu-item[data-page="bienvenida"]');
+            if (bienvenidaItem) {
+                setActiveMenuItem(bienvenidaItem);
+                
+                // Navegar sin llamar a navigateToPage (para evitar doble pushState)
+                const contentArea = document.getElementById('contentArea');
+                contentArea.innerHTML = '<div class="welcome-page">' + welcomePageHTML + '</div>';
+                updateWelcomeStats();
+            }
+            
+            // Cerrar panel de filtros
+            document.getElementById('filtersContainer').style.display = 'none';
+        }
+        
+        // Copiar URL para compartir
+        async function shareCurrentView() {
+            const url = generateShareURL();
+            const btn = document.getElementById('btnShare');
+            
+            try {
+                // Intentar usar la API moderna de clipboard
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(url);
+                } else {
+                    // Fallback: crear input temporal
+                    const tempInput = document.createElement('input');
+                    tempInput.style.position = 'fixed';
+                    tempInput.style.opacity = '0';
+                    tempInput.value = url;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    tempInput.setSelectionRange(0, 99999); // Para móviles
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                }
+                
+                // Cambiar texto del botón temporalmente
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                        <path d="M6 10L9 13L14 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    ¡Copiado!
+                `;
+                btn.classList.add('copied');
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('copied');
+                }, 2000);
+                
+            } catch (err) {
+                console.error('Error al copiar:', err);
+                // Si todo falla, mostrar prompt con la URL
+                prompt('Copia esta URL:', url);
+            }
+        }
+        
+        // ==================== FIN FUNCIONES URL PARAMETERS ====================
+        
         // Guardar el HTML original de la página de bienvenida
         let welcomePageHTML = '';
         
@@ -199,10 +485,13 @@
                 const html = await response.text();
                 document.getElementById('menuContainer').innerHTML = html;
                 
-                // Inicializar el menú después de cargarlo
-                initializeMenu();
+                // Inicializar el menú inmediatamente después de cargarlo
+                requestAnimationFrame(() => {
+                    initializeMenu();
+                });
             } catch (error) {
                 console.error('Error al cargar el menú:', error);
+                document.getElementById('menuContainer').innerHTML = '<div style="color: red; padding: 16px;">Error al cargar el menú</div>';
             }
         }
         
@@ -220,10 +509,67 @@
             // Mostrar rango de fechas del dataset
             updateDataRangeInfo();
             
+            // Inicializar filtros
+            initializeFilters();
+            
+            // Guardar el contenido de bienvenida ANTES de cualquier navegación
+            const welcomePageElement = document.querySelector('.welcome-page');
+            if (welcomePageElement) {
+                welcomePageHTML = welcomePageElement.innerHTML;
+            }
+            
+            // === LEER Y APLICAR PARÁMETROS DE URL ===
+            const urlParams = getURLParams();
+            let hasFilters = false;
+            
+            // Verificar si hay filtros en la URL
+            if (urlParams.interaccion || urlParams.fechaIntDesde || urlParams.fechaIntHasta ||
+                urlParams.tipoMonitoreo || urlParams.canal || urlParams.skill || urlParams.subSkill ||
+                urlParams.bpo || urlParams.fechaMonDesde || urlParams.fechaMonHasta ||
+                urlParams.agente || urlParams.supervisor || urlParams.analista || urlParams.comentarios) {
+                hasFilters = true;
+            }
+            
+            // Aplicar filtros de URL si existen
+            if (hasFilters) {
+                applyURLParamsToFilters(urlParams);
+                applyFilters(); // Aplicar filtros automáticamente
+            }
+            
+            // Navegar a la página especificada en URL
+            if (urlParams.page && urlParams.page !== 'bienvenida') {
+                // Buscar el item del menú
+                let menuItem = document.querySelector(`.menu-item[data-page="${urlParams.page}"]`);
+                if (!menuItem) {
+                    // Podría ser un submenú
+                    menuItem = document.querySelector(`.submenu-item[data-page="${urlParams.page}"]`);
+                    if (menuItem) {
+                        const parentItem = menuItem.closest('.menu-item');
+                        setActiveMenuItem(parentItem);
+                        setActiveSubmenuItem(menuItem);
+                    }
+                } else {
+                    setActiveMenuItem(menuItem);
+                }
+                
+                navigateToPage(urlParams.page);
+            } else {
+                // Actualizar estadísticas de bienvenida
+                updateWelcomeStats();
+            }
+            // === FIN PARÁMETROS URL ===
+            
             // Event listeners para tooltip de información
             document.getElementById('infoIcon').addEventListener('click', (e) => {
                 e.stopPropagation();
                 const tooltip = document.getElementById('infoTooltip');
+                const icon = document.getElementById('infoIcon');
+                const rect = icon.getBoundingClientRect();
+                
+                // Posicionar tooltip debajo del ícono
+                tooltip.style.top = `${rect.bottom + 12}px`;
+                tooltip.style.left = `${rect.left}px`;
+                
                 tooltip.classList.toggle('show');
             });
             
@@ -241,14 +587,15 @@
                 }
             });
             
-            // Inicializar filtros
-            initializeFilters();
+            // Event listener para botón Inicio
+            document.getElementById('btnHome').addEventListener('click', () => {
+                goHome();
+            });
             
-            // Actualizar estadísticas de bienvenida
-            updateWelcomeStats();
-            
-            // Guardar nuevamente después de actualizar stats
-            welcomePageHTML = document.querySelector('.welcome-page').innerHTML;
+            // Event listener para botón Compartir
+            document.getElementById('btnShare').addEventListener('click', () => {
+                shareCurrentView();
+            });
             
             // Toggle de filtros
             document.getElementById('filterToggle').addEventListener('click', () => {
@@ -263,17 +610,22 @@
                 btn.textContent = 'Aplicando...';
                 btn.disabled = true;
                 
+                // Obtener página activa ANTES de aplicar filtros
+                const activePage = getActiveMenuPage();
+                
                 applyFilters();
                 
-                // Recargar la página activa automáticamente
-                const activePage = getActiveMenuPage();
+                // Actualizar URL con los filtros activos (sin cambiar 'page')
+                updateURLWithFilters();
+                
+                // Recargar la página activa automáticamente (SIN navegar)
                 if (activePage === 'bienvenida') {
                     // Actualizar estadísticas de bienvenida
                     updateWelcomeStats();
                     btn.textContent = originalText;
                     btn.disabled = false;
                 } else {
-                    // Recargar la subpágina con los datos filtrados
+                    // Recargar SOLO la subpágina actual con los datos filtrados
                     loadPage(activePage);
                     setTimeout(() => {
                         btn.textContent = originalText;
@@ -291,8 +643,30 @@
                 
                 clearFilters();
                 
-                // Recargar la página activa automáticamente
+                // Limpiar filtros de la URL pero mantener la página activa
                 const activePage = getActiveMenuPage();
+                const url = new URL(window.location);
+                
+                // Eliminar todos los parámetros de filtros
+                url.searchParams.delete('interaccion');
+                url.searchParams.delete('fechaIntDesde');
+                url.searchParams.delete('fechaIntHasta');
+                url.searchParams.delete('tipoMonitoreo');
+                url.searchParams.delete('canal');
+                url.searchParams.delete('skill');
+                url.searchParams.delete('subSkill');
+                url.searchParams.delete('bpo');
+                url.searchParams.delete('fechaMonDesde');
+                url.searchParams.delete('fechaMonHasta');
+                url.searchParams.delete('agente');
+                url.searchParams.delete('supervisor');
+                url.searchParams.delete('analista');
+                url.searchParams.delete('comentarios');
+                
+                // Actualizar URL
+                window.history.pushState({}, '', url);
+                
+                // Recargar la página activa automáticamente
                 if (activePage === 'bienvenida') {
                     // Actualizar estadísticas de bienvenida
                     updateWelcomeStats();
@@ -311,6 +685,15 @@
         
         function navigateToPage(page) {
             const contentArea = document.getElementById('contentArea');
+            
+            // Actualizar URL sin recargar la página
+            const url = new URL(window.location);
+            if (page === 'bienvenida') {
+                url.searchParams.delete('page');
+            } else {
+                url.searchParams.set('page', page);
+            }
+            window.history.pushState({}, '', url);
             
             if (page === 'bienvenida') {
                 // Restaurar página de bienvenida
@@ -492,47 +875,57 @@
         }
         
         function initializeMenu() {
-            console.log('Inicializando menú...');
+            // Hover en items de menú con submenú
+            document.querySelectorAll('.menu-item.has-submenu').forEach(item => {
+                const submenu = item.querySelector('.submenu');
+                
+                if (!submenu) return;
+                
+                // Mostrar submenú en hover
+                item.addEventListener('mouseenter', () => {
+                    // Cerrar otros submenús
+                    document.querySelectorAll('.menu-item.open').forEach(i => {
+                        if (i !== item) i.classList.remove('open');
+                    });
+                    
+                    // Abrir este submenú
+                    item.classList.add('open');
+                    
+                    // Posicionar el submenú
+                    const rect = item.getBoundingClientRect();
+                    submenu.style.top = `${rect.bottom + 8}px`;
+                    submenu.style.left = `${rect.left}px`;
+                    
+                    // Forzar reflow
+                    submenu.offsetHeight;
+                });
+                
+                // Cerrar submenú cuando el mouse sale del item completo
+                item.addEventListener('mouseleave', (e) => {
+                    // Solo cerrar si el mouse no está sobre el submenú
+                    setTimeout(() => {
+                        if (!item.matches(':hover')) {
+                            item.classList.remove('open');
+                        }
+                    }, 100);
+                });
+            });
             
-            // Click en items de menú principales
-            document.querySelectorAll('.menu-item').forEach(item => {
-                const label = item.querySelector('.menu-label');
-                
-                if (!label) return;
-                
-                label.addEventListener('click', (e) => {
+            // Click en items de menú principales (sin submenú)
+            document.querySelectorAll('.menu-item:not(.has-submenu)').forEach(item => {
+                item.addEventListener('click', (e) => {
                     e.stopPropagation();
                     
-                    console.log('Click en menu item:', item.dataset.page, 'Has submenu:', item.classList.contains('has-submenu'));
+                    // Cerrar todos los submenús
+                    document.querySelectorAll('.menu-item.open').forEach(i => {
+                        i.classList.remove('open');
+                    });
                     
-                    // Si tiene submenú, toggle del submenú
-                    if (item.classList.contains('has-submenu')) {
-                        const wasOpen = item.classList.contains('open');
-                        
-                        // Cerrar todos los submenús
-                        document.querySelectorAll('.menu-item.open').forEach(i => {
-                            i.classList.remove('open');
-                        });
-                        
-                        // Toggle el actual
-                        if (!wasOpen) {
-                            item.classList.add('open');
-                            console.log('Submenú abierto');
-                        } else {
-                            console.log('Submenú cerrado');
-                        }
-                    } else {
-                        // Cerrar todos los submenús
-                        document.querySelectorAll('.menu-item.open').forEach(i => {
-                            i.classList.remove('open');
-                        });
-                        
-                        // Navegar directamente
-                        const page = item.dataset.page;
-                        if (page) {
-                            setActiveMenuItem(item);
-                            navigateToPage(page);
-                        }
+                    // Navegar
+                    const page = item.dataset.page;
+                    if (page) {
+                        setActiveMenuItem(item);
+                        navigateToPage(page);
                     }
                 });
             });
@@ -542,7 +935,6 @@
                 item.addEventListener('click', (e) => {
                     e.stopPropagation();
                     const page = item.dataset.page;
-                    console.log('Click en submenu item:', page);
                     
                     if (page) {
                         const parentItem = item.closest('.menu-item');
@@ -571,7 +963,35 @@
                 setActiveMenuItem(firstItem);
             }
             
-            console.log('Menú inicializado. Total items:', document.querySelectorAll('.menu-item').length);
+            // Manejar navegación del navegador (botón atrás/adelante)
+            window.addEventListener('popstate', () => {
+                const urlParams = getURLParams();
+                const page = urlParams.page || 'bienvenida';
+                
+                // Actualizar menú activo
+                let menuItem = document.querySelector(`.menu-item[data-page="${page}"]`);
+                if (!menuItem) {
+                    menuItem = document.querySelector(`.submenu-item[data-page="${page}"]`);
+                    if (menuItem) {
+                        const parentItem = menuItem.closest('.menu-item');
+                        setActiveMenuItem(parentItem);
+                        setActiveSubmenuItem(menuItem);
+                    }
+                } else {
+                    setActiveMenuItem(menuItem);
+                }
+                
+                // Navegar sin actualizar URL (para evitar loop)
+                if (page === 'bienvenida') {
+                    const contentArea = document.getElementById('contentArea');
+                    if (contentArea && welcomePageHTML) {
+                        contentArea.innerHTML = '<div class="welcome-page">' + welcomePageHTML + '</div>';
+                        updateWelcomeStats();
+                    }
+                } else {
+                    loadPage(page);
+                }
+            });
         }
         
         function setActiveMenuItem(item) {

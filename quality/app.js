@@ -9,7 +9,6 @@ async function loadData() {
         const data = await response.json();
         window.rawData = data;
         window.filteredData = data;
-        console.log('Datos cargados:', data.base_excel.length, 'registros');
         return data;
     } catch (error) {
         console.error('Error al cargar datos:', error);
@@ -81,6 +80,41 @@ function parseDate(dateStr) {
     return new Date(year, month, day);
 }
 
+// Función para evaluar búsqueda en comentarios con AND/OR
+function evaluateCommentSearch(comment, searchExpression) {
+    // Si no hay expresión de búsqueda, pasa el filtro
+    if (!searchExpression) return true;
+    
+    // Si hay búsqueda pero no hay comentario, NO pasa el filtro
+    if (!comment) return false;
+    
+    // Normalizar texto (minúsculas, eliminar acentos)
+    const normalizeText = (text) => {
+        return text.toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+    };
+    
+    const normalizedComment = normalizeText(comment);
+    const normalizedExpression = normalizeText(searchExpression);
+    
+    // Primero procesar OR (tiene menor precedencia)
+    if (normalizedExpression.includes(' or ')) {
+        const orTerms = normalizedExpression.split(' or ');
+        return orTerms.some(orTerm => evaluateCommentSearch(comment, orTerm.trim()));
+    }
+    
+    // Luego procesar AND (tiene mayor precedencia)
+    if (normalizedExpression.includes(' and ')) {
+        const andTerms = normalizedExpression.split(' and ');
+        return andTerms.every(andTerm => evaluateCommentSearch(comment, andTerm.trim()));
+    }
+    
+    // Si no hay operadores, buscar el término simple
+    const searchTerm = normalizedExpression.trim();
+    return normalizedComment.includes(searchTerm);
+}
+
 // Comparar fechas (solo día)
 function isSameDate(date1, date2) {
     if (!date1 || !date2) return false;
@@ -106,7 +140,8 @@ function applyFilters() {
         fechaMonitoreoHasta: document.getElementById('filterFechaMonitoreoHasta')?.value,
         agente: document.getElementById('filterAgente')?.value,
         supervisor: document.getElementById('filterSupervisor')?.value,
-        analista: document.getElementById('filterAnalista')?.value
+        analista: document.getElementById('filterAnalista')?.value,
+        comentarios: document.getElementById('filterComentarios')?.value.trim()
     };
     
     let filtered = window.rawData.base_excel.filter(record => {
@@ -197,6 +232,14 @@ function applyFilters() {
             return false;
         }
         
+        // Filtro por Comentarios (con AND/OR)
+        if (filters.comentarios) {
+            const comentario = record.COMENTARIOS || '';
+            if (!evaluateCommentSearch(comentario, filters.comentarios)) {
+                return false;
+            }
+        }
+        
         return true;
     });
     
@@ -205,17 +248,14 @@ function applyFilters() {
         base_excel: filtered
     };
     
-    console.log('========== FILTROS APLICADOS ==========');
-    console.log('Filtros activos:', Object.entries(filters).filter(([k, v]) => v).map(([k, v]) => `${k}: ${v}`));
-    console.log('Total registros:', window.rawData.base_excel.length);
-    console.log('Registros filtrados:', filtered.length);
-    console.log('========================================');
+    // Actualizar indicadores visuales de filtro
+    updateFilterIndicators();
 }
 
 // Limpiar filtros
 function clearFilters() {
     // Limpiar campos de texto
-    const textInputs = ['filterInteraccion'];
+    const textInputs = ['filterInteraccion', 'filterComentarios'];
     textInputs.forEach(id => {
         const input = document.getElementById(id);
         if (input) input.value = '';
@@ -252,7 +292,58 @@ function clearFilters() {
     // Resetear datos filtrados
     window.filteredData = window.rawData;
     
-    console.log('Filtros limpiados');
+    // Actualizar indicadores visuales
+    updateFilterIndicators();
+}
+
+// Actualizar indicadores visuales de filtro (badge y contador)
+function updateFilterIndicators() {
+    const badge = document.getElementById('filterBadge');
+    const counter = document.getElementById('filterCounter');
+    const filteredCount = document.getElementById('filteredCount');
+    const totalCount = document.getElementById('totalCount');
+    
+    if (!badge || !counter) return;
+    
+    // Contar filtros activos
+    let activeFiltersCount = 0;
+    
+    if (document.getElementById('filterInteraccion')?.value.trim()) activeFiltersCount++;
+    if (document.getElementById('filterFechaInteraccionDesde')?.value) activeFiltersCount++;
+    if (document.getElementById('filterFechaInteraccionHasta')?.value) activeFiltersCount++;
+    if (document.getElementById('filterTipoMonitoreo')?.value) activeFiltersCount++;
+    if (document.getElementById('filterCanal')?.value) activeFiltersCount++;
+    if (document.getElementById('filterSkill')?.value) activeFiltersCount++;
+    if (document.getElementById('filterSubSkill')?.value) activeFiltersCount++;
+    if (document.getElementById('filterBPO')?.value) activeFiltersCount++;
+    if (document.getElementById('filterFechaMonitoreoDesde')?.value) activeFiltersCount++;
+    if (document.getElementById('filterFechaMonitoreoHasta')?.value) activeFiltersCount++;
+    if (document.getElementById('filterAgente')?.value) activeFiltersCount++;
+    if (document.getElementById('filterSupervisor')?.value) activeFiltersCount++;
+    if (document.getElementById('filterAnalista')?.value) activeFiltersCount++;
+    if (document.getElementById('filterComentarios')?.value.trim()) activeFiltersCount++;
+    
+    // Actualizar badge
+    if (activeFiltersCount > 0) {
+        badge.textContent = activeFiltersCount;
+        badge.style.display = 'block';
+    } else {
+        badge.style.display = 'none';
+    }
+    
+    // Actualizar contador
+    const total = window.rawData?.base_excel?.length || 0;
+    const filtered = window.filteredData?.base_excel?.length || 0;
+    
+    totalCount.textContent = total.toLocaleString('es-ES');
+    filteredCount.textContent = filtered.toLocaleString('es-ES');
+    
+    // Mostrar contador solo si hay filtros activos
+    if (activeFiltersCount > 0) {
+        counter.style.display = 'block';
+    } else {
+        counter.style.display = 'none';
+    }
 }
 
 // Funciones de utilidad para subpáginas
