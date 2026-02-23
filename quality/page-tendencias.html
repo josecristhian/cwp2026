@@ -40,7 +40,7 @@
         }
         .toggle-btn.active {
             background: #fff;
-            color: #1b98e0;
+            color: #3b82f6;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         .toggle-btn:hover:not(.active) { color: #334155; }
@@ -150,6 +150,9 @@
         .badge-green  { background: #d1fae5; color: #065f46; }
         .badge-red    { background: #fee2e2; color: #991b1b; }
         .badge-yellow { background: #fef3c7; color: #92400e; }
+        .badge-orange { background: #ffedd5; color: #9a3412; }
+        .outlier-moderate-high { background: #f0fdf4 !important; }
+        .outlier-moderate-low  { background: #fff7ed !important; }
 
         /* ===== BPO SUMMARY ===== */
         .bpo-summary {
@@ -184,7 +187,7 @@
         }
 
         .table-scroll {
-            max-height: 420px;
+            max-height: 520px;
             overflow-y: auto;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
@@ -211,16 +214,7 @@
     <div style="padding: 0;">
         <h2 style="margin-bottom: 24px; color: var(--text-primary, #1e293b);">📈 Tendencias y Proyecciones Temporales</h2>
         <div id="contenidoPrincipal">
-            <div class="loading" style="display: flex; align-items: center; justify-content: center; gap: 12px; padding: 48px; color: var(--text-secondary);">
-    <div style="width: 20px; height: 20px; border: 3px solid var(--color-pearl); border-top-color: var(--color-electric); border-radius: 50%; animation: spin 1s linear infinite;"></div>
-    <span style="font-family: var(--font-body); font-weight: 500;">Cargando datos...</span>
-</div>
-
-<style>
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-</style>
+            <div class="loading">Cargando datos...</div>
         </div>
     </div>
 
@@ -480,7 +474,7 @@
 
             // TABLA: Estacionalidad
             html += `<div class="chart-wrap">
-                <div class="chart-heading">Análisis de Estacionalidad por ${pLabel}</div>
+                <div class="chart-heading">Análisis de Estacionalidad por ${pLabel} — Detección IQR + Cambios Bruscos</div>
                 <div class="table-scroll" id="tablaEstacionalidad"></div>
             </div>`;
 
@@ -514,7 +508,7 @@
                 data: {
                     labels: allLabels,
                     datasets: [
-                        { label: 'Score Promedio', data: realPad, borderColor: '#1b98e0', backgroundColor: 'rgba(59,130,246,0.08)', fill: true, tension: 0.3, pointRadius: 4, pointBackgroundColor: '#1b98e0', borderWidth: 2.5 },
+                        { label: 'Score Promedio', data: realPad, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.08)', fill: true, tension: 0.3, pointRadius: 4, pointBackgroundColor: '#3b82f6', borderWidth: 2.5 },
                         { label: '+1σ', data: upPad, borderColor: 'rgba(59,130,246,0.18)', backgroundColor: 'rgba(59,130,246,0.04)', fill: '+1', borderDash: [4, 4], borderWidth: 1, pointRadius: 0 },
                         { label: '-1σ', data: loPad, borderColor: 'rgba(59,130,246,0.18)', fill: false, borderDash: [4, 4], borderWidth: 1, pointRadius: 0 },
                         { label: `Proyección (${nProy})`, data: proyPad, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.06)', fill: true, borderDash: [6, 4], borderWidth: 2, pointRadius: 3, pointStyle: 'triangle', pointBackgroundColor: '#f59e0b' },
@@ -560,7 +554,7 @@
             renderBPOChart(records, periodos, periodField, pLabelPlural);
 
             // --- 6. Cuartiles ---
-            const cuartilColors = { 'Q1': '#ef4444', 'Q2': '#f59e0b', 'Q3': '#1b98e0', 'Q4': '#10b981' };
+            const cuartilColors = { 'Q1': '#ef4444', 'Q2': '#f59e0b', 'Q3': '#3b82f6', 'Q4': '#10b981' };
             const cuartilData = {};
             ['Q1', 'Q2', 'Q3', 'Q4'].forEach(q => {
                 cuartilData[q] = periodos.map(p => {
@@ -601,20 +595,88 @@
             document.getElementById('tablaMejores').innerHTML = buildCritTable(top5, 'best');
             document.getElementById('tablaPeores').innerHTML = buildCritTable(bot5, 'worst');
 
-            // Estacionalidad
+            // Estacionalidad — IQR + multi-tier detection
             const avgG = avg(yAll);
-            const stdG = stdDev(yAll);
-            let estH = `<table class="tend-table"><thead><tr><th>${pLabel}</th><th>Score</th><th>N</th><th>%C.Proc</th><th>%Recont.</th><th>Desviación</th><th>Outlier</th></tr></thead><tbody>`;
-            metricsPorPeriodo.forEach(it => {
+            const sortedScores = [...yAll].sort((a, b) => a - b);
+            const q1Idx = Math.floor(sortedScores.length * 0.25);
+            const q3Idx = Math.floor(sortedScores.length * 0.75);
+            const iqrQ1 = sortedScores[q1Idx] || 0;
+            const iqrQ3 = sortedScores[q3Idx] || 0;
+            const iqr = iqrQ3 - iqrQ1;
+            const lowerFence = iqrQ1 - 1.5 * iqr;
+            const upperFence = iqrQ3 + 1.5 * iqr;
+            const lowerExtreme = iqrQ1 - 3 * iqr;
+            const upperExtreme = iqrQ3 + 3 * iqr;
+
+            let estH = `<table class="tend-table"><thead><tr>
+                <th>${pLabel}</th><th>Score</th><th>N</th><th>%C.Proc</th><th>%Recont.</th>
+                <th>Δ vs Anterior</th><th>Desv. del Prom.</th><th>Clasificación</th>
+            </tr></thead><tbody>`;
+
+            metricsPorPeriodo.forEach((it, idx) => {
                 const desv = it.score - avgG;
-                const z = stdG ? Math.abs(desv) / stdG : 0;
-                const isOut = z > 2;
-                const rCls = isOut ? (desv > 0 ? 'outlier-high' : 'outlier-low') : '';
-                const outBadge = isOut ? (desv > 0 ? '<span class="badge-sm badge-green">↑ Pico +</span>' : '<span class="badge-sm badge-red">↓ Pico −</span>') : '<span style="color:#94a3b8;">Normal</span>';
                 const dCol = desv >= 0 ? '#10b981' : '#ef4444';
-                estH += `<tr class="${rCls}"><td><strong>${it.periodo}</strong></td><td>${it.score.toFixed(1)}</td><td>${it.count}</td><td>${it.pctCumple.toFixed(0)}%</td><td>${it.pctRecontacto.toFixed(0)}%</td><td style="color:${dCol};font-weight:600;">${desv >= 0 ? '+' : ''}${desv.toFixed(1)} pts</td><td>${outBadge}</td></tr>`;
+
+                // WoW change
+                const prevScore = idx > 0 ? metricsPorPeriodo[idx - 1].score : null;
+                const wow = prevScore !== null ? it.score - prevScore : null;
+                const wowStr = wow !== null
+                    ? `<span style="color:${wow >= 0 ? '#10b981' : '#ef4444'};font-weight:600;">${wow >= 0 ? '+' : ''}${wow.toFixed(1)}</span>`
+                    : '<span style="color:#94a3b8;">—</span>';
+
+                // IQR-based outlier classification
+                let outLevel = 'normal';   // normal | moderate | extreme
+                let outDir = '';            // high | low
+                if (it.score > upperExtreme) { outLevel = 'extreme'; outDir = 'high'; }
+                else if (it.score > upperFence) { outLevel = 'moderate'; outDir = 'high'; }
+                else if (it.score < lowerExtreme) { outLevel = 'extreme'; outDir = 'low'; }
+                else if (it.score < lowerFence) { outLevel = 'moderate'; outDir = 'low'; }
+
+                // Also flag large WoW swings (>5 pts)
+                const bigSwing = wow !== null && Math.abs(wow) > 5;
+
+                let rowCls = '';
+                let badge = '';
+                if (outLevel === 'extreme' && outDir === 'high') {
+                    rowCls = 'outlier-high'; badge = '<span class="badge-sm badge-green">⬆ Pico Alto Extremo</span>';
+                } else if (outLevel === 'extreme' && outDir === 'low') {
+                    rowCls = 'outlier-low'; badge = '<span class="badge-sm badge-red">⬇ Pico Bajo Extremo</span>';
+                } else if (outLevel === 'moderate' && outDir === 'high') {
+                    rowCls = 'outlier-moderate-high'; badge = '<span class="badge-sm badge-green">↑ Sobre rango</span>';
+                } else if (outLevel === 'moderate' && outDir === 'low') {
+                    rowCls = 'outlier-moderate-low'; badge = '<span class="badge-sm badge-orange">↓ Bajo rango</span>';
+                } else if (bigSwing && wow > 0) {
+                    rowCls = 'outlier-moderate-high'; badge = '<span class="badge-sm badge-yellow">⚡ Salto positivo</span>';
+                } else if (bigSwing && wow < 0) {
+                    rowCls = 'outlier-moderate-low'; badge = '<span class="badge-sm badge-orange">⚡ Caída brusca</span>';
+                } else {
+                    badge = '<span style="color:#94a3b8;">Normal</span>';
+                }
+
+                // Score color coding
+                const sColor = it.score >= 85 ? '#10b981' : it.score >= 75 ? '#3b82f6' : it.score >= 65 ? '#f59e0b' : '#ef4444';
+
+                estH += `<tr class="${rowCls}">
+                    <td><strong>${it.periodo}</strong></td>
+                    <td style="color:${sColor};font-weight:700;">${it.score.toFixed(1)}</td>
+                    <td>${it.count}</td>
+                    <td>${it.pctCumple.toFixed(0)}%</td>
+                    <td>${it.pctRecontacto.toFixed(0)}%</td>
+                    <td>${wowStr}</td>
+                    <td style="color:${dCol};font-weight:600;">${desv >= 0 ? '+' : ''}${desv.toFixed(1)} pts</td>
+                    <td>${badge}</td>
+                </tr>`;
             });
-            document.getElementById('tablaEstacionalidad').innerHTML = estH + `</tbody></table>`;
+
+            // Add summary row with IQR info
+            estH += `</tbody></table>
+            <div style="margin-top:10px;padding:10px 14px;background:#f8fafc;border-radius:8px;font-size:.78rem;color:#64748b;">
+                📊 <strong>Rango IQR:</strong> Q1=${iqrQ1.toFixed(1)} · Q3=${iqrQ3.toFixed(1)} · IQR=${iqr.toFixed(1)} · 
+                Cerca inferior: <${lowerFence.toFixed(1)} · Cerca superior: >${upperFence.toFixed(1)} · 
+                Promedio general: ${avgG.toFixed(1)} · 
+                <strong>Cambio brusco:</strong> |Δ| > 5 pts entre periodos consecutivos
+            </div>`;
+            document.getElementById('tablaEstacionalidad').innerHTML = estH;
 
             setTimeout(notifyHeight, 150);
             setTimeout(notifyHeight, 600);
@@ -655,7 +717,7 @@
         function renderBPOChart(records, periodos, periodField, pLabelPlural) {
             const byBPO = groupBy(records, 'BPO');
             const bpoKeys = Object.keys(byBPO).filter(k => k === 'KN' || k === 'AT');
-            const bpoColors = { 'KN': '#1b98e0', 'AT': '#f59e0b' };
+            const bpoColors = { 'KN': '#3b82f6', 'AT': '#f59e0b' };
             const bpoNames = { 'KN': 'Konecta (KN)', 'AT': 'Atlantic (AT)' };
             const bpoSeries = {};
             const bpoStats = {};
