@@ -13,48 +13,7 @@
             margin-bottom: 24px;
             flex-wrap: wrap;
             align-items: center;
-        }
-
-        .search-box {
-            flex: 1;
-            min-width: 300px;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .search-box input:focus {
-            outline: none;
-            border-color: #1b98e0;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .filter-group {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .filter-group select {
-            padding: 10px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 14px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.2s;
-            min-width: 150px;
-        }
-
-        .filter-group select:focus {
-            outline: none;
-            border-color: #1b98e0;
+            justify-content: flex-end;
         }
 
         .columns-btn {
@@ -515,18 +474,7 @@
         @media (max-width: 768px) {
             .table-controls {
                 flex-direction: column;
-            }
-
-            .search-box {
-                width: 100%;
-            }
-
-            .filter-group {
-                width: 100%;
-            }
-
-            .filter-group select {
-                width: 100%;
+                align-items: stretch;
             }
 
             .columns-grid {
@@ -551,30 +499,8 @@
     <div style="padding: 0;">
         <h2 style="margin-bottom: 32px; font-family: var(--font-display); font-size: 32px; font-weight: 700; background: linear-gradient(135deg, var(--color-navy) 0%, var(--color-electric) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -0.5px;">Tabla de Datos Completa</h2>
         
-        <!-- Controles de búsqueda y filtros -->
+        <!-- Controles -->
         <div class="table-controls">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="🔍 Buscar en todos los campos...">
-            </div>
-            
-            <div class="filter-group">
-                <select id="filterCanal">
-                    <option value="">Todos los Canales</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <select id="filterSkill">
-                    <option value="">Todos los Skills</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <select id="filterBPO">
-                    <option value="">Todos los BPOs</option>
-                </select>
-            </div>
-
             <button class="columns-btn" onclick="abrirModalColumnas()">
                 ⚙️ Columnas
             </button>
@@ -584,8 +510,7 @@
 
         <!-- Información de la tabla -->
         <div class="table-info">
-            <span>Mostrando <strong id="countVisible">0</strong> de <strong id="countTotal">0</strong> registros</span>
-            <span id="filterStatus"></span>
+            <span>Mostrando <strong id="countTotal">0</strong> registros</span>
         </div>
 
         <!-- Contenedor de la tabla -->
@@ -727,14 +652,8 @@
             // Inicializar columnas visibles con las esenciales
             visibleColumns = [...columnasEsenciales];
             
-            // Inicializar filtros
-            inicializarFiltros();
-            
             // Renderizar tabla inicial
             renderizarTabla();
-            
-            // Configurar eventos
-            configurarEventos();
             
             // Actualizar contadores
             actualizarContadores();
@@ -743,63 +662,6 @@
             setTimeout(notifyHeight, 100);
             setTimeout(notifyHeight, 500);
             setTimeout(notifyHeight, 1000);
-        }
-
-        // Inicializar opciones de filtros
-        function inicializarFiltros() {
-            const canales = [...new Set(allData.map(r => r.DATA_CANAL).filter(Boolean))].sort();
-            const skills = [...new Set(allData.map(r => r.DATA_SKILL).filter(Boolean))].sort();
-            const bpos = [...new Set(allData.map(r => r.BPO).filter(Boolean))].sort();
-
-            llenarSelect('filterCanal', canales);
-            llenarSelect('filterSkill', skills);
-            llenarSelect('filterBPO', bpos);
-        }
-
-        // Llenar un selector con opciones
-        function llenarSelect(id, options) {
-            const select = document.getElementById(id);
-            options.forEach(opt => {
-                const option = document.createElement('option');
-                option.value = opt;
-                option.textContent = opt;
-                select.appendChild(option);
-            });
-        }
-
-        // Configurar eventos de búsqueda y filtros
-        function configurarEventos() {
-            document.getElementById('searchInput').addEventListener('input', aplicarFiltros);
-            document.getElementById('filterCanal').addEventListener('change', aplicarFiltros);
-            document.getElementById('filterSkill').addEventListener('change', aplicarFiltros);
-            document.getElementById('filterBPO').addEventListener('change', aplicarFiltros);
-        }
-
-        // Aplicar filtros de búsqueda y selección
-        function aplicarFiltros() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const canalFilter = document.getElementById('filterCanal').value;
-            const skillFilter = document.getElementById('filterSkill').value;
-            const bpoFilter = document.getElementById('filterBPO').value;
-
-            filteredData = allData.filter(record => {
-                // Búsqueda general en todas las columnas
-                const matchSearch = !searchTerm || 
-                    Object.values(record).some(value => 
-                        value && value.toString().toLowerCase().includes(searchTerm)
-                    );
-
-                // Filtros de selección
-                const matchCanal = !canalFilter || record.DATA_CANAL === canalFilter;
-                const matchSkill = !skillFilter || record.DATA_SKILL === skillFilter;
-                const matchBPO = !bpoFilter || record.BPO === bpoFilter;
-
-                return matchSearch && matchCanal && matchSkill && matchBPO;
-            });
-
-            renderizarTabla();
-            actualizarContadores();
-            setTimeout(notifyHeight, 100);
         }
 
         // Renderizar tabla con datos filtrados
@@ -813,7 +675,6 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                         <h3>No se encontraron resultados</h3>
-                        <p>Intenta ajustar tus filtros de búsqueda</p>
                     </div>
                 `;
                 return;
@@ -1082,22 +943,7 @@
 
         // Actualizar contadores
         function actualizarContadores() {
-            document.getElementById('countVisible').textContent = filteredData.length;
-            document.getElementById('countTotal').textContent = allData.length;
-
-            const searchTerm = document.getElementById('searchInput').value;
-            const canalFilter = document.getElementById('filterCanal').value;
-            const skillFilter = document.getElementById('filterSkill').value;
-            const bpoFilter = document.getElementById('filterBPO').value;
-
-            const activeFilters = [];
-            if (searchTerm) activeFilters.push('Búsqueda activa');
-            if (canalFilter) activeFilters.push(`Canal: ${canalFilter}`);
-            if (skillFilter) activeFilters.push(`Skill: ${skillFilter}`);
-            if (bpoFilter) activeFilters.push(`BPO: ${bpoFilter}`);
-
-            document.getElementById('filterStatus').textContent = 
-                activeFilters.length > 0 ? `Filtros: ${activeFilters.join(', ')}` : '';
+            document.getElementById('countTotal').textContent = filteredData.length;
         }
 
         // Abrir modal de columnas
