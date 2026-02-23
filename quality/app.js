@@ -155,19 +155,19 @@ function applyFilters() {
             const recordDate = parseDate(record['FECHA DE INTERACCIÓN']);
             if (!recordDate) return false;
             
-            // Normalizar todas las fechas a medianoche para comparación
-            const recordDateNormalized = new Date(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate());
+            // Normalizar fechas a números YYYYMMDD para comparación exacta
+            const recordDateNum = recordDate.getFullYear() * 10000 + (recordDate.getMonth() + 1) * 100 + recordDate.getDate();
             
             if (filters.fechaInteraccionDesde) {
-                const fromDate = new Date(filters.fechaInteraccionDesde);
-                const fromDateNormalized = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
-                if (recordDateNormalized < fromDateNormalized) return false;
+                const fromDate = new Date(filters.fechaInteraccionDesde + 'T00:00:00');
+                const fromDateNum = fromDate.getFullYear() * 10000 + (fromDate.getMonth() + 1) * 100 + fromDate.getDate();
+                if (recordDateNum < fromDateNum) return false;
             }
             
             if (filters.fechaInteraccionHasta) {
-                const toDate = new Date(filters.fechaInteraccionHasta);
-                const toDateNormalized = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
-                if (recordDateNormalized > toDateNormalized) return false;
+                const toDate = new Date(filters.fechaInteraccionHasta + 'T00:00:00');
+                const toDateNum = toDate.getFullYear() * 10000 + (toDate.getMonth() + 1) * 100 + toDate.getDate();
+                if (recordDateNum > toDateNum) return false;
             }
         }
         
@@ -201,19 +201,19 @@ function applyFilters() {
             const recordDate = parseDate(record['FECHA DE MONITOREO']);
             if (!recordDate) return false;
             
-            // Normalizar todas las fechas a medianoche para comparación
-            const recordDateNormalized = new Date(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate());
+            // Normalizar fechas a números YYYYMMDD para comparación exacta
+            const recordDateNum = recordDate.getFullYear() * 10000 + (recordDate.getMonth() + 1) * 100 + recordDate.getDate();
             
             if (filters.fechaMonitoreoDesde) {
-                const fromDate = new Date(filters.fechaMonitoreoDesde);
-                const fromDateNormalized = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
-                if (recordDateNormalized < fromDateNormalized) return false;
+                const fromDate = new Date(filters.fechaMonitoreoDesde + 'T00:00:00');
+                const fromDateNum = fromDate.getFullYear() * 10000 + (fromDate.getMonth() + 1) * 100 + fromDate.getDate();
+                if (recordDateNum < fromDateNum) return false;
             }
             
             if (filters.fechaMonitoreoHasta) {
-                const toDate = new Date(filters.fechaMonitoreoHasta);
-                const toDateNormalized = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
-                if (recordDateNormalized > toDateNormalized) return false;
+                const toDate = new Date(filters.fechaMonitoreoHasta + 'T00:00:00');
+                const toDateNum = toDate.getFullYear() * 10000 + (toDate.getMonth() + 1) * 100 + toDate.getDate();
+                if (recordDateNum > toDateNum) return false;
             }
         }
         
