@@ -293,6 +293,8 @@
         supDispersionUmbral: 20,     // R14: desv. equipo supervisor > 20
         errorFatalDesproporcion: 2,  // R15: tasa error fatal > 2x promedio general
         sinMonitoreoDias: 7,         // R16: días sin monitoreo para alertar
+        desbalanceRatio: 2,          // R17: ratio ≥2x entre segmento más y menos monitoreado
+        desbalanceMinAgentes: 5,     // R17: mínimo agentes por segmento
       },
       criteriosConPuntaje: [
         'Q1','Q2','Q3','Q4','Q5','Q6','Q7','Q8','Q9','Q10',
@@ -301,7 +303,7 @@
       criteriosFatales: ['Q12', 'Q15'],
       criteriosCriticos: ['Q4', 'Q11', 'Q20'],
       priorizacion: {
-        multiplicadores: { error_fatal: 10, error_critico: 5, gap_alto: 3, brecha_segmento: 2, oportunidad: 1, tendencia: 8, supervisor: 6, correlacion: 4, variabilidad: 3, sesgo: 5, muestra: 1, recuperacion: 1, estancamiento: 4, sup_dispersion: 3, fatal_canal: 9, sin_monitoreo: 2 },
+        multiplicadores: { error_fatal: 10, error_critico: 5, gap_alto: 3, brecha_segmento: 2, oportunidad: 1, tendencia: 8, supervisor: 6, correlacion: 4, variabilidad: 3, sesgo: 5, muestra: 1, recuperacion: 1, estancamiento: 4, sup_dispersion: 3, fatal_canal: 9, sin_monitoreo: 2, desbalance_cobertura: 3 },
         umbralesPrioridad: { critica: 100, alta: 50, media: 20 }
       },
       palabrasClave: {
@@ -936,6 +938,43 @@
       return resultado.sort((a,b) => b.diasSinMonitoreo - a.diasSinMonitoreo);
     }
 
+    // ── R17: Desbalance de cobertura de monitoreo entre segmentos ──────
+    function detectarDesbalanceCobertura(records) {
+      const dims = ['BPO', 'DATA_CANAL', 'DATA_SKILL', 'DATA_SUB_SKILL'];
+      const resultado = [];
+      dims.forEach(dim => {
+        const segMap = {};
+        records.forEach(r => {
+          const seg = r[dim];
+          if (!seg) return;
+          if (!segMap[seg]) segMap[seg] = { nombre: seg, agentes: new Set(), auditorias: 0 };
+          segMap[seg].auditorias++;
+          const agId = r['ID AGENTE'] || r['AGENTE'];
+          if (agId) segMap[seg].agentes.add(agId);
+        });
+        const segs = Object.values(segMap)
+          .map(s => ({ ...s, totalAgentes: s.agentes.size, tasaAudPorAgente: s.agentes.size > 0 ? _round(s.auditorias / s.agentes.size) : 0 }))
+          .filter(s => s.totalAgentes >= CONFIG.umbrales.desbalanceMinAgentes);
+        if (segs.length < 2) return;
+        segs.sort((a,b) => b.tasaAudPorAgente - a.tasaAudPorAgente);
+        const maxSeg = segs[0];
+        const minSeg = segs[segs.length - 1];
+        if (minSeg.tasaAudPorAgente === 0) return;
+        const ratio = _round(maxSeg.tasaAudPorAgente / minSeg.tasaAudPorAgente);
+        if (ratio >= CONFIG.umbrales.desbalanceRatio) {
+          const dimLabel = { BPO:'BPO', DATA_CANAL:'Canal', DATA_SKILL:'Skill', DATA_SUB_SKILL:'Sub-Skill' }[dim] || dim;
+          resultado.push({
+            dimension: dimLabel,
+            segMayor: maxSeg.nombre, tasaMayor: maxSeg.tasaAudPorAgente, audMayor: maxSeg.auditorias, agentesMayor: maxSeg.totalAgentes,
+            segMenor: minSeg.nombre, tasaMenor: minSeg.tasaAudPorAgente, audMenor: minSeg.auditorias, agentesMenor: minSeg.totalAgentes,
+            ratio,
+            detalle: segs.map(s => ({ nombre: s.nombre, tasa: s.tasaAudPorAgente, auditorias: s.auditorias, agentes: s.totalAgentes }))
+          });
+        }
+      });
+      return resultado.sort((a,b) => b.ratio - a.ratio);
+    }
+
     function detectarHallazgos(analisis) {
       const todos = [];
 
@@ -1143,6 +1182,19 @@
         });
       }
 
+      // REGLA 17: Desbalance de cobertura de monitoreo
+      if (analisis.desbalanceCobertura && analisis.desbalanceCobertura.length > 0) {
+        analisis.desbalanceCobertura.forEach((db, idx) => {
+          todos.push({
+            id: `DESBALANCE-${db.dimension}`, tipo: 'desbalance_cobertura', subtipo: 'desbalance_cobertura',
+            datos: db,
+            dimension: db.dimension,
+            scorePriorizacion: _round(db.ratio * 10 * CONFIG.priorizacion.multiplicadores.desbalance_cobertura),
+            regla: `REGLA 17: Desbalance ${db.ratio}x en ${db.dimension} (${db.segMayor} vs ${db.segMenor})`
+          });
+        });
+      }
+
       // Deduplicar
       const vistos = new Map();
       todos.forEach(h => {
@@ -1185,10 +1237,11 @@
       const supDispersion = detectarSupervisoresDispersion(records);
       const fatalPorCanal = detectarErrorFatalPorCanal(records, colMap);
       const sinMonitoreo = detectarAgentesSinMonitoreo(records);
+      const desbalanceCobertura = detectarDesbalanceCobertura(records);
 
       const analisis = { metricas, gaps, errores, segmentos, comentarios, agentes, supervisores,
         tendencia, concentracionSup, correlaciones, variabilidad, sesgoAnalistas, muestrasInsuf, recuperados,
-        criteriosEstancados, supDispersion, fatalPorCanal, sinMonitoreo,
+        criteriosEstancados, supDispersion, fatalPorCanal, sinMonitoreo, desbalanceCobertura,
         totales: {
           agentes: agentes.totalAgentes,
           supervisores: supervisores.length,
@@ -1259,7 +1312,7 @@
         <div class="hia-section-title"><span class="icon" style="background:var(--hia-blue-light);color:var(--hia-blue);">📐</span> Metodología</div>
         <div class="hia-card">
           <div class="hia-card-title">Motor de Detección Automática de Hallazgos</div>
-          <p style="font-size:14px;color:var(--hia-text-sec);margin-bottom:20px;">El sistema aplica 16 reglas de detección sobre los datos de auditoría para identificar hallazgos de forma automática. Cada hallazgo se prioriza según su frecuencia, impacto y tipo.</p>
+          <p style="font-size:14px;color:var(--hia-text-sec);margin-bottom:20px;">El sistema aplica 17 reglas de detección sobre los datos de auditoría para identificar hallazgos de forma automática. Cada hallazgo se prioriza según su frecuencia, impacto y tipo.</p>
         </div>
         <div class="hia-card">
           <div class="hia-card-title">Reglas de Detección Automática</div>
@@ -1282,6 +1335,7 @@
               <tr><td>14</td><td>Supervisor con alta dispersión</td><td>Desv. equipo >${CONFIG.umbrales.supDispersionUmbral} con Q1 y Q4</td><td>Supervisores que tienen agentes excelentes y pésimos al mismo tiempo. Indica coaching desigual — sabe desarrollar talento pero no uniformemente.</td></tr>
               <tr><td>15</td><td>Error fatal desproporcionado</td><td>Tasa ≥${CONFIG.umbrales.errorFatalDesproporcion}x promedio general</td><td>Un canal o skill con tasa de errores fatales muy superior al promedio. Algo específico de ese segmento dispara el error y requiere intervención diferenciada.</td></tr>
               <tr><td>16</td><td>Agente sin monitoreo reciente</td><td>>${CONFIG.umbrales.sinMonitoreoDias} días sin auditoría</td><td>Agentes que dejaron de ser monitoreados. Son punto ciego — sin visibilidad de su desempeño actual, no se puede gestionar su calidad.</td></tr>
+              <tr><td>17</td><td>Desbalance de cobertura de monitoreo</td><td>Ratio aud/agente ≥${CONFIG.umbrales.desbalanceRatio}x entre segmentos</td><td>La cobertura de monitoreo no es equitativa entre segmentos. Algunos reciben mucha más supervisión que otros, lo que sesga las conclusiones y reduce la retroalimentación a ciertos equipos.</td></tr>
             </tbody>
           </table></div>
           <div style="margin-top:16px;padding:12px 16px;background:#f8fafc;border-radius:8px;font-size:13px;">
@@ -1592,8 +1646,49 @@
         html += `</div>`;
       }
 
+      // R17: Desbalance de cobertura
+      if (analisis.desbalanceCobertura && analisis.desbalanceCobertura.length > 0) {
+        const items = analisis.desbalanceCobertura;
+        const total = items.length;
+        html += `<div class="hia-rule-block warning">
+          <div style="font-weight:700;font-size:15px;margin-bottom:12px;">⚖️ R17: Desbalance de Cobertura de Monitoreo <span class="hia-badge alta">${total} dimensiones con desbalance</span></div>
+          <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Dimensión</th><th>Más Monitoreado</th><th class="num">Aud/Agente</th><th>Menos Monitoreado</th><th class="num">Aud/Agente</th><th class="num">Ratio</th></tr></thead><tbody>`;
+        items.slice(0,5).forEach(db => {
+          html += `<tr><td><strong>${db.dimension}</strong></td><td>${db.segMayor}</td><td class="num" style="color:var(--hia-green);font-weight:700;">${db.tasaMayor}</td><td>${db.segMenor}</td><td class="num" style="color:var(--hia-red);font-weight:700;">${db.tasaMenor}</td><td class="num"><span class="hia-badge critica">${db.ratio}x</span></td></tr>`;
+        });
+        html += `</tbody>`;
+        if (total > 5) {
+          html += `<tbody id="exp-r17" style="display:none;">`;
+          items.slice(5).forEach(db => {
+            html += `<tr><td><strong>${db.dimension}</strong></td><td>${db.segMayor}</td><td class="num" style="color:var(--hia-green);font-weight:700;">${db.tasaMayor}</td><td>${db.segMenor}</td><td class="num" style="color:var(--hia-red);font-weight:700;">${db.tasaMenor}</td><td class="num"><span class="hia-badge critica">${db.ratio}x</span></td></tr>`;
+          });
+          html += `</tbody>`;
+        }
+        html += `</table></div>`;
+        if (total > 5) html += `<button class="hia-expand-btn" id="exp-r17-btn" data-label="▼ Ver ${total - 5} más" onclick="toggleExpand('exp-r17')">▼ Ver ${total - 5} más</button>`;
+        // Detail per dimension
+        items.forEach(db => {
+          html += `<div style="margin-top:12px;"><div style="font-weight:600;font-size:13px;margin-bottom:6px;">${db.dimension}: detalle por segmento</div>`;
+          db.detalle.forEach(s => {
+            const maxTasa = db.detalle[0].tasa;
+            const pct = maxTasa > 0 ? Math.round(s.tasa / maxTasa * 100) : 0;
+            html += `<div style="display:flex;align-items:center;gap:10px;padding:4px 0;font-size:13px;">
+              <span style="min-width:90px;font-weight:600;">${s.nombre}</span>
+              <div class="hia-bar-bg" style="flex:1;height:16px;border-radius:4px;">
+                <div class="hia-bar-fill" style="width:${pct}%;background:${s.tasa===db.tasaMenor?'var(--hia-red)':s.tasa===db.tasaMayor?'var(--hia-green)':'var(--hia-blue)'};border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;">
+                  <span style="color:white;font-size:10px;font-weight:700;">${s.tasa}</span>
+                </div>
+              </div>
+              <span style="font-size:11px;color:var(--hia-text-sec);min-width:80px;">${s.auditorias} aud / ${s.agentes} ag</span>
+            </div>`;
+          });
+          html += `</div>`;
+        });
+        html += `</div>`;
+      }
+
       // No detections message
-      const totalDetecciones = (analisis.tendencia?.tendencias?.length||0) + (analisis.concentracionSup?.length||0) + (analisis.correlaciones?.length||0) + (analisis.variabilidad?.length||0) + (analisis.sesgoAnalistas?.length||0) + (analisis.muestrasInsuf?.length||0) + (analisis.recuperados?.length||0) + (analisis.criteriosEstancados?.length||0) + (analisis.supDispersion?.length||0) + (analisis.fatalPorCanal?.length||0) + (analisis.sinMonitoreo?.length||0);
+      const totalDetecciones = (analisis.tendencia?.tendencias?.length||0) + (analisis.concentracionSup?.length||0) + (analisis.correlaciones?.length||0) + (analisis.variabilidad?.length||0) + (analisis.sesgoAnalistas?.length||0) + (analisis.muestrasInsuf?.length||0) + (analisis.recuperados?.length||0) + (analisis.criteriosEstancados?.length||0) + (analisis.supDispersion?.length||0) + (analisis.fatalPorCanal?.length||0) + (analisis.sinMonitoreo?.length||0) + (analisis.desbalanceCobertura?.length||0);
       if (totalDetecciones === 0) {
         html += `<div style="padding:20px;text-align:center;color:var(--hia-text-sec);font-size:13px;">✅ No se detectaron hallazgos adicionales con las reglas avanzadas para los datos filtrados actuales.</div>`;
       }
@@ -1614,7 +1709,7 @@
 
       hallazgos.forEach(h => {
         const hId = `hallazgo-${h.orden}`;
-        const tipoLabels = { error_fatal:'Error Fatal', gap_criterio:'Gap Criterio', error_frecuente:'Error Frecuente', brecha_segmento:'Brecha Segmento', oportunidad:'Oportunidad', tendencia_negativa:'Tendencia ↓', supervisor_concentracion:'Supervisor', correlacion_errores:'Correlación', variabilidad_agente:'Variabilidad', sesgo_analista:'Sesgo Analista', muestra_insuficiente:'Muestra Baja', recuperacion_agente:'Recuperación ↑', criterio_estancado:'Estancamiento', supervisor_dispersion:'Sup. Dispersión', error_fatal_canal:'Fatal × Canal', agente_sin_monitoreo:'Sin Monitoreo' };
+        const tipoLabels = { error_fatal:'Error Fatal', gap_criterio:'Gap Criterio', error_frecuente:'Error Frecuente', brecha_segmento:'Brecha Segmento', oportunidad:'Oportunidad', tendencia_negativa:'Tendencia ↓', supervisor_concentracion:'Supervisor', correlacion_errores:'Correlación', variabilidad_agente:'Variabilidad', sesgo_analista:'Sesgo Analista', muestra_insuficiente:'Muestra Baja', recuperacion_agente:'Recuperación ↑', criterio_estancado:'Estancamiento', supervisor_dispersion:'Sup. Dispersión', error_fatal_canal:'Fatal × Canal', agente_sin_monitoreo:'Sin Monitoreo', desbalance_cobertura:'Desbalance Cobertura' };
         const tipoLabel = tipoLabels[h.tipo] || h.tipo;
         const title = h.criterioDesc || (h.dimensionLabel ? `Brecha ${h.dimensionLabel}: ${h.segmentoMejor} vs ${h.segmentoPeor}` : h.tipo === 'tendencia_negativa' ? `Tendencia negativa: -${h.datos.caidaTotal} pts en ${h.datos.caidasConsecutivas} periodos` : h.tipo === 'supervisor_concentracion' ? `Supervisor ${h.datos.nombre}: ${h.datos.pctRiesgo}% agentes en riesgo` : h.tipo === 'correlacion_errores' ? `Correlación ${h.datos.criterio1} ↔ ${h.datos.criterio2}` : h.tipo === 'variabilidad_agente' ? `${h.datos.cantAgentes} agentes con alta variabilidad` : h.tipo === 'sesgo_analista' ? `Analista ${h.datos.nombre} (${h.datos.sesgoTipo})` : h.tipo === 'muestra_insuficiente' ? `Muestra insuficiente: ${h.datos.segmento}` : h.tipo === 'recuperacion_agente' ? `${h.datos.cantAgentes} agentes con recuperación exitosa` : h.tipo === 'criterio_estancado' ? `${h.datos.criterio} estancado en ${h.datos.pctError}% error` : h.tipo === 'supervisor_dispersion' ? `Supervisor ${h.datos.nombre}: dispersión ${h.datos.desvEquipo}` : h.tipo === 'error_fatal_canal' ? `${h.datos.criterioFatal} en ${h.datos.segmento}: ${h.datos.ratio}x promedio` : h.tipo === 'agente_sin_monitoreo' ? `${h.datos.cantAgentes} agentes sin monitoreo reciente` : h.segmento || h.id);
 
@@ -1785,6 +1880,25 @@
             <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Agente</th><th>Supervisor</th><th>BPO</th><th class="num">Última Auditoría</th><th class="num">Días Sin</th><th class="num">Evals Total</th></tr></thead><tbody>`;
           d.agentes.slice(0,10).forEach(a => {
             html += `<tr><td>${(a.nombre||'').substring(0,22)}</td><td>${(a.supervisor||'').substring(0,18)}</td><td>${a.bpo}</td><td class="num">${a.ultimaFechaStr}</td><td class="num" style="color:var(--hia-red);font-weight:700;">${a.diasSinMonitoreo}</td><td class="num">${a.totalEvals}</td></tr>`;
+          });
+          html += `</tbody></table></div>`;
+        }
+        return html;
+      }
+      if (h.tipo === 'desbalance_cobertura') {
+        const db = h.datos;
+        let html = `<div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>
+          <tr><td>Dimensión</td><td><strong>${db.dimension}</strong></td></tr>
+          <tr><td>Segmento más monitoreado</td><td><strong>${db.segMayor}</strong> — ${db.tasaMayor} aud/agente (${db.audMayor} aud, ${db.agentesMayor} agentes)</td></tr>
+          <tr><td>Segmento menos monitoreado</td><td><strong>${db.segMenor}</strong> — ${db.tasaMenor} aud/agente (${db.audMenor} aud, ${db.agentesMenor} agentes)</td></tr>
+          <tr><td>Ratio desbalance</td><td><span style="color:var(--hia-red);font-weight:700;">${db.ratio}x</span></td></tr>
+          <tr><td>Umbral</td><td>≥${CONFIG.umbrales.desbalanceRatio}x</td></tr>
+        </tbody></table></div>`;
+        if (db.detalle && db.detalle.length > 0) {
+          html += `<div style="margin-top:12px;font-weight:700;font-size:13px;margin-bottom:8px;">Cobertura por segmento:</div>
+            <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Segmento</th><th class="num">Aud/Agente</th><th class="num">Auditorías</th><th class="num">Agentes</th></tr></thead><tbody>`;
+          db.detalle.forEach(s => {
+            html += `<tr><td>${s.nombre}</td><td class="num" style="font-weight:700;color:${s.tasa===db.tasaMenor?'var(--hia-red)':s.tasa===db.tasaMayor?'var(--hia-green)':'inherit'}">${s.tasa}</td><td class="num">${s.auditorias}</td><td class="num">${s.agentes}</td></tr>`;
           });
           html += `</tbody></table></div>`;
         }
