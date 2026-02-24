@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hallazgos → Insights → Acciones</title>
+    <title>Hallazgos de Calidad</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* ═══ CUSTOM STYLES FOR H→I→A PAGE ═══ */
         :root {
@@ -14,7 +13,7 @@
             --hia-border: #e2e8f0;
             --hia-text: #1e293b;
             --hia-text-sec: #64748b;
-            --hia-blue: #1b98e0;
+            --hia-blue: #3b82f6;
             --hia-blue-light: #eff6ff;
             --hia-green: #10b981;
             --hia-green-light: #ecfdf5;
@@ -32,38 +31,6 @@
 
         .hia-container { padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--hia-text); }
 
-        /* ── Header ── */
-        .hia-header {
-            background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 50%, #1b98e0 100%);
-            border-radius: var(--hia-radius);
-            padding: 32px;
-            color: white;
-            margin-bottom: 24px;
-            position: relative;
-            overflow: hidden;
-        }
-        .hia-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -20%;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
-            border-radius: 50%;
-        }
-        .hia-header h2 { margin: 0 0 8px; font-size: 26px; font-weight: 700; position: relative; }
-        .hia-header p { margin: 0; opacity: 0.85; font-size: 14px; position: relative; }
-        .hia-header .hia-badge-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; position: relative; }
-        .hia-header .hia-meta-badge {
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255,255,255,0.2);
-            padding: 5px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
 
         /* ── Navigation Tabs ── */
         .hia-nav {
@@ -234,124 +201,27 @@
         .hia-hallazgo-body { display: none; padding: 0 24px 24px; border-top: 1px solid var(--hia-border); }
         .hia-hallazgo.open .hia-hallazgo-body { display: block; }
 
-        /* ── 3-Layer Tabs within hallazgo ── */
-        .hia-layers { display: flex; gap: 0; margin: 16px 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--hia-border); }
-        .hia-layer-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            background: #f8fafc;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--hia-text-sec);
-            transition: all 0.2s;
-            text-align: center;
-        }
-        .hia-layer-btn:not(:last-child) { border-right: 1px solid var(--hia-border); }
-        .hia-layer-btn.active-hallazgo { background: #dbeafe; color: var(--hia-blue); }
-        .hia-layer-btn.active-insight { background: #fef3c7; color: #b45309; }
-        .hia-layer-btn.active-accion { background: #d1fae5; color: #047857; }
-        .hia-layer-content { display: none; padding: 16px 0; }
-        .hia-layer-content.active { display: block; }
 
-        /* ── Insight narrative ── */
-        .hia-narrative {
-            background: var(--hia-yellow-light);
-            border-left: 4px solid var(--hia-yellow);
-            padding: 16px 20px;
-            border-radius: 0 8px 8px 0;
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 16px;
-        }
-        .hia-causes { list-style: none; padding: 0; margin: 0; }
-        .hia-causes li {
-            padding: 8px 0 8px 28px;
-            position: relative;
-            font-size: 13px;
-            border-bottom: 1px solid #f1f5f9;
-        }
-        .hia-causes li::before {
-            content: '';
-            position: absolute;
-            left: 8px;
-            top: 14px;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--hia-yellow);
-        }
-
-        /* ── Action cards ── */
-        .hia-action {
-            border: 1px solid var(--hia-border);
-            border-radius: 10px;
-            padding: 18px;
-            margin-bottom: 12px;
-        }
-        .hia-action-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .hia-action-title { font-weight: 700; font-size: 14px; }
-        .hia-action-obj { font-size: 13px; color: var(--hia-text-sec); margin-bottom: 10px; }
-        .hia-tactics { display: grid; gap: 6px; }
-        .hia-tactic {
-            padding: 8px 12px;
-            background: #f8fafc;
-            border-radius: 6px;
-            font-size: 12px;
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-        }
-        .hia-tactic::before { content: '▸'; color: var(--hia-green); font-weight: 700; flex-shrink: 0; }
-        .hia-smart { margin-top: 10px; padding: 10px 14px; background: var(--hia-green-light); border-radius: 8px; font-size: 12px; }
-
-        /* ── Roadmap Timeline ── */
-        .hia-timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
-        @media (max-width: 768px) { .hia-timeline { grid-template-columns: 1fr; } }
-        .hia-timeline-col {
-            border-radius: var(--hia-radius);
+        /* ── Rule blocks in Panorámica ── */
+        .hia-rule-block {
+            margin-bottom: 28px;
             padding: 20px;
-            position: relative;
-        }
-        .hia-timeline-col.mes1 { background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border: 1px solid #fca5a5; }
-        .hia-timeline-col.mes2 { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1px solid #fcd34d; }
-        .hia-timeline-col.mes3 { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 1px solid #6ee7b7; }
-        .hia-timeline-title { font-weight: 800; font-size: 15px; margin-bottom: 4px; }
-        .hia-timeline-period { font-size: 12px; color: var(--hia-text-sec); margin-bottom: 14px; }
-        .hia-timeline-item {
-            padding: 10px 12px;
-            background: rgba(255,255,255,0.7);
-            border-radius: 8px;
-            margin-bottom: 8px;
-            font-size: 12px;
-            line-height: 1.4;
-        }
-        .hia-timeline-item .sem { font-weight: 700; color: var(--hia-text-sec); font-size: 11px; }
-        .hia-timeline-item .resp { color: var(--hia-text-sec); font-size: 11px; margin-top: 2px; }
-
-        /* ── Charts ── */
-        .hia-chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; margin-bottom: 24px; }
-        .hia-chart-card {
             background: var(--hia-card);
             border-radius: var(--hia-radius);
-            padding: 20px;
             box-shadow: var(--hia-shadow);
+            border-left: 4px solid var(--hia-blue);
         }
-        .hia-chart-card .chart-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; }
-        .hia-chart-card canvas { max-height: 280px; }
-
-        /* ── Grid layouts ── */
-        .hia-grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; margin-bottom: 24px; }
-
-        /* ── Governance ── */
-        .hia-gov-card {
-            background: var(--hia-card);
-            border-radius: var(--hia-radius);
-            padding: 20px;
-            box-shadow: var(--hia-shadow);
-            border-top: 3px solid var(--hia-purple);
+        .hia-rule-block.critical { border-left-color: var(--hia-red); }
+        .hia-rule-block.warning { border-left-color: var(--hia-orange); }
+        .hia-rule-block.info { border-left-color: var(--hia-yellow); }
+        .hia-rule-block.success { border-left-color: var(--hia-green); }
+        .hia-expand-btn {
+            display: block; width: 100%; margin-top: 10px; padding: 8px;
+            background: #f1f5f9; border: 1px solid var(--hia-border); border-radius: 6px;
+            cursor: pointer; font-size: 12px; font-weight: 600; color: var(--hia-text-sec);
+            text-align: center; transition: background 0.2s;
         }
+        .hia-expand-btn:hover { background: #e2e8f0; }
 
         /* ── Loading ── */
         .hia-loading {
@@ -393,7 +263,7 @@
             <div class="hia-loading">
                 <div class="spinner"></div>
                 <div style="font-size: 15px; font-weight: 600;">Cargando análisis...</div>
-                <div style="font-size: 13px; margin-top: 6px;">Procesando modelo Hallazgos → Insights → Acciones</div>
+                <div style="font-size: 13px; margin-top: 6px;">Procesando detección automática de hallazgos</div>
             </div>
         </div>
     </div>
@@ -404,12 +274,25 @@
     // ════════════════════════════════════════════════════════════════════════
     const CONFIG = {
       umbrales: {
-        gapCritico: 5,
-        errorFrecuente: 25,
-        gapSegmento: 15,
+        gapCritico: 3,
+        errorFrecuente: 15,
+        gapSegmento: 10,
         errorFatal: 5,
         scoreRiesgo: 75,
         scoreExcelente: 85,
+        tendenciaCaida: 5,           // R6: caída acumulada > 5 pts en 3 periodos
+        tendenciaPeriodos: 3,        // R6: periodos consecutivos
+        supConcentracion: 30,        // R7: >30% agentes en riesgo por supervisor
+        correlacionUmbral: 12,       // R8: >12% co-ocurrencia de errores
+        variabilidadAgente: 25,      // R9: desv. estándar agente > 25
+        sesgoAnalista: 10,           // R10: diferencia > 10 pts vs promedio general
+        muestraMinima: 10,           // R11: < 10 auditorías = muestra insuficiente
+        recuperacionPeriodos: 2,     // R12: 2+ evaluaciones consecutivas mejorando
+        estancamientoPeriodos: 3,    // R13: 3+ periodos sin mejora (±2%)
+        estancamientoMargen: 2,      // R13: margen de variación para considerar "igual"
+        supDispersionUmbral: 20,     // R14: desv. equipo supervisor > 20
+        errorFatalDesproporcion: 2,  // R15: tasa error fatal > 2x promedio general
+        sinMonitoreoDias: 7,         // R16: días sin monitoreo para alertar
       },
       criteriosConPuntaje: [
         'Q1','Q2','Q3','Q4','Q5','Q6','Q7','Q8','Q9','Q10',
@@ -417,215 +300,9 @@
       ],
       criteriosFatales: ['Q12', 'Q15'],
       criteriosCriticos: ['Q4', 'Q11', 'Q20'],
-      causasRaiz: {
-        gap_criterio_Q11: [
-          'Gap de conocimiento técnico en resolución de problemas',
-          'Presión de AHT limita tiempo de investigación',
-          'Sistemas lentos dificultan acceso a información',
-          'Falta de documentación actualizada',
-          'Training insuficiente en productos/servicios'
-        ],
-        gap_criterio_Q20: [
-          'Catálogo de tipificación demasiado complejo (>100 opciones)',
-          'Falta de entrenamiento específico en tipificación',
-          'Presión de tiempo: tipifican apurados al final',
-          'Sin validación automática en tiempo real',
-          'Feedback llega tarde (días después)'
-        ],
-        gap_criterio_Q4: [
-          'Falta de estructura en la conversación',
-          'No sigue scripts ni guías de conversación',
-          'Dificultad para manejar clientes complejos',
-          'Presión de AHT afecta dirección de la llamada',
-          'Falta de coaching en técnicas de control de llamada'
-        ],
-        gap_criterio_Q17: [
-          'Sin protocolo claro de gestión de hold',
-          'Presión de AHT: evitan cerrar y reabrir',
-          'Sistemas lentos obligan a holds largos',
-          'No ofrecen alternativas (callback)'
-        ],
-        gap_criterio_Q19: [
-          'No se promueve uso de canales de autogestión',
-          'Desconocimiento de herramientas digitales disponibles',
-          'Falta de incentivo por ofrecer autogestión',
-          'Scripts no incluyen oferta de autogestión'
-        ],
-        gap_criterio_Q18: [
-          'No existe cultura de disculpa corporativa',
-          'Falta de empatía ante inconvenientes del cliente',
-          'Agentes no identifican momentos para disculparse',
-          'Scripts rígidos no incluyen frases de empatía'
-        ],
-        gap_criterio_generico: [
-          'Falta de entrenamiento específico en este criterio',
-          'Bajo refuerzo en coaching sobre este tema',
-          'Proceso no está claramente documentado',
-          'Feedback insuficiente o tardío'
-        ],
-        error_fatal_Q12: [
-          'Problema no resuelto en primera interacción',
-          'Falla en Q11 (Solución) no detectada por agente',
-          'Falta de validación antes de cerrar',
-          'Cliente debe llamar nuevamente por mismo tema'
-        ],
-        error_fatal_Q15: [
-          'No validación correcta de identidad',
-          'Dar información sensible sin autenticación',
-          'Desconocimiento de políticas de seguridad',
-          'Presión del cliente para saltarse protocolos'
-        ],
-        brecha_bpo: [
-          'Diferencias en procesos de entrenamiento entre BPOs',
-          'Herramientas/sistemas diferentes',
-          'Calidad de coaching y supervisión desigual',
-          'Gestión del conocimiento desigual'
-        ],
-        brecha_canal: [
-          'Mayor tiempo de consulta en digital',
-          'Presión de AHT diferente por canal',
-          'Perfil de agente distinto por canal',
-          'Complejidad de casos distribuida desigualmente'
-        ],
-        brecha_skill: [
-          'Complejidad técnica diferente entre skills',
-          'Diferente nivel de entrenamiento',
-          'Herramientas de soporte desiguales',
-          'Volumen de casos afecta calidad'
-        ],
-        oportunidad_canal: [
-          'Canal digital permite más tiempo de investigación',
-          'No hay presión de silencio incómodo',
-          'Puede usar knowledge base más fácilmente',
-          'Casos más simples van a digital'
-        ],
-        oportunidad_segmento: [
-          'Mejores prácticas identificables',
-          'Modelo de coaching replicable',
-          'Herramientas más efectivas en uso',
-          'Cultura de calidad más madura en ese segmento'
-        ]
-      },
-      impactoPorIndicador: {
-        NPS: 'Afecta satisfacción del cliente y Net Promoter Score',
-        AHT: 'Impacta tiempo promedio de atención y costos operativos',
-        FCR: 'Reduce resolución en primer contacto, genera recontactos',
-        Ventas: 'Afecta conversión y revenue',
-        Negocio: 'Impacta métricas de negocio y reportería',
-        Compliance: 'Riesgo de incumplimiento normativo',
-        Legal: 'Riesgo legal y reputacional'
-      },
-      accionesPorTipo: {
-        gap_criterio: [
-          {
-            prioridad: 'CRITICA',
-            titulo: 'Certificación obligatoria en {{criterio_desc}}',
-            objetivo: 'Reducir errores de {{pct_error}}% a <{{meta_critica}}% en 60 días',
-            tacticas: [
-              'Crear módulo e-learning específico para {{criterio_desc}}',
-              'Quiz de certificación: mínimo 90% para aprobar',
-              'Recertificación trimestral obligatoria',
-              'Dashboard de certificación por supervisor'
-            ],
-            meta_smart: '100% de agentes certificados en {{criterio_desc}} en 30 días',
-            metrica: '% de agentes certificados, % aprobación quiz'
-          },
-          {
-            prioridad: 'ALTA',
-            titulo: 'Programa de mentoría para {{criterio_desc}}',
-            objetivo: 'Replicar mejores prácticas de agentes top en {{criterio_desc}}',
-            tacticas: [
-              'Identificar top 20 agentes con {{criterio}}=máximo',
-              'Asignar 5 agentes mentoreados por campeón',
-              'Sesiones semanales de 30 min por 6 semanas',
-              'Reconocimiento a campeones con incentivos'
-            ],
-            meta_smart: '60% de mentoreados mejoran en >3 puntos en {{criterio_desc}}',
-            metrica: 'Delta de {{criterio}} pre vs post mentoría'
-          }
-        ],
-        error_frecuente: [
-          {
-            prioridad: 'CRITICA',
-            titulo: 'Simplificación y validación automática para {{criterio_desc}}',
-            objetivo: 'Prevenir errores de {{criterio_desc}} mediante controles en tiempo real',
-            tacticas: [
-              'Simplificar proceso/catálogo de {{criterio_desc}}',
-              'Implementar validaciones automáticas en sistema',
-              'Alertas en tiempo real al agente cuando comete error',
-              'Bloquear acciones incorrectas antes de finalizar'
-            ],
-            meta_smart: 'Sistema activo en 45 días, previene >70% de errores de {{criterio_desc}}',
-            metrica: '% de alertas que evitan errores, % error post-implementación'
-          }
-        ],
-        brecha_segmento: [
-          {
-            prioridad: 'CRITICA',
-            titulo: 'Benchmark y replicación: {{segmento_mejor}} → {{segmento_peor}}',
-            objetivo: 'Reducir gap entre {{segmento_mejor}} ({{score_mejor}}) y {{segmento_peor}} ({{score_peor}}) de {{gap}} a <15 puntos',
-            tacticas: [
-              'Benchmark urgente: identificar 5 mejores prácticas de {{segmento_mejor}}',
-              'Shadowing: supervisores de {{segmento_peor}} observan a top performers',
-              'Implementar herramientas/procesos del segmento líder',
-              'Coaching intensivo para {{segmento_peor}} durante 60 días'
-            ],
-            meta_smart: 'Gap reducido en 50% en 60 días (de {{gap}} a <{{meta_gap}} pts)',
-            metrica: 'Score promedio por segmento, delta semanal'
-          }
-        ],
-        error_fatal: [
-          {
-            prioridad: 'CRITICA',
-            titulo: 'Protocolo 3 strikes para errores fatales ({{criterio_desc}})',
-            objetivo: 'Reducir errores fatales de {{pct_error}}% a <5% en 90 días',
-            tacticas: [
-              'Strike 1: Coaching inmediato + warning escrita',
-              'Strike 2: Fuera de operación 3 días para re-training',
-              'Strike 3: Plan de mejora 30 días o desvinculación',
-              'Comunicar política a toda la operación',
-              'Dashboard semanal de agentes en strikes'
-            ],
-            meta_smart: '<5% errores fatales en 90 días',
-            metrica: '% errores fatales, # agentes por strike'
-          },
-          {
-            prioridad: 'CRITICA',
-            titulo: 'Intervención de emergencia - Agentes con score=0',
-            objetivo: '0 agentes operando con score=0 en 2 semanas',
-            tacticas: [
-              'Identificar agentes con errores fatales recurrentes',
-              'Reunión 1:1 agente + supervisor + RRHH',
-              'Plan de mejora intensivo o reasignación inmediata',
-              'No pueden operar hasta superar recertificación'
-            ],
-            meta_smart: '100% agentes score=0 fuera de operación en 7 días',
-            metrica: 'Número de agentes score=0 operando'
-          }
-        ],
-        oportunidad: [
-          {
-            prioridad: 'ALTA',
-            titulo: 'Estrategia de replicación desde {{segmento_mejor}}',
-            objetivo: 'Capitalizar mejores prácticas de {{segmento_mejor}} (score: {{score_mejor}})',
-            tacticas: [
-              'Documentar mejores prácticas del segmento {{segmento_mejor}}',
-              'Crear programa de cross-training entre segmentos',
-              'Implementar herramientas exitosas en otros segmentos',
-              'Reconocer y premiar al segmento líder'
-            ],
-            meta_smart: 'Incrementar score promedio general en 5 pts en 90 días',
-            metrica: 'Score promedio general, adopción de mejores prácticas'
-          }
-        ]
-      },
       priorizacion: {
-        multiplicadores: { error_fatal: 10, error_critico: 5, gap_alto: 3, brecha_segmento: 2, oportunidad: 1 },
+        multiplicadores: { error_fatal: 10, error_critico: 5, gap_alto: 3, brecha_segmento: 2, oportunidad: 1, tendencia: 8, supervisor: 6, correlacion: 4, variabilidad: 3, sesgo: 5, muestra: 1, recuperacion: 1, estancamiento: 4, sup_dispersion: 3, fatal_canal: 9, sin_monitoreo: 2 },
         umbralesPrioridad: { critica: 100, alta: 50, media: 20 }
-      },
-      calculoMetas: {
-        reduccionEsperada: { critica: 0.5, alta: 0.3, media: 0.2 },
-        plazos: { critica: '30 días', alta: '60 días', media: '90 días' }
       },
       palabrasClave: {
         Q20: ['tipificación','tipifica','ortografía','gramática','evidencia','nota','hermes','query'],
@@ -646,48 +323,6 @@
         Q2: { emoji: '🟡', label: 'Aceptable', rango: '75-84' },
         Q3: { emoji: '🟠', label: 'En riesgo', rango: '65-74' },
         Q4: { emoji: '🔴', label: 'Crítico', rango: '<65' }
-      },
-      roadmap: {
-        mes1: {
-          titulo: 'Intervenciones de Emergencia', periodo: 'Días 1-30',
-          acciones: [
-            { semana: 'S1', accion: 'Identificar y sacar de operación agentes score=0', responsable: 'Supervisores + RRHH', entregable: 'Lista de agentes, plan individual' },
-            { semana: 'S1-S2', accion: 'Comunicar protocolo 3 strikes a toda la operación', responsable: 'Gerencia de Calidad', entregable: 'Comunicado oficial' },
-            { semana: 'S2-S3', accion: 'Lanzar certificaciones obligatorias para criterios críticos', responsable: 'Training', entregable: 'Módulos e-learning activos' },
-            { semana: 'S3-S4', accion: 'Implementar coaching intensivo para agentes en riesgo', responsable: 'Supervisores', entregable: 'Planes de mejora firmados' }
-          ]
-        },
-        mes2: {
-          titulo: 'Mejora Estructural', periodo: 'Días 31-60',
-          acciones: [
-            { semana: 'S5-S6', accion: 'Programa de mentoría: top performers → agentes con oportunidad', responsable: 'Quality + Training', entregable: 'Parejas asignadas, cronograma' },
-            { semana: 'S5-S6', accion: 'Benchmark entre BPOs/segmentos', responsable: 'Quality', entregable: 'Documento de mejores prácticas' },
-            { semana: 'S7-S8', accion: 'Implementar validaciones automáticas (tipificación, etc.)', responsable: 'IT + Quality', entregable: 'Sistema en producción' },
-            { semana: 'S7-S8', accion: 'Recalibración de analistas de calidad', responsable: 'Quality', entregable: 'Calibración completada' }
-          ]
-        },
-        mes3: {
-          titulo: 'Sostenibilidad', periodo: 'Días 61-90',
-          acciones: [
-            { semana: 'S9-S10', accion: 'Evaluar progreso: comparar métricas pre vs post', responsable: 'Quality', entregable: 'Reporte comparativo' },
-            { semana: 'S9-S10', accion: 'Ajustar acciones según resultados', responsable: 'Gerencia', entregable: 'Plan actualizado' },
-            { semana: 'S11-S12', accion: 'Documentar mejores prácticas y lecciones aprendidas', responsable: 'Quality', entregable: 'Knowledge base actualizado' },
-            { semana: 'S11-S12', accion: 'Definir modelo de sostenibilidad', responsable: 'Gerencia', entregable: 'Modelo operativo aprobado' }
-          ]
-        }
-      },
-      governance: {
-        reuniones: [
-          { nombre: 'War Room Calidad', frecuencia: 'Semanal', participantes: 'Quality, Supervisores, Training', objetivo: 'Revisar métricas, coaching cases' },
-          { nombre: 'Steering Committee', frecuencia: 'Quincenal', participantes: 'Gerencia, Quality, RRHH', objetivo: 'Avance roadmap, decisiones' },
-          { nombre: 'Review Ejecutivo', frecuencia: 'Mensual', participantes: 'Dirección, Gerencia', objetivo: 'Resultados, inversiones, ajustes' }
-        ],
-        duenos: [
-          { hallazgo: 'Errores fatales', owner: 'Gerencia de Calidad', soporte: 'RRHH, Supervisores', escalamiento: 'Dirección' },
-          { hallazgo: 'Gaps críticos', owner: 'Training & Development', soporte: 'Quality, Supervisores', escalamiento: 'Gerencia' },
-          { hallazgo: 'Brechas segmentos', owner: 'Gerencia de Operaciones', soporte: 'Quality, BPOs', escalamiento: 'Dirección' },
-          { hallazgo: 'Agentes en riesgo', owner: 'Supervisores directos', soporte: 'Quality, RRHH', escalamiento: 'Gerencia' }
-        ]
       }
     };
 
@@ -905,6 +540,402 @@
     }
 
     // ── 8. Detector de hallazgos ──────────────────────────────────────
+
+    // ── R6: Tendencia temporal ─────────────────────────────────────────
+    function analizarTendenciaTemporal(records) {
+      // Agrupar por SEMANA y calcular score promedio
+      const semMap = {};
+      records.forEach(r => {
+        const sem = r['SEMANA'] || r['MES'];
+        if (!sem) return;
+        if (!semMap[sem]) semMap[sem] = { label: sem, scores: [], count: 0 };
+        const s = _num(r['QA SCORE']);
+        if (s !== null) { semMap[sem].scores.push(s); semMap[sem].count++; }
+      });
+      const periodos = Object.values(semMap).map(p => ({
+        label: p.label, count: p.count,
+        scorePromedio: p.scores.length > 0 ? _round(p.scores.reduce((a,b)=>a+b,0)/p.scores.length) : 0
+      }));
+      // Ordenar por label (asume SEM XX o Mon-YY sort lexicográfico razonable)
+      periodos.sort((a,b) => a.label.localeCompare(b.label));
+
+      // Detectar caídas consecutivas
+      let caidasConsecutivas = 0;
+      let caidaTotal = 0;
+      let picoAnterior = 0;
+      const tendencias = [];
+      for (let i = 1; i < periodos.length; i++) {
+        const delta = periodos[i].scorePromedio - periodos[i-1].scorePromedio;
+        if (delta < 0) {
+          caidasConsecutivas++;
+          caidaTotal += Math.abs(delta);
+          if (caidasConsecutivas === 1) picoAnterior = periodos[i-1].scorePromedio;
+        } else {
+          if (caidasConsecutivas >= CONFIG.umbrales.tendenciaPeriodos && caidaTotal >= CONFIG.umbrales.tendenciaCaida) {
+            tendencias.push({
+              periodoInicio: periodos[i - caidasConsecutivas - 1]?.label || '?',
+              periodoFin: periodos[i-1].label,
+              caidasConsecutivas, caidaTotal: _round(caidaTotal),
+              scorePico: picoAnterior, scoreActual: periodos[i-1].scorePromedio
+            });
+          }
+          caidasConsecutivas = 0; caidaTotal = 0;
+        }
+      }
+      // Check trailing
+      if (caidasConsecutivas >= CONFIG.umbrales.tendenciaPeriodos && caidaTotal >= CONFIG.umbrales.tendenciaCaida) {
+        tendencias.push({
+          periodoInicio: periodos[periodos.length - caidasConsecutivas - 1]?.label || '?',
+          periodoFin: periodos[periodos.length-1].label,
+          caidasConsecutivas, caidaTotal: _round(caidaTotal),
+          scorePico: picoAnterior, scoreActual: periodos[periodos.length-1].scorePromedio
+        });
+      }
+      return { periodos, tendencias };
+    }
+
+    // ── R7: Concentración errores por supervisor ──────────────────────
+    function analizarConcentracionSupervisores(records) {
+      const supMap = {};
+      records.forEach(r => {
+        const sup = r['SUPERVISOR'];
+        const agId = r['ID AGENTE'];
+        if (!sup || !agId) return;
+        if (!supMap[sup]) supMap[sup] = { nombre: sup, bpo: r['BPO'], agentes: {} };
+        if (!supMap[sup].agentes[agId]) supMap[sup].agentes[agId] = { scores: [], nombre: r['AGENTE'] };
+        const s = _num(r['QA SCORE']);
+        if (s !== null) supMap[sup].agentes[agId].scores.push(s);
+      });
+      return Object.values(supMap).map(sup => {
+        const agList = Object.values(sup.agentes);
+        const totalAgentes = agList.length;
+        const enRiesgo = agList.filter(a => {
+          const avg = a.scores.length > 0 ? a.scores.reduce((x,y)=>x+y,0)/a.scores.length : 0;
+          return avg < CONFIG.umbrales.scoreRiesgo;
+        }).length;
+        const pctRiesgo = _round(_safeDiv(enRiesgo * 100, totalAgentes));
+        const allScores = agList.flatMap(a=>a.scores);
+        const avgScore = allScores.length > 0 ? _round(allScores.reduce((a,b)=>a+b,0)/allScores.length) : 0;
+        return { nombre: sup.nombre, bpo: sup.bpo, totalAgentes, enRiesgo, pctRiesgo, scorePromedio: avgScore };
+      }).filter(s => s.pctRiesgo > CONFIG.umbrales.supConcentracion && s.totalAgentes >= 3)
+        .sort((a,b) => b.pctRiesgo - a.pctRiesgo);
+    }
+
+    // ── R8: Correlación de errores ────────────────────────────────────
+    function analizarCorrelacionErrores(records, colMap) {
+      const pares = [
+        { q1: 'Q11', q2: 'Q12', label: 'Solución → Recontacto' },
+        { q1: 'Q17', q2: 'Q2', label: 'Hold → Escucha Activa' },
+        { q1: 'Q20', q2: 'Q11', label: 'Tipificación → Solución' },
+        { q1: 'Q4', q2: 'Q11', label: 'Dir. Conversación → Solución' },
+        { q1: 'Q15', q2: 'Q12', label: 'Seguridad → Recontacto' }
+      ];
+      const resultado = [];
+      pares.forEach(par => {
+        const col1 = colMap[par.q1];
+        const col2 = colMap[par.q2];
+        if (!col1 || !col2) return;
+        const max1 = col1.puntaje || 1;
+        const max2 = col2.puntaje || 1;
+        let ambosError = 0;
+        let total = 0;
+        records.forEach(r => {
+          const v1 = _num(r[par.q1]);
+          const v2 = _num(r[par.q2]);
+          if (v1 === null || v2 === null) return;
+          total++;
+          if (v1 < max1 && v2 < max2) ambosError++;
+        });
+        const pct = _round(_safeDiv(ambosError * 100, total));
+        if (pct > CONFIG.umbrales.correlacionUmbral) {
+          resultado.push({
+            criterio1: par.q1, criterio2: par.q2,
+            desc1: col1.descripcion || par.q1, desc2: col2.descripcion || par.q2,
+            label: par.label, ambosError, total, porcentaje: pct
+          });
+        }
+      });
+      resultado.sort((a,b) => b.porcentaje - a.porcentaje);
+      return resultado;
+    }
+
+    // ── R9: Variabilidad de agentes ───────────────────────────────────
+    function analizarVariabilidadAgentes(records) {
+      const agMap = {};
+      records.forEach(r => {
+        const id = r['ID AGENTE'];
+        if (!id) return;
+        if (!agMap[id]) agMap[id] = { id, nombre: r['AGENTE'], supervisor: r['SUPERVISOR'], bpo: r['BPO'], scores: [] };
+        const s = _num(r['QA SCORE']);
+        if (s !== null) agMap[id].scores.push(s);
+      });
+      return Object.values(agMap)
+        .filter(a => a.scores.length >= 3) // mínimo 3 evaluaciones
+        .map(a => {
+          const avg = a.scores.reduce((x,y)=>x+y,0)/a.scores.length;
+          const variance = a.scores.reduce((s,v)=>s+Math.pow(v-avg,2),0)/a.scores.length;
+          const desv = _round(Math.sqrt(variance));
+          return { ...a, scorePromedio: _round(avg), desviacion: desv, scoreMin: Math.min(...a.scores), scoreMax: Math.max(...a.scores) };
+        })
+        .filter(a => a.desviacion > CONFIG.umbrales.variabilidadAgente)
+        .sort((a,b) => b.desviacion - a.desviacion);
+    }
+
+    // ── R10: Sesgo de analista ────────────────────────────────────────
+    function analizarSesgoAnalistas(records) {
+      const analMap = {};
+      records.forEach(r => {
+        const anal = r['ANALISTA'];
+        if (!anal) return;
+        if (!analMap[anal]) analMap[anal] = { nombre: anal, scores: [] };
+        const s = _num(r['QA SCORE']);
+        if (s !== null) analMap[anal].scores.push(s);
+      });
+      const analistas = Object.values(analMap).map(a => ({
+        nombre: a.nombre, auditorias: a.scores.length,
+        scorePromedio: a.scores.length > 0 ? _round(a.scores.reduce((x,y)=>x+y,0)/a.scores.length) : 0
+      }));
+      if (analistas.length < 2) return [];
+      const promedioGlobal = _round(analistas.reduce((s,a)=>s+a.scorePromedio,0)/analistas.length);
+      return analistas.map(a => ({
+        ...a, promedioGlobal, desvio: _round(a.scorePromedio - promedioGlobal),
+        desvioAbs: _round(Math.abs(a.scorePromedio - promedioGlobal)),
+        sesgoTipo: a.scorePromedio > promedioGlobal ? 'INDULGENTE' : 'ESTRICTO'
+      })).filter(a => a.desvioAbs > CONFIG.umbrales.sesgoAnalista && a.auditorias >= 10)
+        .sort((a,b) => b.desvioAbs - a.desvioAbs);
+    }
+
+    // ── R11: Muestras insuficientes ───────────────────────────────────
+    function detectarMuestrasInsuficientes(records) {
+      const dims = ['DATA_SKILL', 'DATA_SUB_SKILL'];
+      const resultado = [];
+      dims.forEach(dim => {
+        const mapa = {};
+        records.forEach(r => {
+          const val = r[dim];
+          if (!val) return;
+          mapa[val] = (mapa[val] || 0) + 1;
+        });
+        Object.entries(mapa).forEach(([seg, count]) => {
+          if (count < CONFIG.umbrales.muestraMinima) {
+            resultado.push({ dimension: dim, segmento: seg, auditorias: count, minimo: CONFIG.umbrales.muestraMinima });
+          }
+        });
+      });
+      return resultado;
+    }
+
+    // ── R12: Recuperación de agentes ──────────────────────────────────
+    function detectarRecuperacionAgentes(records) {
+      // Agrupar evaluaciones por agente ordenadas por fecha
+      const agMap = {};
+      records.forEach(r => {
+        const id = r['ID AGENTE'];
+        if (!id) return;
+        if (!agMap[id]) agMap[id] = { id, nombre: r['AGENTE'], supervisor: r['SUPERVISOR'], bpo: r['BPO'], evals: [] };
+        const s = _num(r['QA SCORE']);
+        const sem = r['SEMANA'] || r['MES'] || '';
+        if (s !== null) agMap[id].evals.push({ score: s, periodo: sem });
+      });
+      const recuperados = [];
+      Object.values(agMap).forEach(ag => {
+        if (ag.evals.length < 3) return;
+        // Ordenar por periodo
+        ag.evals.sort((a,b) => a.periodo.localeCompare(b.periodo));
+        // Buscar patrón: al menos 1 eval en Q4 (<65) seguida de 2+ evals en Q1/Q2 (≥75)
+        let tuvoQ4 = false;
+        let mejoras = 0;
+        let scoreInicial = 0;
+        for (const ev of ag.evals) {
+          if (ev.score < 65) { tuvoQ4 = true; mejoras = 0; scoreInicial = ev.score; }
+          else if (tuvoQ4 && ev.score >= 75) { mejoras++; }
+        }
+        if (tuvoQ4 && mejoras >= CONFIG.umbrales.recuperacionPeriodos) {
+          const ultimoScore = ag.evals[ag.evals.length-1].score;
+          recuperados.push({
+            id: ag.id, nombre: ag.nombre, supervisor: ag.supervisor, bpo: ag.bpo,
+            scoreInicial, scoreActual: ultimoScore, mejora: _round(ultimoScore - scoreInicial),
+            evaluaciones: ag.evals.length
+          });
+        }
+      });
+      return recuperados.sort((a,b) => b.mejora - a.mejora);
+    }
+
+    // ── R13: Criterio con mejora estancada ────────────────────────────
+    function detectarCriteriosEstancados(records, colMap) {
+      // Agrupar por periodo y calcular % error por criterio
+      const periodoMap = {};
+      records.forEach(r => {
+        const per = r['SEMANA'] || r['MES'];
+        if (!per) return;
+        if (!periodoMap[per]) periodoMap[per] = {};
+        CONFIG.criteriosConPuntaje.forEach(q => {
+          const col = colMap[q];
+          if (!col) return;
+          const v = _num(r[q]);
+          if (v === null) return;
+          if (!periodoMap[per][q]) periodoMap[per][q] = { total: 0, conError: 0 };
+          periodoMap[per][q].total++;
+          if (v < (col.puntaje || 1)) periodoMap[per][q].conError++;
+        });
+      });
+      const periodos = Object.keys(periodoMap).sort();
+      if (periodos.length < CONFIG.umbrales.estancamientoPeriodos) return [];
+
+      const estancados = [];
+      CONFIG.criteriosConPuntaje.forEach(q => {
+        const serie = periodos.map(p => {
+          const d = periodoMap[p]?.[q];
+          return d && d.total > 0 ? _round(d.conError * 100 / d.total) : null;
+        }).filter(v => v !== null);
+        if (serie.length < CONFIG.umbrales.estancamientoPeriodos) return;
+        // Check last N periods for stagnation
+        const ultimos = serie.slice(-CONFIG.umbrales.estancamientoPeriodos);
+        const margen = CONFIG.umbrales.estancamientoMargen;
+        const base = ultimos[0];
+        const todosIguales = ultimos.every(v => Math.abs(v - base) <= margen);
+        if (todosIguales && base > 10) { // Solo si el % error es relevante (>10%)
+          const col = colMap[q];
+          estancados.push({
+            criterio: q, descripcion: col?.descripcion || q,
+            pctError: base, periodos: CONFIG.umbrales.estancamientoPeriodos,
+            serie: ultimos
+          });
+        }
+      });
+      return estancados.sort((a,b) => b.pctError - a.pctError);
+    }
+
+    // ── R14: Supervisor con alta dispersión interna ───────────────────
+    function detectarSupervisoresDispersion(records) {
+      const supMap = {};
+      records.forEach(r => {
+        const sup = r['SUPERVISOR'];
+        const agId = r['ID AGENTE'];
+        if (!sup || !agId) return;
+        if (!supMap[sup]) supMap[sup] = { nombre: sup, bpo: r['BPO'], agentes: {} };
+        if (!supMap[sup].agentes[agId]) supMap[sup].agentes[agId] = { scores: [], nombre: r['AGENTE'] };
+        const s = _num(r['QA SCORE']);
+        if (s !== null) supMap[sup].agentes[agId].scores.push(s);
+      });
+      const resultado = [];
+      Object.values(supMap).forEach(sup => {
+        const agList = Object.values(sup.agentes).filter(a => a.scores.length >= 2);
+        if (agList.length < 4) return; // mínimo 4 agentes para que sea relevante
+        const promedios = agList.map(a => _round(a.scores.reduce((x,y)=>x+y,0)/a.scores.length));
+        const avgEquipo = _round(promedios.reduce((a,b)=>a+b,0)/promedios.length);
+        const variance = promedios.reduce((s,v)=>s+Math.pow(v-avgEquipo,2),0)/promedios.length;
+        const desvEquipo = _round(Math.sqrt(variance));
+        // Verificar que tiene agentes en Q1 y Q4 simultáneamente
+        const tieneQ1 = promedios.some(p => p >= 85);
+        const tieneQ4 = promedios.some(p => p < 65);
+        if (desvEquipo > CONFIG.umbrales.supDispersionUmbral && tieneQ1 && tieneQ4) {
+          const enQ1 = promedios.filter(p => p >= 85).length;
+          const enQ4 = promedios.filter(p => p < 65).length;
+          resultado.push({
+            nombre: sup.nombre, bpo: sup.bpo, totalAgentes: agList.length,
+            desvEquipo, avgEquipo, enQ1, enQ4,
+            scoreMin: Math.min(...promedios), scoreMax: Math.max(...promedios)
+          });
+        }
+      });
+      return resultado.sort((a,b) => b.desvEquipo - a.desvEquipo);
+    }
+
+    // ── R15: Error fatal desproporcionado por canal/skill ─────────────
+    function detectarErrorFatalPorCanal(records, colMap) {
+      const criteriosFatales = ['Q12','Q15'];
+      const dimensiones = ['DATA_CANAL','DATA_SKILL'];
+      const resultado = [];
+
+      criteriosFatales.forEach(qf => {
+        const col = colMap[qf];
+        if (!col) return;
+        const maxPts = col.puntaje || 1;
+        // Calcular tasa general
+        let totalGen = 0, errorGen = 0;
+        records.forEach(r => {
+          const v = _num(r[qf]);
+          if (v === null) return;
+          totalGen++;
+          if (v < maxPts) errorGen++;
+        });
+        const tasaGeneral = totalGen > 0 ? _round(errorGen * 100 / totalGen) : 0;
+        if (tasaGeneral === 0) return;
+
+        dimensiones.forEach(dim => {
+          const segMap = {};
+          records.forEach(r => {
+            const seg = r[dim];
+            if (!seg) return;
+            const v = _num(r[qf]);
+            if (v === null) return;
+            if (!segMap[seg]) segMap[seg] = { total: 0, error: 0 };
+            segMap[seg].total++;
+            if (v < maxPts) segMap[seg].error++;
+          });
+          Object.entries(segMap).forEach(([seg, d]) => {
+            if (d.total < 10) return; // mínimo 10 auditorías
+            const tasaSeg = _round(d.error * 100 / d.total);
+            const ratio = tasaGeneral > 0 ? _round(tasaSeg / tasaGeneral, 1) : 0;
+            if (ratio >= CONFIG.umbrales.errorFatalDesproporcion) {
+              resultado.push({
+                criterioFatal: qf, descFatal: col.descripcion || qf,
+                dimension: dim, segmento: seg,
+                tasaSegmento: tasaSeg, tasaGeneral,
+                ratio, errores: d.error, total: d.total
+              });
+            }
+          });
+        });
+      });
+      return resultado.sort((a,b) => b.ratio - a.ratio);
+    }
+
+    // ── R16: Agente sin monitoreo reciente ────────────────────────────
+    function detectarAgentesSinMonitoreo(records) {
+      // Encontrar fecha más reciente del dataset
+      let fechaMax = null;
+      const agMap = {};
+      records.forEach(r => {
+        const fechaStr = r['FECHA MONITOREO'] || r['FECHA'];
+        const agId = r['ID AGENTE'];
+        if (!agId) return;
+        let fecha = null;
+        if (fechaStr) {
+          if (typeof fechaStr === 'number') {
+            // Excel serial date
+            fecha = new Date((fechaStr - 25569) * 86400000);
+          } else {
+            fecha = new Date(fechaStr);
+          }
+          if (isNaN(fecha.getTime())) fecha = null;
+        }
+        if (!agMap[agId]) agMap[agId] = { id: agId, nombre: r['AGENTE'], supervisor: r['SUPERVISOR'], bpo: r['BPO'], ultimaFecha: null, totalEvals: 0 };
+        agMap[agId].totalEvals++;
+        if (fecha) {
+          if (!agMap[agId].ultimaFecha || fecha > agMap[agId].ultimaFecha) agMap[agId].ultimaFecha = fecha;
+          if (!fechaMax || fecha > fechaMax) fechaMax = fecha;
+        }
+      });
+      if (!fechaMax) return [];
+      const umbralMs = CONFIG.umbrales.sinMonitoreoDias * 24 * 60 * 60 * 1000;
+      const resultado = [];
+      Object.values(agMap).forEach(ag => {
+        if (!ag.ultimaFecha) return;
+        const diff = fechaMax.getTime() - ag.ultimaFecha.getTime();
+        if (diff > umbralMs) {
+          const diasSin = Math.floor(diff / (24*60*60*1000));
+          resultado.push({
+            ...ag, diasSinMonitoreo: diasSin,
+            ultimaFechaStr: ag.ultimaFecha.toISOString().split('T')[0]
+          });
+        }
+      });
+      return resultado.sort((a,b) => b.diasSinMonitoreo - a.diasSinMonitoreo);
+    }
+
     function detectarHallazgos(analisis) {
       const todos = [];
 
@@ -963,17 +994,154 @@
       const promGeneral = analisis.metricas.scorePromedio;
       Object.entries(analisis.segmentos).forEach(([dim, info]) => {
         info.segmentos.forEach(seg => {
-          if (seg.scorePromedio > promGeneral + 15) {
+          if (seg.scorePromedio > promGeneral + 10) {
             todos.push({
               id: `OPORT-${dim}-${seg.nombre}`, tipo: 'oportunidad', subtipo: 'oportunidad',
               dimension: dim, segmento: seg.nombre, scoreSegmento: seg.scorePromedio, scoreGeneral: promGeneral,
               diferencia: _round(seg.scorePromedio - promGeneral), datos: seg,
               scorePriorizacion: _round((seg.scorePromedio - promGeneral) * CONFIG.priorizacion.multiplicadores.oportunidad),
-              regla: 'REGLA 5: Oportunidad (score > promedio + 15)'
+              regla: 'REGLA 5: Oportunidad (score > promedio + 10)'
             });
           }
         });
       });
+
+      // REGLA 6: Tendencia negativa
+      if (analisis.tendencia) {
+        analisis.tendencia.tendencias.forEach((t, idx) => {
+          todos.push({
+            id: `TEND-${idx+1}`, tipo: 'tendencia_negativa', subtipo: 'tendencia_negativa',
+            datos: t, caidaTotal: t.caidaTotal, periodos: t.caidasConsecutivas,
+            scorePriorizacion: _round(t.caidaTotal * CONFIG.priorizacion.multiplicadores.tendencia),
+            regla: `REGLA 6: Tendencia negativa (${t.caidasConsecutivas} periodos, -${t.caidaTotal} pts)`
+          });
+        });
+      }
+
+      // REGLA 7: Concentración de errores en supervisor
+      if (analisis.concentracionSup) {
+        analisis.concentracionSup.forEach((sup, idx) => {
+          todos.push({
+            id: `SUP-${idx+1}`, tipo: 'supervisor_concentracion', subtipo: 'supervisor_concentracion',
+            supervisor: sup.nombre, datos: sup, pctRiesgo: sup.pctRiesgo,
+            scorePriorizacion: _round(sup.pctRiesgo * CONFIG.priorizacion.multiplicadores.supervisor / 10),
+            regla: `REGLA 7: Supervisor con ${sup.pctRiesgo}% agentes en riesgo`
+          });
+        });
+      }
+
+      // REGLA 8: Correlación de errores
+      if (analisis.correlaciones) {
+        analisis.correlaciones.forEach((cor, idx) => {
+          todos.push({
+            id: `CORR-${cor.criterio1}-${cor.criterio2}`, tipo: 'correlacion_errores', subtipo: 'correlacion_errores',
+            criterio1: cor.criterio1, criterio2: cor.criterio2,
+            desc1: cor.desc1, desc2: cor.desc2, label: cor.label,
+            datos: cor, pctCorrelacion: cor.porcentaje,
+            scorePriorizacion: _round(cor.porcentaje * CONFIG.priorizacion.multiplicadores.correlacion / 10),
+            regla: `REGLA 8: Correlación ${cor.criterio1}↔${cor.criterio2} (${cor.porcentaje}%)`
+          });
+        });
+      }
+
+      // REGLA 9: Variabilidad de agentes
+      if (analisis.variabilidad && analisis.variabilidad.length > 0) {
+        const avgDesv = _round(analisis.variabilidad.reduce((s,a) => s+a.desviacion, 0) / analisis.variabilidad.length);
+        todos.push({
+          id: 'VAR-AGENTES', tipo: 'variabilidad_agente', subtipo: 'variabilidad_agente',
+          datos: { agentes: analisis.variabilidad, cantAgentes: analisis.variabilidad.length, desvPromedio: avgDesv },
+          desv: avgDesv,
+          scorePriorizacion: _round(analisis.variabilidad.length * CONFIG.priorizacion.multiplicadores.variabilidad),
+          regla: `REGLA 9: ${analisis.variabilidad.length} agentes con desv. estándar >${CONFIG.umbrales.variabilidadAgente}`
+        });
+      }
+
+      // REGLA 10: Sesgo de analista
+      if (analisis.sesgoAnalistas) {
+        analisis.sesgoAnalistas.forEach((an, idx) => {
+          todos.push({
+            id: `SESGO-${idx+1}`, tipo: 'sesgo_analista', subtipo: 'sesgo_analista',
+            analista: an.nombre, datos: an, desvio: an.desvio,
+            scorePriorizacion: _round(an.desvioAbs * CONFIG.priorizacion.multiplicadores.sesgo),
+            regla: `REGLA 10: Analista ${an.nombre} (${an.sesgoTipo}, desvío ${an.desvio > 0 ? '+' : ''}${an.desvio} pts)`
+          });
+        });
+      }
+
+      // REGLA 11: Muestras insuficientes
+      if (analisis.muestrasInsuf) {
+        analisis.muestrasInsuf.forEach((mi, idx) => {
+          todos.push({
+            id: `MUESTRA-${mi.segmento}`, tipo: 'muestra_insuficiente', subtipo: 'muestra_insuficiente',
+            segmento: mi.segmento, datos: mi,
+            scorePriorizacion: _round((CONFIG.umbrales.muestraMinima - mi.auditorias) * CONFIG.priorizacion.multiplicadores.muestra),
+            regla: `REGLA 11: ${mi.segmento} con solo ${mi.auditorias} auditorías (<${mi.minimo})`
+          });
+        });
+      }
+
+      // REGLA 12: Recuperación de agentes
+      if (analisis.recuperados && analisis.recuperados.length > 0) {
+        todos.push({
+          id: 'RECUP-AGENTES', tipo: 'recuperacion_agente', subtipo: 'recuperacion_agente',
+          datos: { agentes: analisis.recuperados, cantAgentes: analisis.recuperados.length },
+          agentesRecup: analisis.recuperados.length,
+          scorePriorizacion: _round(analisis.recuperados.length * CONFIG.priorizacion.multiplicadores.recuperacion),
+          regla: `REGLA 12: ${analisis.recuperados.length} agentes con recuperación sostenida`
+        });
+      }
+
+      // REGLA 13: Criterios estancados
+      if (analisis.criteriosEstancados) {
+        analisis.criteriosEstancados.forEach((ce, idx) => {
+          todos.push({
+            id: `ESTANC-${ce.criterio}`, tipo: 'criterio_estancado', subtipo: 'criterio_estancado',
+            criterio: ce.criterio, criterioDesc: ce.descripcion,
+            datos: ce, periodos_estancados: ce.periodos, pctError: ce.pctError,
+            meta_reduccion: _round(ce.pctError * 0.3),
+            scorePriorizacion: _round(ce.pctError * CONFIG.priorizacion.multiplicadores.estancamiento / 10),
+            regla: `REGLA 13: ${ce.criterio} estancado en ${ce.pctError}% error por ${ce.periodos} periodos`
+          });
+        });
+      }
+
+      // REGLA 14: Supervisor con alta dispersión
+      if (analisis.supDispersion) {
+        analisis.supDispersion.forEach((sd, idx) => {
+          todos.push({
+            id: `DISP-${idx+1}`, tipo: 'supervisor_dispersion', subtipo: 'supervisor_dispersion',
+            supervisor: sd.nombre, datos: sd, desv_equipo: sd.desvEquipo,
+            scorePriorizacion: _round(sd.desvEquipo * CONFIG.priorizacion.multiplicadores.sup_dispersion / 10),
+            regla: `REGLA 14: Supervisor ${sd.nombre} con dispersión ${sd.desvEquipo} (Q1: ${sd.enQ1}, Q4: ${sd.enQ4})`
+          });
+        });
+      }
+
+      // REGLA 15: Error fatal desproporcionado por canal/skill
+      if (analisis.fatalPorCanal) {
+        analisis.fatalPorCanal.forEach((fc, idx) => {
+          todos.push({
+            id: `FATALCANAL-${fc.criterioFatal}-${fc.segmento}`, tipo: 'error_fatal_canal', subtipo: 'error_fatal_canal',
+            criterio_fatal: fc.criterioFatal, canal_skill: fc.segmento,
+            tasa_canal: fc.tasaSegmento, meta_tasa: _round(fc.tasaGeneral * 1.2),
+            datos: fc,
+            scorePriorizacion: _round(fc.ratio * fc.tasaSegmento * CONFIG.priorizacion.multiplicadores.fatal_canal / 10),
+            regla: `REGLA 15: ${fc.criterioFatal} en ${fc.segmento}: ${fc.tasaSegmento}% (${fc.ratio}x promedio)`
+          });
+        });
+      }
+
+      // REGLA 16: Agentes sin monitoreo reciente
+      if (analisis.sinMonitoreo && analisis.sinMonitoreo.length > 0) {
+        todos.push({
+          id: 'SIN-MONITOREO', tipo: 'agente_sin_monitoreo', subtipo: 'agente_sin_monitoreo',
+          datos: { agentes: analisis.sinMonitoreo, cantAgentes: analisis.sinMonitoreo.length },
+          cant_agentes: analisis.sinMonitoreo.length,
+          dias_sin: CONFIG.umbrales.sinMonitoreoDias,
+          scorePriorizacion: _round(analisis.sinMonitoreo.length * CONFIG.priorizacion.multiplicadores.sin_monitoreo),
+          regla: `REGLA 16: ${analisis.sinMonitoreo.length} agentes sin monitoreo en >${CONFIG.umbrales.sinMonitoreoDias} días`
+        });
+      }
 
       // Deduplicar
       const vistos = new Map();
@@ -982,7 +1150,7 @@
         if (!vistos.has(key) || vistos.get(key).scorePriorizacion < h.scorePriorizacion) vistos.set(key, h);
       });
       const deduplicados = Array.from(vistos.values()).sort((a,b)=>b.scorePriorizacion - a.scorePriorizacion);
-      const top = deduplicados.slice(0, CONFIG.formatoDocumento.topHallazgos);
+      const top = deduplicados.slice(0, Math.max(CONFIG.formatoDocumento.topHallazgos, 10));
       const umbP = CONFIG.priorizacion.umbralesPrioridad;
       top.forEach((h,i) => {
         h.prioridadCalculada = h.scorePriorizacion >= umbP.critica ? 'CRITICA' : h.scorePriorizacion >= umbP.alta ? 'ALTA' : 'MEDIA';
@@ -990,84 +1158,6 @@
       });
       return top;
     }
-
-    // ── 9. Generador de Insights ──────────────────────────────────────
-    function generarInsight(hallazgo, analisis) {
-      const cr = CONFIG.causasRaiz;
-      let causas;
-      if (hallazgo.tipo === 'error_fatal') causas = cr[`error_fatal_${hallazgo.criterio}`] || cr.gap_criterio_generico;
-      else if (hallazgo.tipo === 'gap_criterio' || hallazgo.tipo === 'error_frecuente') causas = cr[`gap_criterio_${hallazgo.criterio}`] || cr.gap_criterio_generico;
-      else if (hallazgo.tipo === 'brecha_segmento') {
-        const dim = (hallazgo.dimension||'').toLowerCase();
-        causas = dim === 'bpo' ? cr.brecha_bpo : dim === 'data_canal' ? cr.brecha_canal : cr.brecha_skill;
-      } else if (hallazgo.tipo === 'oportunidad') {
-        causas = (hallazgo.dimension||'').toLowerCase() === 'data_canal' ? cr.oportunidad_canal : cr.oportunidad_segmento;
-      } else causas = cr.gap_criterio_generico;
-
-      // Impacto
-      const indicadores = (hallazgo.indicadores || []).map(ind => ({ indicador: ind, descripcion: CONFIG.impactoPorIndicador[ind] || 'Impacto en operación' }));
-      let severidad = 'MEDIA';
-      if (hallazgo.tipo === 'error_fatal') severidad = 'MUY ALTA';
-      else if (hallazgo.scorePriorizacion >= CONFIG.priorizacion.umbralesPrioridad.critica) severidad = 'ALTA';
-      else if (hallazgo.scorePriorizacion >= CONFIG.priorizacion.umbralesPrioridad.alta) severidad = 'MEDIA-ALTA';
-
-      // Patrones
-      const patrones = [];
-      if (hallazgo.criterio && analisis.comentarios.conteosPorCategoria[hallazgo.criterio]) {
-        const cat = analisis.comentarios.conteosPorCategoria[hallazgo.criterio];
-        if (cat.total > 0) {
-          const topP = Object.entries(cat.palabras).filter(([,c])=>c>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
-          patrones.push({ tipo: 'text_mining', descripcion: `${cat.total} menciones en comentarios`, detalle: topP.map(([p,c])=>`"${p}" (${c})`) });
-        }
-      }
-      if (analisis.agentes.enRiesgo.length > 0) {
-        patrones.push({ tipo: 'agentes', descripcion: `${analisis.agentes.enRiesgo.length} agentes con score <${CONFIG.umbrales.scoreRiesgo}` });
-      }
-
-      // Narrativa
-      let narrativa = '';
-      if (hallazgo.tipo === 'error_fatal') {
-        narrativa = `El hallazgo de errores fatales en ${hallazgo.criterioDesc} representa un riesgo ${severidad.toLowerCase()} para la operación, con ${hallazgo.datos.porcentajeError}% de incidencia.`;
-      } else if (hallazgo.tipo === 'gap_criterio' || hallazgo.tipo === 'error_frecuente') {
-        narrativa = `El criterio "${hallazgo.criterioDesc}" muestra un gap ponderado de ${hallazgo.datos.gapPonderado}%, con ${hallazgo.datos.porcentajeError}% de auditorías con error.`;
-      } else if (hallazgo.tipo === 'brecha_segmento') {
-        narrativa = `Brecha de ${hallazgo.gap} puntos entre ${hallazgo.segmentoMejor} (${hallazgo.scoreMejor}) y ${hallazgo.segmentoPeor} (${hallazgo.scorePeor}).`;
-      } else if (hallazgo.tipo === 'oportunidad') {
-        narrativa = `${hallazgo.segmento} supera el promedio general en ${hallazgo.diferencia} puntos. Oportunidad de replicación.`;
-      }
-      if (patrones.length > 0 && patrones[0].tipo === 'text_mining') narrativa += ` Análisis de comentarios: ${patrones[0].descripcion}.`;
-
-      return { causasRaiz: causas, impactoNegocio: { indicadores, severidad }, patrones, narrativa };
-    }
-
-    // ── 10. Generador de Acciones ─────────────────────────────────────
-    function generarAcciones(hallazgo) {
-      const acc = CONFIG.accionesPorTipo;
-      let templates;
-      switch (hallazgo.tipo) {
-        case 'error_fatal': templates = acc.error_fatal || []; break;
-        case 'gap_criterio': templates = acc.gap_criterio || []; break;
-        case 'error_frecuente': templates = acc.error_frecuente || []; break;
-        case 'brecha_segmento': templates = acc.brecha_segmento || []; break;
-        case 'oportunidad': templates = acc.oportunidad || []; break;
-        default: templates = acc.gap_criterio || [];
-      }
-      const vars = {
-        criterio: hallazgo.criterio || 'N/A', criterio_desc: hallazgo.criterioDesc || 'criterio no especificado',
-        pct_error: hallazgo.datos?.porcentajeError || 0, gap: hallazgo.gap || hallazgo.datos?.gap || 0,
-        meta_critica: _round((hallazgo.datos?.porcentajeError || 25) * 0.5),
-        segmento_mejor: hallazgo.segmentoMejor || 'mejor segmento',
-        segmento_peor: hallazgo.segmentoPeor || 'segmento con oportunidad',
-        score_mejor: hallazgo.scoreMejor || 0, score_peor: hallazgo.scorePeor || 0,
-        meta_gap: hallazgo.gap ? _round(hallazgo.gap / 2) : 7.5
-      };
-      const personalize = str => str ? str.replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] !== undefined ? vars[key] : `{{${key}}}`) : str;
-      return templates.map(t => ({
-        prioridad: t.prioridad, titulo: personalize(t.titulo), objetivo: personalize(t.objetivo),
-        tacticas: t.tacticas.map(tc => personalize(tc)), meta_smart: personalize(t.meta_smart), metrica: personalize(t.metrica)
-      }));
-    }
-
 
     // ════════════════════════════════════════════════════════════════════════
     // MAIN ORCHESTRATOR
@@ -1081,13 +1171,33 @@
       const agentes = identificarAgentesRiesgo(records);
       const supervisores = analizarSupervisores(records);
 
-      const analisis = { metricas, gaps, errores, segmentos, comentarios, agentes, supervisores };
-      const hallazgos = detectarHallazgos(analisis);
+      // Nuevas reglas 6-12
+      const tendencia = analizarTendenciaTemporal(records);
+      const concentracionSup = analizarConcentracionSupervisores(records);
+      const correlaciones = analizarCorrelacionErrores(records, colMap);
+      const variabilidad = analizarVariabilidadAgentes(records);
+      const sesgoAnalistas = analizarSesgoAnalistas(records);
+      const muestrasInsuf = detectarMuestrasInsuficientes(records);
+      const recuperados = detectarRecuperacionAgentes(records);
 
-      hallazgos.forEach(h => {
-        h.insight = generarInsight(h, analisis);
-        h.acciones = generarAcciones(h);
-      });
+      // Nuevas reglas 14-17
+      const criteriosEstancados = detectarCriteriosEstancados(records, colMap);
+      const supDispersion = detectarSupervisoresDispersion(records);
+      const fatalPorCanal = detectarErrorFatalPorCanal(records, colMap);
+      const sinMonitoreo = detectarAgentesSinMonitoreo(records);
+
+      const analisis = { metricas, gaps, errores, segmentos, comentarios, agentes, supervisores,
+        tendencia, concentracionSup, correlaciones, variabilidad, sesgoAnalistas, muestrasInsuf, recuperados,
+        criteriosEstancados, supDispersion, fatalPorCanal, sinMonitoreo,
+        totales: {
+          agentes: agentes.totalAgentes,
+          supervisores: supervisores.length,
+          analistas: new Set(records.map(r => r['ANALISTA']).filter(Boolean)).size,
+          criterios: gaps.length,
+          periodos: tendencia.periodos?.length || 0
+        }
+      };
+      const hallazgos = detectarHallazgos(analisis);
 
       return { analisis, hallazgos };
     }
@@ -1096,11 +1206,9 @@
     // ════════════════════════════════════════════════════════════════════════
     // RENDERER
     // ════════════════════════════════════════════════════════════════════════
-    const chartsCreated = [];
-
     function scoreColor(s) { return s >= 85 ? 'var(--hia-green)' : s >= 75 ? 'var(--hia-yellow)' : s >= 65 ? 'var(--hia-orange)' : 'var(--hia-red)'; }
     function scoreBadge(s) { return s >= 85 ? 'q1' : s >= 75 ? 'q2' : s >= 65 ? 'q3' : 'q4'; }
-    function prioColor(p) { return p === 'CRITICA' ? '#ef4444' : p === 'ALTA' ? '#f59e0b' : '#1b98e0'; }
+    function prioColor(p) { return p === 'CRITICA' ? '#ef4444' : p === 'ALTA' ? '#f59e0b' : '#3b82f6'; }
     function prioBadge(p) { return p === 'CRITICA' ? 'critica' : p === 'ALTA' ? 'alta' : 'media'; }
 
     function renderPage(resultado) {
@@ -1116,29 +1224,15 @@
       const fechaStr = `${fecha.getDate()} de ${meses[fecha.getMonth()]} de ${fecha.getFullYear()}`;
 
       container.innerHTML = `
-        <div>
-          <h2>🎯 Hallazgos → Insights → Acciones</h2>
-          <p>Modelo analítico de 3 capas para transformar datos operativos en iniciativas accionables</p>
-        </div>
-        <BR><BR>
-
         <nav class="hia-nav" id="hiaNav">
           <button class="hia-nav-btn active" data-section="metodologia">📐 Metodología</button>
-          <button class="hia-nav-btn" data-section="contexto">🏢 Contexto</button>
           <button class="hia-nav-btn" data-section="panoramica">🔭 Vista Panorámica</button>
           <button class="hia-nav-btn" data-section="hallazgos">📊 Hallazgos (${hallazgos.length})</button>
-          <button class="hia-nav-btn" data-section="resumen">📋 Resumen Ejecutivo</button>
-          <button class="hia-nav-btn" data-section="roadmap">🗓️ Roadmap</button>
-          <button class="hia-nav-btn" data-section="governance">🏛️ Governance</button>
         </nav>
 
         <div id="secMetodologia" class="hia-section active"></div>
-        <div id="secContexto" class="hia-section"></div>
         <div id="secPanoramica" class="hia-section"></div>
         <div id="secHallazgos" class="hia-section"></div>
-        <div id="secResumen" class="hia-section"></div>
-        <div id="secRoadmap" class="hia-section"></div>
-        <div id="secGovernance" class="hia-section"></div>
       `;
 
       // Nav logic
@@ -1148,19 +1242,15 @@
           document.querySelectorAll('.hia-section').forEach(s => s.classList.remove('active'));
           btn.classList.add('active');
           const sec = btn.dataset.section;
-          const secMap = { metodologia:'secMetodologia', contexto:'secContexto', panoramica:'secPanoramica', hallazgos:'secHallazgos', resumen:'secResumen', roadmap:'secRoadmap', governance:'secGovernance' };
+          const secMap = { metodologia:'secMetodologia', panoramica:'secPanoramica', hallazgos:'secHallazgos' };
           document.getElementById(secMap[sec]).classList.add('active');
           setTimeout(notifyHeight, 100);
         });
       });
 
       renderMetodologia();
-      renderContexto(analisis);
       renderPanoramica(analisis);
       renderHallazgos(hallazgos, analisis);
-      renderResumen(hallazgos, analisis);
-      renderRoadmap();
-      renderGovernance();
     }
 
     // ── SECTION 1: Metodología ────────────────────────────────────────
@@ -1168,36 +1258,30 @@
       document.getElementById('secMetodologia').innerHTML = `
         <div class="hia-section-title"><span class="icon" style="background:var(--hia-blue-light);color:var(--hia-blue);">📐</span> Metodología</div>
         <div class="hia-card">
-          <div class="hia-card-title">Modelo Hallazgos → Insights → Acciones (H→I→A)</div>
-          <p style="font-size:14px;color:var(--hia-text-sec);margin-bottom:20px;">Este análisis aplica un modelo de 3 capas para transformar datos operativos en iniciativas accionables.</p>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px;">
-            <div style="padding:20px;background:var(--hia-blue-light);border-radius:10px;border-left:4px solid var(--hia-blue);">
-              <div style="font-weight:800;font-size:15px;margin-bottom:6px;">📊 HALLAZGOS</div>
-              <div style="font-size:13px;color:var(--hia-text-sec);">Datos objetivos del análisis cuantitativo</div>
-              <div style="font-size:12px;margin-top:8px;color:var(--hia-blue);font-weight:600;">¿Qué dicen los datos?</div>
-            </div>
-            <div style="padding:20px;background:var(--hia-yellow-light);border-radius:10px;border-left:4px solid var(--hia-yellow);">
-              <div style="font-weight:800;font-size:15px;margin-bottom:6px;">💡 INSIGHTS</div>
-              <div style="font-size:13px;color:var(--hia-text-sec);">Interpretación, causas raíz e impacto</div>
-              <div style="font-size:12px;margin-top:8px;color:#b45309;font-weight:600;">¿Por qué está pasando?</div>
-            </div>
-            <div style="padding:20px;background:var(--hia-green-light);border-radius:10px;border-left:4px solid var(--hia-green);">
-              <div style="font-weight:800;font-size:15px;margin-bottom:6px;">🎬 ACCIONES</div>
-              <div style="font-size:13px;color:var(--hia-text-sec);">Iniciativas priorizadas con metas SMART</div>
-              <div style="font-size:12px;margin-top:8px;color:#047857;font-weight:600;">¿Qué hacemos al respecto?</div>
-            </div>
-          </div>
+          <div class="hia-card-title">Motor de Detección Automática de Hallazgos</div>
+          <p style="font-size:14px;color:var(--hia-text-sec);margin-bottom:20px;">El sistema aplica 16 reglas de detección sobre los datos de auditoría para identificar hallazgos de forma automática. Cada hallazgo se prioriza según su frecuencia, impacto y tipo.</p>
         </div>
         <div class="hia-card">
           <div class="hia-card-title">Reglas de Detección Automática</div>
           <div class="hia-table-wrap"><table class="hia-table">
-            <thead><tr><th>#</th><th>Regla</th><th>Umbral</th></tr></thead>
+            <thead><tr><th>#</th><th>Regla</th><th>Umbral</th><th>Explicación</th></tr></thead>
             <tbody>
-              <tr><td>1</td><td>Gaps críticos en criterios</td><td>Gap ponderado > ${CONFIG.umbrales.gapCritico}%</td></tr>
-              <tr><td>2</td><td>Errores frecuentes</td><td>> ${CONFIG.umbrales.errorFrecuente}% de auditorías con error</td></tr>
-              <tr><td>3</td><td>Brechas entre segmentos</td><td>Gap > ${CONFIG.umbrales.gapSegmento} puntos</td></tr>
-              <tr><td>4</td><td>Errores fatales (Q12/Q15)</td><td>> ${CONFIG.umbrales.errorFatal}% de incidencia</td></tr>
-              <tr><td>5</td><td>Oportunidades de replicación</td><td>Score > promedio + 15 pts</td></tr>
+              <tr><td>1</td><td>Gaps críticos en criterios</td><td>Gap ponderado > ${CONFIG.umbrales.gapCritico}%</td><td>Identifica criterios donde la diferencia entre el puntaje máximo posible y el obtenido, normalizada por peso, supera el umbral. Prioriza criterios de alto impacto con bajo cumplimiento.</td></tr>
+              <tr><td>2</td><td>Errores frecuentes</td><td>> ${CONFIG.umbrales.errorFrecuente}% de auditorías con error</td><td>Detecta criterios que fallan en más de 1 de cada 4 auditorías. Señala problemas sistémicos de conocimiento o proceso, no casos aislados.</td></tr>
+              <tr><td>3</td><td>Brechas entre segmentos</td><td>Gap > ${CONFIG.umbrales.gapSegmento} puntos</td><td>Compara score promedio entre BPOs, canales, skills y sub-skills. Un gap grande indica condiciones desiguales que requieren intervención focalizada.</td></tr>
+              <tr><td>4</td><td>Errores fatales (Q12/Q15)</td><td>> ${CONFIG.umbrales.errorFatal}% de incidencia</td><td>Errores que llevan la evaluación a cero (recontacto innecesario o falla de seguridad). Son los de mayor impacto en score y experiencia del cliente.</td></tr>
+              <tr><td>5</td><td>Oportunidades de replicación</td><td>Score > promedio + 10 pts</td><td>Identifica segmentos con desempeño significativamente superior al promedio. Sus prácticas pueden documentarse y replicarse en segmentos rezagados.</td></tr>
+              <tr><td>6</td><td>Tendencia negativa</td><td>Caída >${CONFIG.umbrales.tendenciaCaida} pts en ${CONFIG.umbrales.tendenciaPeriodos} periodos</td><td>Detecta deterioro sostenido del score a lo largo del tiempo. Permite intervenir antes de que el problema se agrave, a diferencia de las reglas estáticas.</td></tr>
+              <tr><td>7</td><td>Concentración errores en supervisor</td><td>>${CONFIG.umbrales.supConcentracion}% agentes en riesgo</td><td>Cuando muchos agentes de un mismo supervisor están en riesgo, el problema es de liderazgo, no individual. Requiere coaching al supervisor.</td></tr>
+              <tr><td>8</td><td>Correlación de errores</td><td>Co-ocurrencia >${CONFIG.umbrales.correlacionUmbral}%</td><td>Identifica pares de criterios que fallan simultáneamente, revelando cadenas causales (ej: mala solución → recontacto). Permite atacar la causa raíz.</td></tr>
+              <tr><td>9</td><td>Variabilidad de agentes</td><td>Desv. estándar individual >${CONFIG.umbrales.variabilidadAgente}</td><td>Agentes que alternan entre scores altos y ceros. Su problema no es de conocimiento sino de consistencia o atención. Requieren acciones distintas al coaching tradicional.</td></tr>
+              <tr><td>10</td><td>Sesgo de analista</td><td>Desvío >${CONFIG.umbrales.sesgoAnalista} pts vs promedio</td><td>Analistas que califican consistentemente más alto o bajo que sus pares. Compromete la equidad del monitoreo y requiere recalibración.</td></tr>
+              <tr><td>11</td><td>Muestra insuficiente</td><td>&lt;${CONFIG.umbrales.muestraMinima} auditorías por segmento</td><td>Segmentos con pocas auditorías no permiten conclusiones estadísticamente confiables. Evita tomar decisiones sobre datos insuficientes.</td></tr>
+              <tr><td>12</td><td>Recuperación de agentes</td><td>${CONFIG.umbrales.recuperacionPeriodos}+ evals mejorando de Q4 a Q1/Q2</td><td>Agentes que pasaron de bajo rendimiento a desempeño sólido de forma sostenida. Documentar estos casos crea modelos replicables de mejora.</td></tr>
+              <tr><td>13</td><td>Criterio con mejora estancada</td><td>${CONFIG.umbrales.estancamientoPeriodos}+ periodos sin variación (±${CONFIG.umbrales.estancamientoMargen}%)</td><td>Criterios que llevan varios periodos con el mismo % de error. Las acciones actuales no funcionan y se necesita cambiar de estrategia.</td></tr>
+              <tr><td>14</td><td>Supervisor con alta dispersión</td><td>Desv. equipo >${CONFIG.umbrales.supDispersionUmbral} con Q1 y Q4</td><td>Supervisores que tienen agentes excelentes y pésimos al mismo tiempo. Indica coaching desigual — sabe desarrollar talento pero no uniformemente.</td></tr>
+              <tr><td>15</td><td>Error fatal desproporcionado</td><td>Tasa ≥${CONFIG.umbrales.errorFatalDesproporcion}x promedio general</td><td>Un canal o skill con tasa de errores fatales muy superior al promedio. Algo específico de ese segmento dispara el error y requiere intervención diferenciada.</td></tr>
+              <tr><td>16</td><td>Agente sin monitoreo reciente</td><td>>${CONFIG.umbrales.sinMonitoreoDias} días sin auditoría</td><td>Agentes que dejaron de ser monitoreados. Son punto ciego — sin visibilidad de su desempeño actual, no se puede gestionar su calidad.</td></tr>
             </tbody>
           </table></div>
           <div style="margin-top:16px;padding:12px 16px;background:#f8fafc;border-radius:8px;font-size:13px;">
@@ -1206,126 +1290,28 @@
         </div>`;
     }
 
-    // ── SECTION 2: Contexto ───────────────────────────────────────────
-    function renderContexto(analisis) {
-      const m = analisis.metricas;
-      let html = `<div class="hia-section-title"><span class="icon" style="background:var(--hia-purple-light);color:var(--hia-purple);">🏢</span> Contexto General de la Operación</div>`;
-
-      // KPIs
-      html += `<div class="hia-kpi-grid">
-        <div class="hia-kpi"><div class="label">Total Auditorías</div><div class="value">${m.totalAuditorias.toLocaleString()}</div></div>
-        <div class="hia-kpi green"><div class="label">Score Promedio</div><div class="value" style="color:${scoreColor(m.scorePromedio)}">${m.scorePromedio}</div><div class="sub">Mediana: ${m.scoreMediana}</div></div>
-        <div class="hia-kpi purple"><div class="label">Agentes Evaluados</div><div class="value">${m.agentesUnicos}</div><div class="sub">${m.supervisoresUnicos} supervisores</div></div>
-        <div class="hia-kpi"><div class="label">Desviación Estándar</div><div class="value">${m.scoreDesviacion}</div><div class="sub">Min: ${m.scoreMin} | Max: ${m.scoreMax}</div></div>
-      </div>`;
-
-      // BPO + Cuartiles grid
-      html += `<div class="hia-grid-2">
-        <div class="hia-card"><div class="hia-card-title">Distribución por BPO</div>`;
-      Object.entries(m.bpos).forEach(([bpo, info]) => {
-        html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f1f5f9;">
-          <div><span style="font-weight:700;">${bpo}</span><span style="font-size:12px;color:var(--hia-text-sec);margin-left:8px;">${info.total} aud.</span></div>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div class="hia-bar-bg" style="width:120px;"><div class="hia-bar-fill" style="width:${info.scorePromedio}%;background:${scoreColor(info.scorePromedio)};"></div></div>
-            <span style="font-weight:700;color:${scoreColor(info.scorePromedio)};min-width:40px;text-align:right;">${info.scorePromedio}</span>
-          </div>
-        </div>`;
-      });
-      html += `</div>`;
-
-      html += `<div class="hia-card"><div class="hia-card-title">Distribución por Cuartil</div>`;
-      const cConfig = CONFIG.coloresCuartiles;
-      ['Q1','Q2','Q3','Q4'].forEach(c => {
-        const info = m.cuartiles[c] || { cantidad:0, porcentaje:0 };
-        const cc = cConfig[c];
-        html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;">
-          <div><span style="font-weight:700;">${cc.emoji} ${c}</span><span style="font-size:12px;color:var(--hia-text-sec);margin-left:6px;">${cc.rango}</span></div>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div class="hia-bar-bg" style="width:100px;"><div class="hia-bar-fill" style="width:${info.porcentaje}%;background:${scoreColor(c==='Q1'?90:c==='Q2'?80:c==='Q3'?70:50)};"></div></div>
-            <span style="font-size:13px;font-weight:600;min-width:75px;text-align:right;">${info.cantidad} (${info.porcentaje}%)</span>
-          </div>
-        </div>`;
-      });
-      html += `</div></div>`;
-
-      // Chart: Cuartiles
-      html += `<div class="hia-chart-grid">
-        <div class="hia-chart-card"><div class="chart-title">Distribución de Cuartiles</div><canvas id="chartCuartiles"></canvas></div>
-        <div class="hia-chart-card"><div class="chart-title">Score por BPO</div><canvas id="chartBPO"></canvas></div>
-      </div>`;
-
-      document.getElementById('secContexto').innerHTML = html;
-
-      // Render charts
-      setTimeout(() => {
-        const ctx1 = document.getElementById('chartCuartiles');
-        if (ctx1) {
-          chartsCreated.push(new Chart(ctx1, {
-            type: 'doughnut',
-            data: {
-              labels: ['Q1 (≥85)', 'Q2 (75-84)', 'Q3 (65-74)', 'Q4 (<65)'],
-              datasets: [{ data: [m.cuartiles.Q1?.cantidad||0, m.cuartiles.Q2?.cantidad||0, m.cuartiles.Q3?.cantidad||0, m.cuartiles.Q4?.cantidad||0],
-                backgroundColor: ['#10b981','#f59e0b','#f97316','#ef4444'], borderWidth: 0 }]
-            },
-            options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { size: 12 } } } } }
-          }));
-        }
-        const ctx2 = document.getElementById('chartBPO');
-        if (ctx2) {
-          const bpoNames = Object.keys(m.bpos);
-          chartsCreated.push(new Chart(ctx2, {
-            type: 'bar',
-            data: {
-              labels: bpoNames,
-              datasets: [{ label: 'Score Promedio', data: bpoNames.map(b=>m.bpos[b].scorePromedio),
-                backgroundColor: bpoNames.map(b=>scoreColor(m.bpos[b].scorePromedio)+'33'),
-                borderColor: bpoNames.map(b=>scoreColor(m.bpos[b].scorePromedio)),
-                borderWidth: 2, borderRadius: 8 }]
-            },
-            options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false } } }
-          }));
-        }
-      }, 50);
-    }
-
     // ── SECTION 3: Vista Panorámica ───────────────────────────────────
     function renderPanoramica(analisis) {
       let html = `<div class="hia-section-title"><span class="icon" style="background:#fef3c7;color:#b45309;">🔭</span> Vista Panorámica</div>`;
 
-      // Top gaps table
-      html += `<div class="hia-card"><div class="hia-card-title">Top 10 Criterios con Mayor Gap Ponderado</div>
+      // R1: Top gaps table
+      html += `<div class="hia-rule-block warning"><div class="hia-card-title">R1: Top 10 Criterios con Mayor Gap Ponderado</div>
         <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>#</th><th>Criterio</th><th>Descripción</th><th class="num">Máx</th><th class="num">Prom</th><th class="num">Gap%</th><th class="num">% Error</th></tr></thead><tbody>`;
       analisis.gaps.slice(0,10).forEach((g,i) => {
         html += `<tr><td>${i+1}</td><td><strong>${g.criterio}</strong></td><td>${g.descripcion}</td><td class="num">${g.puntajeMaximo}</td><td class="num">${g.promedioObtenido}</td><td class="num">${g.gapPonderado}%</td><td class="num"><span class="hia-badge ${g.porcentajeError>30?'critica':g.porcentajeError>15?'alta':'media'}">${g.porcentajeError}%</span></td></tr>`;
       });
       html += `</tbody></table></div></div>`;
 
-      // Chart: Gaps
-      html += `<div class="hia-chart-grid">
-        <div class="hia-chart-card"><div class="chart-title">Gap Ponderado por Criterio (Top 10)</div><canvas id="chartGaps"></canvas></div>
-        <div class="hia-chart-card"><div class="chart-title">Errores Fatales y Críticos</div><canvas id="chartErrores"></canvas></div>
-      </div>`;
-
-      // Errores fatales table
-      html += `<div class="hia-grid-2">
-        <div class="hia-card"><div class="hia-card-title">⚠️ Errores Fatales</div>
-          <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Criterio</th><th>Descripción</th><th class="num">Errores</th><th class="num">%</th><th>Nivel</th></tr></thead><tbody>`;
-      analisis.errores.fatales.forEach(e => {
-        const nivel = e.porcentajeError > 10 ? '<span class="hia-badge critica">CRÍTICO</span>' : e.porcentajeError > 5 ? '<span class="hia-badge alta">ALTO</span>' : '<span class="hia-badge media">OK</span>';
-        html += `<tr><td><strong>${e.criterio}</strong></td><td>${e.descripcion}</td><td class="num">${e.conError}/${e.totalEvaluados}</td><td class="num">${e.porcentajeError}%</td><td>${nivel}</td></tr>`;
-      });
-      html += `</tbody></table></div></div>`;
-
-      // Errores críticos
-      html += `<div class="hia-card"><div class="hia-card-title">🔴 Errores Críticos (Q4, Q11, Q20)</div>
+      // R2: Errores críticos table
+      html += `<div class="hia-rule-block critical"><div class="hia-card-title">R2: 🔴 Errores Críticos (Q4, Q11, Q20)</div>
           <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Criterio</th><th>Descripción</th><th class="num">Errores</th><th class="num">%</th></tr></thead><tbody>`;
       analisis.errores.criticos.forEach(e => {
         html += `<tr><td><strong>${e.criterio}</strong></td><td>${e.descripcion}</td><td class="num">${e.conError}/${e.totalEvaluados}</td><td class="num"><span class="hia-badge ${e.porcentajeError>25?'critica':'alta'}">${e.porcentajeError}%</span></td></tr>`;
       });
-      html += `</tbody></table></div></div></div>`;
+      html += `</tbody></table></div></div>`;
 
-      // Brechas por segmento
-      html += `<div class="hia-card"><div class="hia-card-title">📊 Brechas por Segmento</div>`;
+      // R3 / R5: Brechas por segmento
+      html += `<div class="hia-rule-block info"><div class="hia-card-title">R3 / R5: 📊 Brechas por Segmento</div>`;
       const dimLabels = { BPO:'BPO', DATA_CANAL:'Canal', DATA_SKILL:'Skill', DATA_SUB_SKILL:'Sub-Skill' };
       Object.entries(analisis.segmentos).forEach(([dim, info]) => {
         html += `<div style="margin-bottom:20px;"><div style="font-weight:700;font-size:14px;margin-bottom:10px;">${dimLabels[dim]||dim} ${info.gap >= CONFIG.umbrales.gapSegmento ? '<span class="hia-badge critica">Gap: '+info.gap+' pts</span>' : info.gap > 0 ? '<span class="hia-badge media">Gap: '+info.gap+' pts</span>' : ''}</div>`;
@@ -1344,62 +1330,280 @@
       });
       html += `</div>`;
 
-      // Text mining
-      html += `<div class="hia-card"><div class="hia-card-title">🔍 Text Mining de Comentarios (${analisis.comentarios.comentariosTotal} analizados)</div>
-        <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>#</th><th>Palabra Clave</th><th>Categoría</th><th class="num">Menciones</th></tr></thead><tbody>`;
-      analisis.comentarios.topPalabras.slice(0,10).forEach((p,i) => {
-        html += `<tr><td>${i+1}</td><td>"${p.palabra}"</td><td><span class="hia-badge media">${p.categoria}</span></td><td class="num">${p.count}</td></tr>`;
+      // R4: Errores fatales table
+      html += `<div class="hia-rule-block critical"><div class="hia-card-title">R4: ⚠️ Errores Fatales</div>
+          <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Criterio</th><th>Descripción</th><th class="num">Errores</th><th class="num">%</th><th>Nivel</th></tr></thead><tbody>`;
+      analisis.errores.fatales.forEach(e => {
+        const nivel = e.porcentajeError > 10 ? '<span class="hia-badge critica">CRÍTICO</span>' : e.porcentajeError > 5 ? '<span class="hia-badge alta">ALTO</span>' : '<span class="hia-badge media">OK</span>';
+        html += `<tr><td><strong>${e.criterio}</strong></td><td>${e.descripcion}</td><td class="num">${e.conError}/${e.totalEvaluados}</td><td class="num">${e.porcentajeError}%</td><td>${nivel}</td></tr>`;
       });
       html += `</tbody></table></div></div>`;
 
-      // Agentes resumen
-      html += `<div class="hia-kpi-grid" style="margin-top:20px;">
-        <div class="hia-kpi"><div class="label">Total Agentes</div><div class="value">${analisis.agentes.totalAgentes}</div></div>
-        <div class="hia-kpi red"><div class="label">Agentes en Riesgo</div><div class="value" style="color:var(--hia-red);">${analisis.agentes.enRiesgo.length}</div><div class="sub">Score &lt;${CONFIG.umbrales.scoreRiesgo}</div></div>
-        <div class="hia-kpi red"><div class="label">Agentes Score=0</div><div class="value" style="color:var(--hia-red);">${analisis.agentes.conScoreCero.length}</div></div>
-        <div class="hia-kpi green"><div class="label">Top Performers</div><div class="value" style="color:var(--hia-green);">${analisis.agentes.topPerformers.length}</div><div class="sub">Score ≥${CONFIG.umbrales.scoreExcelente}</div></div>
-      </div>`;
+      // R6: Tendencia
+      if (analisis.tendencia && analisis.tendencia.tendencias.length > 0) {
+        const items = analisis.tendencia.tendencias;
+        const total = items.length;
+        html += `<div class="hia-rule-block critical">
+          <div style="font-weight:700;font-size:15px;margin-bottom:12px;">📉 R6: Tendencias Negativas Detectadas <span class="hia-badge critica">${total} de ${analisis.totales.periodos} periodos</span></div>`;
+        items.slice(0,5).forEach(t => {
+          html += `<div style="padding:12px;background:var(--hia-red-light);border-radius:8px;margin-bottom:8px;font-size:13px;">
+            <strong>${t.periodoInicio} → ${t.periodoFin}:</strong> Caída de <span style="color:var(--hia-red);font-weight:700;">${t.caidaTotal} pts</span> en ${t.caidasConsecutivas} periodos (de ${t.scorePico} a ${t.scoreActual})
+          </div>`;
+        });
+        if (total > 5) {
+          html += `<div id="exp-r6" style="display:none;">`;
+          items.slice(5).forEach(t => {
+            html += `<div style="padding:12px;background:var(--hia-red-light);border-radius:8px;margin-bottom:8px;font-size:13px;">
+              <strong>${t.periodoInicio} → ${t.periodoFin}:</strong> Caída de <span style="color:var(--hia-red);font-weight:700;">${t.caidaTotal} pts</span> en ${t.caidasConsecutivas} periodos (de ${t.scorePico} a ${t.scoreActual})
+            </div>`;
+          });
+          html += `</div><button class="hia-expand-btn" id="exp-r6-btn" data-label="▼ Ver ${total - 5} más" onclick="toggleExpand('exp-r6')">▼ Ver ${total - 5} más</button>`;
+        }
+        html += `</div>`;
+      }
+
+      // R7: Supervisores con concentración
+      if (analisis.concentracionSup && analisis.concentracionSup.length > 0) {
+        const items = analisis.concentracionSup;
+        const total = items.length;
+        html += `<div class="hia-rule-block critical">
+          <div style="font-weight:700;font-size:15px;margin-bottom:12px;">👥 R7: Supervisores con Alta Concentración de Riesgo <span class="hia-badge critica">${total} de ${analisis.totales.supervisores}</span></div>
+          <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Supervisor</th><th>BPO</th><th class="num">Agentes</th><th class="num">En Riesgo</th><th class="num">% Riesgo</th><th class="num">Score</th></tr></thead><tbody>`;
+        items.slice(0,5).forEach(s => {
+          html += `<tr><td><strong>${(s.nombre||'').substring(0,25)}</strong></td><td>${s.bpo}</td><td class="num">${s.totalAgentes}</td><td class="num" style="color:var(--hia-red);font-weight:700;">${s.enRiesgo}</td><td class="num"><span class="hia-badge critica">${s.pctRiesgo}%</span></td><td class="num" style="color:${scoreColor(s.scorePromedio)}">${s.scorePromedio}</td></tr>`;
+        });
+        html += `</tbody>`;
+        if (total > 5) {
+          html += `<tbody id="exp-r7" style="display:none;">`;
+          items.slice(5).forEach(s => {
+            html += `<tr><td><strong>${(s.nombre||'').substring(0,25)}</strong></td><td>${s.bpo}</td><td class="num">${s.totalAgentes}</td><td class="num" style="color:var(--hia-red);font-weight:700;">${s.enRiesgo}</td><td class="num"><span class="hia-badge critica">${s.pctRiesgo}%</span></td><td class="num" style="color:${scoreColor(s.scorePromedio)}">${s.scorePromedio}</td></tr>`;
+          });
+          html += `</tbody>`;
+        }
+        html += `</table></div>`;
+        if (total > 5) html += `<button class="hia-expand-btn" id="exp-r7-btn" data-label="▼ Ver ${total - 5} más" onclick="toggleExpand('exp-r7')">▼ Ver ${total - 5} más</button>`;
+        html += `</div>`;
+      }
+
+      // R8: Correlaciones
+      if (analisis.correlaciones && analisis.correlaciones.length > 0) {
+        const items = analisis.correlaciones;
+        const total = items.length;
+        html += `<div class="hia-rule-block warning">
+          <div style="font-weight:700;font-size:15px;margin-bottom:12px;">🔗 R8: Correlaciones de Errores <span class="hia-badge alta">${total} pares detectados</span></div>
+          <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Par</th><th>Cadena Causal</th><th class="num">Co-ocurrencia</th><th class="num">%</th></tr></thead><tbody>`;
+        items.slice(0,5).forEach(c => {
+          html += `<tr><td><strong>${c.criterio1} ↔ ${c.criterio2}</strong></td><td>${c.label}</td><td class="num">${c.ambosError}/${c.total}</td><td class="num"><span class="hia-badge critica">${c.porcentaje}%</span></td></tr>`;
+        });
+        html += `</tbody>`;
+        if (total > 5) {
+          html += `<tbody id="exp-r8" style="display:none;">`;
+          items.slice(5).forEach(c => {
+            html += `<tr><td><strong>${c.criterio1} ↔ ${c.criterio2}</strong></td><td>${c.label}</td><td class="num">${c.ambosError}/${c.total}</td><td class="num"><span class="hia-badge critica">${c.porcentaje}%</span></td></tr>`;
+          });
+          html += `</tbody>`;
+        }
+        html += `</table></div>`;
+        if (total > 5) html += `<button class="hia-expand-btn" id="exp-r8-btn" data-label="▼ Ver ${total - 5} más" onclick="toggleExpand('exp-r8')">▼ Ver ${total - 5} más</button>`;
+        html += `</div>`;
+      }
+
+      // R9: Variabilidad
+      if (analisis.variabilidad && analisis.variabilidad.length > 0) {
+        const items = analisis.variabilidad;
+        const total = items.length;
+        html += `<div class="hia-rule-block warning">
+          <div style="font-weight:700;font-size:15px;margin-bottom:12px;">📈 R9: Agentes con Alta Variabilidad <span class="hia-badge alta">${total} de ${analisis.totales.agentes} agentes</span></div>
+          <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Agente</th><th>Supervisor</th><th>BPO</th><th class="num">Prom</th><th class="num">Desv</th><th class="num">Min</th><th class="num">Max</th><th class="num">Evals</th></tr></thead><tbody>`;
+        items.slice(0,5).forEach(a => {
+          html += `<tr><td>${(a.nombre||'').substring(0,22)}</td><td>${(a.supervisor||'').substring(0,18)}</td><td>${a.bpo}</td><td class="num">${a.scorePromedio}</td><td class="num" style="color:var(--hia-red);font-weight:700;">${a.desviacion}</td><td class="num">${a.scoreMin}</td><td class="num">${a.scoreMax}</td><td class="num">${a.scores.length}</td></tr>`;
+        });
+        html += `</tbody>`;
+        if (total > 5) {
+          html += `<tbody id="exp-r9" style="display:none;">`;
+          items.slice(5).forEach(a => {
+            html += `<tr><td>${(a.nombre||'').substring(0,22)}</td><td>${(a.supervisor||'').substring(0,18)}</td><td>${a.bpo}</td><td class="num">${a.scorePromedio}</td><td class="num" style="color:var(--hia-red);font-weight:700;">${a.desviacion}</td><td class="num">${a.scoreMin}</td><td class="num">${a.scoreMax}</td><td class="num">${a.scores.length}</td></tr>`;
+          });
+          html += `</tbody>`;
+        }
+        html += `</table></div>`;
+        if (total > 5) html += `<button class="hia-expand-btn" id="exp-r9-btn" data-label="▼ Ver ${total - 5} más" onclick="toggleExpand('exp-r9')">▼ Ver ${total - 5} más</button>`;
+        html += `</div>`;
+      }
+
+      // R10: Sesgo analistas
+      if (analisis.sesgoAnalistas && analisis.sesgoAnalistas.length > 0) {
+        const items = analisis.sesgoAnalistas;
+        const total = items.length;
+        html += `<div class="hia-rule-block warning">
+          <div style="font-weight:700;font-size:15px;margin-bottom:12px;">⚖️ R10: Sesgo en Analistas <span class="hia-badge alta">${total} de ${analisis.totales.analistas} analistas</span></div>
+          <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Analista</th><th class="num">Auditorías</th><th class="num">Score Prom</th><th class="num">Prom Global</th><th class="num">Desvío</th><th>Tipo</th></tr></thead><tbody>`;
+        items.slice(0,5).forEach(a => {
+          html += `<tr><td><strong>${(a.nombre||'').substring(0,25)}</strong></td><td class="num">${a.auditorias}</td><td class="num">${a.scorePromedio}</td><td class="num">${a.promedioGlobal}</td><td class="num" style="color:${a.desvio>0?'var(--hia-green)':'var(--hia-red)'};font-weight:700;">${a.desvio>0?'+':''}${a.desvio}</td><td><span class="hia-badge ${a.sesgoTipo==='INDULGENTE'?'alta':'critica'}">${a.sesgoTipo}</span></td></tr>`;
+        });
+        html += `</tbody>`;
+        if (total > 5) {
+          html += `<tbody id="exp-r10" style="display:none;">`;
+          items.slice(5).forEach(a => {
+            html += `<tr><td><strong>${(a.nombre||'').substring(0,25)}</strong></td><td class="num">${a.auditorias}</td><td class="num">${a.scorePromedio}</td><td class="num">${a.promedioGlobal}</td><td class="num" style="color:${a.desvio>0?'var(--hia-green)':'var(--hia-red)'};font-weight:700;">${a.desvio>0?'+':''}${a.desvio}</td><td><span class="hia-badge ${a.sesgoTipo==='INDULGENTE'?'alta':'critica'}">${a.sesgoTipo}</span></td></tr>`;
+          });
+          html += `</tbody>`;
+        }
+        html += `</table></div>`;
+        if (total > 5) html += `<button class="hia-expand-btn" id="exp-r10-btn" data-label="▼ Ver ${total - 5} más" onclick="toggleExpand('exp-r10')">▼ Ver ${total - 5} más</button>`;
+        html += `</div>`;
+      }
+
+      // R11: Muestras
+      if (analisis.muestrasInsuf && analisis.muestrasInsuf.length > 0) {
+        const items = analisis.muestrasInsuf;
+        const total = items.length;
+        html += `<div class="hia-rule-block info">
+          <div style="font-weight:700;font-size:15px;margin-bottom:12px;">⚠️ R11: Muestras Insuficientes <span class="hia-badge media">${total} segmentos detectados</span></div>`;
+        items.slice(0,5).forEach(mi => {
+          html += `<div style="padding:10px 14px;background:#fefce8;border-left:3px solid var(--hia-yellow);border-radius:0 6px 6px 0;margin-bottom:6px;font-size:13px;">
+            <strong>${mi.segmento}</strong> (${mi.dimension}): solo ${mi.auditorias} auditorías — mínimo requerido: ${mi.minimo}
+          </div>`;
+        });
+        if (total > 5) {
+          html += `<div id="exp-r11" style="display:none;">`;
+          items.slice(5).forEach(mi => {
+            html += `<div style="padding:10px 14px;background:#fefce8;border-left:3px solid var(--hia-yellow);border-radius:0 6px 6px 0;margin-bottom:6px;font-size:13px;">
+              <strong>${mi.segmento}</strong> (${mi.dimension}): solo ${mi.auditorias} auditorías — mínimo requerido: ${mi.minimo}
+            </div>`;
+          });
+          html += `</div><button class="hia-expand-btn" id="exp-r11-btn" data-label="▼ Ver ${total - 5} más" onclick="toggleExpand('exp-r11')">▼ Ver ${total - 5} más</button>`;
+        }
+        html += `</div>`;
+      }
+
+      // R12: Recuperación
+      if (analisis.recuperados && analisis.recuperados.length > 0) {
+        const items = analisis.recuperados;
+        const total = items.length;
+        html += `<div class="hia-rule-block success">
+          <div style="font-weight:700;font-size:15px;margin-bottom:12px;">🌟 R12: Agentes Recuperados <span class="hia-badge q1">${total} de ${analisis.totales.agentes} agentes</span></div>
+          <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Agente</th><th>Supervisor</th><th>BPO</th><th class="num">Score Inicial</th><th class="num">Score Actual</th><th class="num">Mejora</th></tr></thead><tbody>`;
+        items.slice(0,5).forEach(a => {
+          html += `<tr><td>${(a.nombre||'').substring(0,22)}</td><td>${(a.supervisor||'').substring(0,18)}</td><td>${a.bpo}</td><td class="num" style="color:var(--hia-red);">${a.scoreInicial}</td><td class="num" style="color:var(--hia-green);font-weight:700;">${a.scoreActual}</td><td class="num" style="color:var(--hia-green);">+${a.mejora}</td></tr>`;
+        });
+        html += `</tbody>`;
+        if (total > 5) {
+          html += `<tbody id="exp-r12" style="display:none;">`;
+          items.slice(5).forEach(a => {
+            html += `<tr><td>${(a.nombre||'').substring(0,22)}</td><td>${(a.supervisor||'').substring(0,18)}</td><td>${a.bpo}</td><td class="num" style="color:var(--hia-red);">${a.scoreInicial}</td><td class="num" style="color:var(--hia-green);font-weight:700;">${a.scoreActual}</td><td class="num" style="color:var(--hia-green);">+${a.mejora}</td></tr>`;
+          });
+          html += `</tbody>`;
+        }
+        html += `</table></div>`;
+        if (total > 5) html += `<button class="hia-expand-btn" id="exp-r12-btn" data-label="▼ Ver ${total - 5} más" onclick="toggleExpand('exp-r12')">▼ Ver ${total - 5} más</button>`;
+        html += `</div>`;
+      }
+
+      // R13: Criterios estancados
+      if (analisis.criteriosEstancados && analisis.criteriosEstancados.length > 0) {
+        const items = analisis.criteriosEstancados;
+        const total = items.length;
+        html += `<div class="hia-rule-block warning">
+          <div style="font-weight:700;font-size:15px;margin-bottom:12px;">⏸️ R13: Criterios con Mejora Estancada <span class="hia-badge alta">${total} de ${analisis.totales.criterios} criterios</span></div>
+          <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Criterio</th><th>Descripción</th><th class="num">% Error</th><th class="num">Periodos</th><th>Serie</th></tr></thead><tbody>`;
+        items.slice(0,5).forEach(ce => {
+          html += `<tr><td><strong>${ce.criterio}</strong></td><td>${(ce.descripcion||'').substring(0,35)}</td><td class="num" style="color:var(--hia-orange);font-weight:700;">${ce.pctError}%</td><td class="num">${ce.periodos}</td><td style="font-size:12px;">${ce.serie.map(v=>v+'%').join(' → ')}</td></tr>`;
+        });
+        html += `</tbody>`;
+        if (total > 5) {
+          html += `<tbody id="exp-r13" style="display:none;">`;
+          items.slice(5).forEach(ce => {
+            html += `<tr><td><strong>${ce.criterio}</strong></td><td>${(ce.descripcion||'').substring(0,35)}</td><td class="num" style="color:var(--hia-orange);font-weight:700;">${ce.pctError}%</td><td class="num">${ce.periodos}</td><td style="font-size:12px;">${ce.serie.map(v=>v+'%').join(' → ')}</td></tr>`;
+          });
+          html += `</tbody>`;
+        }
+        html += `</table></div>`;
+        if (total > 5) html += `<button class="hia-expand-btn" id="exp-r13-btn" data-label="▼ Ver ${total - 5} más" onclick="toggleExpand('exp-r13')">▼ Ver ${total - 5} más</button>`;
+        html += `</div>`;
+      }
+
+      // R14: Supervisor dispersión
+      if (analisis.supDispersion && analisis.supDispersion.length > 0) {
+        const items = analisis.supDispersion;
+        const total = items.length;
+        html += `<div class="hia-rule-block warning">
+          <div style="font-weight:700;font-size:15px;margin-bottom:12px;">🎯 R14: Supervisores con Alta Dispersión <span class="hia-badge alta">${total} de ${analisis.totales.supervisores}</span></div>
+          <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Supervisor</th><th>BPO</th><th class="num">Agentes</th><th class="num">Desv</th><th class="num">Prom</th><th class="num">En Q1</th><th class="num">En Q4</th><th class="num">Min</th><th class="num">Max</th></tr></thead><tbody>`;
+        items.slice(0,5).forEach(sd => {
+          html += `<tr><td><strong>${(sd.nombre||'').substring(0,22)}</strong></td><td>${sd.bpo}</td><td class="num">${sd.totalAgentes}</td><td class="num" style="color:var(--hia-orange);font-weight:700;">${sd.desvEquipo}</td><td class="num">${sd.avgEquipo}</td><td class="num" style="color:var(--hia-green);">${sd.enQ1}</td><td class="num" style="color:var(--hia-red);">${sd.enQ4}</td><td class="num">${sd.scoreMin}</td><td class="num">${sd.scoreMax}</td></tr>`;
+        });
+        html += `</tbody>`;
+        if (total > 5) {
+          html += `<tbody id="exp-r14" style="display:none;">`;
+          items.slice(5).forEach(sd => {
+            html += `<tr><td><strong>${(sd.nombre||'').substring(0,22)}</strong></td><td>${sd.bpo}</td><td class="num">${sd.totalAgentes}</td><td class="num" style="color:var(--hia-orange);font-weight:700;">${sd.desvEquipo}</td><td class="num">${sd.avgEquipo}</td><td class="num" style="color:var(--hia-green);">${sd.enQ1}</td><td class="num" style="color:var(--hia-red);">${sd.enQ4}</td><td class="num">${sd.scoreMin}</td><td class="num">${sd.scoreMax}</td></tr>`;
+          });
+          html += `</tbody>`;
+        }
+        html += `</table></div>`;
+        if (total > 5) html += `<button class="hia-expand-btn" id="exp-r14-btn" data-label="▼ Ver ${total - 5} más" onclick="toggleExpand('exp-r14')">▼ Ver ${total - 5} más</button>`;
+        html += `</div>`;
+      }
+
+      // R15: Error fatal por canal
+      if (analisis.fatalPorCanal && analisis.fatalPorCanal.length > 0) {
+        const items = analisis.fatalPorCanal;
+        const total = items.length;
+        html += `<div class="hia-rule-block critical">
+          <div style="font-weight:700;font-size:15px;margin-bottom:12px;">💀 R15: Error Fatal Desproporcionado por Canal/Skill <span class="hia-badge critica">${total} combinaciones detectadas</span></div>
+          <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Error</th><th>Canal/Skill</th><th>Dimensión</th><th class="num">Tasa</th><th class="num">Promedio Gral</th><th class="num">Ratio</th><th class="num">Errores</th></tr></thead><tbody>`;
+        items.slice(0,5).forEach(fc => {
+          html += `<tr><td><strong>${fc.criterioFatal}</strong></td><td><strong>${fc.segmento}</strong></td><td>${fc.dimension}</td><td class="num" style="color:var(--hia-red);font-weight:700;">${fc.tasaSegmento}%</td><td class="num">${fc.tasaGeneral}%</td><td class="num" style="color:var(--hia-red);font-weight:700;">${fc.ratio}x</td><td class="num">${fc.errores}/${fc.total}</td></tr>`;
+        });
+        html += `</tbody>`;
+        if (total > 5) {
+          html += `<tbody id="exp-r15" style="display:none;">`;
+          items.slice(5).forEach(fc => {
+            html += `<tr><td><strong>${fc.criterioFatal}</strong></td><td><strong>${fc.segmento}</strong></td><td>${fc.dimension}</td><td class="num" style="color:var(--hia-red);font-weight:700;">${fc.tasaSegmento}%</td><td class="num">${fc.tasaGeneral}%</td><td class="num" style="color:var(--hia-red);font-weight:700;">${fc.ratio}x</td><td class="num">${fc.errores}/${fc.total}</td></tr>`;
+          });
+          html += `</tbody>`;
+        }
+        html += `</table></div>`;
+        if (total > 5) html += `<button class="hia-expand-btn" id="exp-r15-btn" data-label="▼ Ver ${total - 5} más" onclick="toggleExpand('exp-r15')">▼ Ver ${total - 5} más</button>`;
+        html += `</div>`;
+      }
+
+      // R16: Agentes sin monitoreo
+      if (analisis.sinMonitoreo && analisis.sinMonitoreo.length > 0) {
+        const items = analisis.sinMonitoreo;
+        const total = items.length;
+        html += `<div class="hia-rule-block warning">
+          <div style="font-weight:700;font-size:15px;margin-bottom:12px;">👻 R16: Agentes Sin Monitoreo Reciente <span class="hia-badge alta">${total} de ${analisis.totales.agentes} agentes</span></div>
+          <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Agente</th><th>Supervisor</th><th>BPO</th><th class="num">Última Auditoría</th><th class="num">Días Sin</th><th class="num">Evals Total</th></tr></thead><tbody>`;
+        items.slice(0,5).forEach(a => {
+          html += `<tr><td>${(a.nombre||'').substring(0,22)}</td><td>${(a.supervisor||'').substring(0,18)}</td><td>${a.bpo}</td><td class="num">${a.ultimaFechaStr}</td><td class="num" style="color:var(--hia-red);font-weight:700;">${a.diasSinMonitoreo}</td><td class="num">${a.totalEvals}</td></tr>`;
+        });
+        html += `</tbody>`;
+        if (total > 5) {
+          html += `<tbody id="exp-r16" style="display:none;">`;
+          items.slice(5).forEach(a => {
+            html += `<tr><td>${(a.nombre||'').substring(0,22)}</td><td>${(a.supervisor||'').substring(0,18)}</td><td>${a.bpo}</td><td class="num">${a.ultimaFechaStr}</td><td class="num" style="color:var(--hia-red);font-weight:700;">${a.diasSinMonitoreo}</td><td class="num">${a.totalEvals}</td></tr>`;
+          });
+          html += `</tbody>`;
+        }
+        html += `</table></div>`;
+        if (total > 5) html += `<button class="hia-expand-btn" id="exp-r16-btn" data-label="▼ Ver ${total - 5} más" onclick="toggleExpand('exp-r16')">▼ Ver ${total - 5} más</button>`;
+        html += `</div>`;
+      }
+
+      // No detections message
+      const totalDetecciones = (analisis.tendencia?.tendencias?.length||0) + (analisis.concentracionSup?.length||0) + (analisis.correlaciones?.length||0) + (analisis.variabilidad?.length||0) + (analisis.sesgoAnalistas?.length||0) + (analisis.muestrasInsuf?.length||0) + (analisis.recuperados?.length||0) + (analisis.criteriosEstancados?.length||0) + (analisis.supDispersion?.length||0) + (analisis.fatalPorCanal?.length||0) + (analisis.sinMonitoreo?.length||0);
+      if (totalDetecciones === 0) {
+        html += `<div style="padding:20px;text-align:center;color:var(--hia-text-sec);font-size:13px;">✅ No se detectaron hallazgos adicionales con las reglas avanzadas para los datos filtrados actuales.</div>`;
+      }
 
       document.getElementById('secPanoramica').innerHTML = html;
-
-      // Render charts
-      setTimeout(() => {
-        const ctxG = document.getElementById('chartGaps');
-        if (ctxG) {
-          const topGaps = analisis.gaps.slice(0,10);
-          chartsCreated.push(new Chart(ctxG, {
-            type: 'bar',
-            data: {
-              labels: topGaps.map(g=>g.criterio),
-              datasets: [{ label: 'Gap Ponderado %', data: topGaps.map(g=>g.gapPonderado),
-                backgroundColor: topGaps.map(g=>g.gapPonderado>30?'rgba(239,68,68,0.2)':g.gapPonderado>15?'rgba(245,158,11,0.2)':'rgba(59,130,246,0.2)'),
-                borderColor: topGaps.map(g=>g.gapPonderado>30?'#ef4444':g.gapPonderado>15?'#f59e0b':'#1b98e0'),
-                borderWidth: 2, borderRadius: 6 }]
-            },
-            options: { indexAxis: 'y', responsive: true, scales: { x: { beginAtZero: true } }, plugins: { legend: { display: false } } }
-          }));
-        }
-        const ctxE = document.getElementById('chartErrores');
-        if (ctxE) {
-          const allErr = [...analisis.errores.fatales.map(e=>({...e, tipo:'Fatal'})), ...analisis.errores.criticos.map(e=>({...e, tipo:'Crítico'}))];
-          chartsCreated.push(new Chart(ctxE, {
-            type: 'bar',
-            data: {
-              labels: allErr.map(e=>e.criterio),
-              datasets: [{ label: '% Error', data: allErr.map(e=>e.porcentajeError),
-                backgroundColor: allErr.map(e=>e.tipo==='Fatal'?'rgba(239,68,68,0.3)':'rgba(245,158,11,0.3)'),
-                borderColor: allErr.map(e=>e.tipo==='Fatal'?'#ef4444':'#f59e0b'),
-                borderWidth: 2, borderRadius: 6 }]
-            },
-            options: { responsive: true, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
-          }));
-        }
-      }, 50);
     }
 
     // ── SECTION 4: Hallazgos ──────────────────────────────────────────
     function renderHallazgos(hallazgos, analisis) {
-      let html = `<div class="hia-section-title"><span class="icon" style="background:var(--hia-red-light);color:var(--hia-red);">📊</span> Hallazgos, Insights y Acciones</div>`;
+      let html = `<div class="hia-section-title"><span class="icon" style="background:var(--hia-red-light);color:var(--hia-red);">📊</span> Hallazgos Detectados</div>`;
       html += `<div class="hia-pill-row">`;
       const prioCounts = { CRITICA:0, ALTA:0, MEDIA:0 };
       hallazgos.forEach(h => prioCounts[h.prioridadCalculada]++);
@@ -1410,8 +1614,9 @@
 
       hallazgos.forEach(h => {
         const hId = `hallazgo-${h.orden}`;
-        const tipoLabel = h.tipo === 'error_fatal' ? 'Error Fatal' : h.tipo === 'gap_criterio' ? 'Gap Criterio' : h.tipo === 'error_frecuente' ? 'Error Frecuente' : h.tipo === 'brecha_segmento' ? 'Brecha Segmento' : 'Oportunidad';
-        const title = h.criterioDesc || (h.dimensionLabel ? `Brecha ${h.dimensionLabel}: ${h.segmentoMejor} vs ${h.segmentoPeor}` : h.segmento || h.id);
+        const tipoLabels = { error_fatal:'Error Fatal', gap_criterio:'Gap Criterio', error_frecuente:'Error Frecuente', brecha_segmento:'Brecha Segmento', oportunidad:'Oportunidad', tendencia_negativa:'Tendencia ↓', supervisor_concentracion:'Supervisor', correlacion_errores:'Correlación', variabilidad_agente:'Variabilidad', sesgo_analista:'Sesgo Analista', muestra_insuficiente:'Muestra Baja', recuperacion_agente:'Recuperación ↑', criterio_estancado:'Estancamiento', supervisor_dispersion:'Sup. Dispersión', error_fatal_canal:'Fatal × Canal', agente_sin_monitoreo:'Sin Monitoreo' };
+        const tipoLabel = tipoLabels[h.tipo] || h.tipo;
+        const title = h.criterioDesc || (h.dimensionLabel ? `Brecha ${h.dimensionLabel}: ${h.segmentoMejor} vs ${h.segmentoPeor}` : h.tipo === 'tendencia_negativa' ? `Tendencia negativa: -${h.datos.caidaTotal} pts en ${h.datos.caidasConsecutivas} periodos` : h.tipo === 'supervisor_concentracion' ? `Supervisor ${h.datos.nombre}: ${h.datos.pctRiesgo}% agentes en riesgo` : h.tipo === 'correlacion_errores' ? `Correlación ${h.datos.criterio1} ↔ ${h.datos.criterio2}` : h.tipo === 'variabilidad_agente' ? `${h.datos.cantAgentes} agentes con alta variabilidad` : h.tipo === 'sesgo_analista' ? `Analista ${h.datos.nombre} (${h.datos.sesgoTipo})` : h.tipo === 'muestra_insuficiente' ? `Muestra insuficiente: ${h.datos.segmento}` : h.tipo === 'recuperacion_agente' ? `${h.datos.cantAgentes} agentes con recuperación exitosa` : h.tipo === 'criterio_estancado' ? `${h.datos.criterio} estancado en ${h.datos.pctError}% error` : h.tipo === 'supervisor_dispersion' ? `Supervisor ${h.datos.nombre}: dispersión ${h.datos.desvEquipo}` : h.tipo === 'error_fatal_canal' ? `${h.datos.criterioFatal} en ${h.datos.segmento}: ${h.datos.ratio}x promedio` : h.tipo === 'agente_sin_monitoreo' ? `${h.datos.cantAgentes} agentes sin monitoreo reciente` : h.segmento || h.id);
 
         html += `<div class="hia-hallazgo" id="${hId}">
           <div class="hia-hallazgo-header" onclick="toggleHallazgo('${hId}')">
@@ -1428,14 +1633,7 @@
             <div class="hia-hallazgo-arrow">▼</div>
           </div>
           <div class="hia-hallazgo-body">
-            <div class="hia-layers">
-              <button class="hia-layer-btn active-hallazgo" onclick="switchLayer('${hId}','hallazgo')">📊 Hallazgos</button>
-              <button class="hia-layer-btn" onclick="switchLayer('${hId}','insight')">💡 Insights</button>
-              <button class="hia-layer-btn" onclick="switchLayer('${hId}','accion')">🎬 Acciones</button>
-            </div>
-            <div class="hia-layer-content active" id="${hId}-hallazgo">${renderHallazgoData(h)}</div>
-            <div class="hia-layer-content" id="${hId}-insight">${renderInsightData(h)}</div>
-            <div class="hia-layer-content" id="${hId}-accion">${renderAccionData(h)}</div>
+            <div style="padding:16px 0;">${renderHallazgoData(h)}</div>
           </div>
         </div>`;
       });
@@ -1461,6 +1659,137 @@
           <tr><td>Diferencia</td><td><span style="color:var(--hia-green);font-weight:700;">+${h.diferencia} pts</span></td></tr>
         </tbody></table></div>`;
       }
+      if (h.tipo === 'tendencia_negativa') {
+        const t = h.datos;
+        return `<div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>
+          <tr><td>Periodo inicio</td><td>${t.periodoInicio}</td></tr>
+          <tr><td>Periodo fin</td><td>${t.periodoFin}</td></tr>
+          <tr><td>Periodos consecutivos en caída</td><td><strong>${t.caidasConsecutivas}</strong></td></tr>
+          <tr><td>Score pico</td><td>${t.scorePico}</td></tr>
+          <tr><td>Score actual</td><td><span style="color:var(--hia-red);font-weight:700;">${t.scoreActual}</span></td></tr>
+          <tr><td>Caída total</td><td><span style="color:var(--hia-red);font-weight:700;">-${t.caidaTotal} pts</span></td></tr>
+        </tbody></table></div>`;
+      }
+      if (h.tipo === 'supervisor_concentracion') {
+        const s = h.datos;
+        return `<div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>
+          <tr><td>Supervisor</td><td><strong>${s.nombre}</strong></td></tr>
+          <tr><td>BPO</td><td>${s.bpo}</td></tr>
+          <tr><td>Total agentes</td><td>${s.totalAgentes}</td></tr>
+          <tr><td>Agentes en riesgo</td><td><span style="color:var(--hia-red);font-weight:700;">${s.enRiesgo} (${s.pctRiesgo}%)</span></td></tr>
+          <tr><td>Score promedio equipo</td><td><span style="color:${scoreColor(s.scorePromedio)};font-weight:700;">${s.scorePromedio}</span></td></tr>
+        </tbody></table></div>`;
+      }
+      if (h.tipo === 'correlacion_errores') {
+        const c = h.datos;
+        return `<div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>
+          <tr><td>Criterio 1</td><td><strong>${c.criterio1}</strong> — ${c.desc1}</td></tr>
+          <tr><td>Criterio 2</td><td><strong>${c.criterio2}</strong> — ${c.desc2}</td></tr>
+          <tr><td>Cadena causal</td><td>${c.label}</td></tr>
+          <tr><td>Co-ocurrencia</td><td><span style="color:var(--hia-red);font-weight:700;">${c.ambosError} de ${c.total} (${c.porcentaje}%)</span></td></tr>
+        </tbody></table></div>`;
+      }
+      if (h.tipo === 'variabilidad_agente') {
+        const d = h.datos;
+        let html = `<div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>
+          <tr><td>Agentes con alta variabilidad</td><td><strong>${d.cantAgentes}</strong></td></tr>
+          <tr><td>Desv. estándar promedio</td><td>${d.desvPromedio}</td></tr>
+          <tr><td>Umbral</td><td>>${CONFIG.umbrales.variabilidadAgente}</td></tr>
+        </tbody></table></div>`;
+        if (d.agentes && d.agentes.length > 0) {
+          html += `<div style="margin-top:12px;font-weight:700;font-size:13px;margin-bottom:8px;">Top agentes variables:</div>
+            <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Agente</th><th>Supervisor</th><th class="num">Prom</th><th class="num">Desv</th><th class="num">Min</th><th class="num">Max</th></tr></thead><tbody>`;
+          d.agentes.slice(0,10).forEach(a => {
+            html += `<tr><td>${(a.nombre||'').substring(0,25)}</td><td>${(a.supervisor||'').substring(0,20)}</td><td class="num">${a.scorePromedio}</td><td class="num" style="color:var(--hia-red);font-weight:700;">${a.desviacion}</td><td class="num">${a.scoreMin}</td><td class="num">${a.scoreMax}</td></tr>`;
+          });
+          html += `</tbody></table></div>`;
+        }
+        return html;
+      }
+      if (h.tipo === 'sesgo_analista') {
+        const a = h.datos;
+        return `<div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>
+          <tr><td>Analista</td><td><strong>${a.nombre}</strong></td></tr>
+          <tr><td>Auditorías evaluadas</td><td>${a.auditorias}</td></tr>
+          <tr><td>Score promedio del analista</td><td>${a.scorePromedio}</td></tr>
+          <tr><td>Score promedio global analistas</td><td>${a.promedioGlobal}</td></tr>
+          <tr><td>Desvío</td><td><span style="color:${a.desvio>0?'var(--hia-green)':'var(--hia-red)'};font-weight:700;">${a.desvio > 0 ? '+' : ''}${a.desvio} pts</span></td></tr>
+          <tr><td>Tipo de sesgo</td><td><span class="hia-badge ${a.sesgoTipo==='INDULGENTE'?'alta':'critica'}">${a.sesgoTipo}</span></td></tr>
+        </tbody></table></div>`;
+      }
+      if (h.tipo === 'muestra_insuficiente') {
+        const mi = h.datos;
+        return `<div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>
+          <tr><td>Segmento</td><td><strong>${mi.segmento}</strong></td></tr>
+          <tr><td>Dimensión</td><td>${mi.dimension}</td></tr>
+          <tr><td>Auditorías actuales</td><td><span style="color:var(--hia-red);font-weight:700;">${mi.auditorias}</span></td></tr>
+          <tr><td>Mínimo requerido</td><td>${mi.minimo}</td></tr>
+          <tr><td>Déficit</td><td>${mi.minimo - mi.auditorias} auditorías</td></tr>
+        </tbody></table></div>`;
+      }
+      if (h.tipo === 'recuperacion_agente') {
+        const d = h.datos;
+        let html = `<div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>
+          <tr><td>Agentes recuperados</td><td><span style="color:var(--hia-green);font-weight:700;">${d.cantAgentes}</span></td></tr>
+        </tbody></table></div>`;
+        if (d.agentes && d.agentes.length > 0) {
+          html += `<div style="margin-top:12px;font-weight:700;font-size:13px;margin-bottom:8px;">Detalle de recuperación:</div>
+            <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Agente</th><th>Supervisor</th><th class="num">Score Inicial</th><th class="num">Score Actual</th><th class="num">Mejora</th></tr></thead><tbody>`;
+          d.agentes.slice(0,10).forEach(a => {
+            html += `<tr><td>${(a.nombre||'').substring(0,25)}</td><td>${(a.supervisor||'').substring(0,20)}</td><td class="num" style="color:var(--hia-red);">${a.scoreInicial}</td><td class="num" style="color:var(--hia-green);font-weight:700;">${a.scoreActual}</td><td class="num" style="color:var(--hia-green);">+${a.mejora}</td></tr>`;
+          });
+          html += `</tbody></table></div>`;
+        }
+        return html;
+      }
+      if (h.tipo === 'criterio_estancado') {
+        const ce = h.datos;
+        return `<div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>
+          <tr><td>Criterio</td><td><strong>${ce.criterio}</strong> — ${ce.descripcion}</td></tr>
+          <tr><td>% Error estancado</td><td><span style="color:var(--hia-orange);font-weight:700;">${ce.pctError}%</span></td></tr>
+          <tr><td>Periodos estancados</td><td>${ce.periodos}</td></tr>
+          <tr><td>Serie últimos periodos</td><td>${ce.serie.map(v=>v+'%').join(' → ')}</td></tr>
+        </tbody></table></div>`;
+      }
+      if (h.tipo === 'supervisor_dispersion') {
+        const sd = h.datos;
+        return `<div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>
+          <tr><td>Supervisor</td><td><strong>${sd.nombre}</strong></td></tr>
+          <tr><td>BPO</td><td>${sd.bpo}</td></tr>
+          <tr><td>Total agentes</td><td>${sd.totalAgentes}</td></tr>
+          <tr><td>Dispersión (desv. equipo)</td><td><span style="color:var(--hia-orange);font-weight:700;">${sd.desvEquipo}</span></td></tr>
+          <tr><td>Score promedio equipo</td><td>${sd.avgEquipo}</td></tr>
+          <tr><td>Agentes en Q1 (≥85)</td><td><span style="color:var(--hia-green);font-weight:700;">${sd.enQ1}</span></td></tr>
+          <tr><td>Agentes en Q4 (&lt;65)</td><td><span style="color:var(--hia-red);font-weight:700;">${sd.enQ4}</span></td></tr>
+          <tr><td>Rango scores</td><td>${sd.scoreMin} — ${sd.scoreMax}</td></tr>
+        </tbody></table></div>`;
+      }
+      if (h.tipo === 'error_fatal_canal') {
+        const fc = h.datos;
+        return `<div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>
+          <tr><td>Error fatal</td><td><strong>${fc.criterioFatal}</strong> — ${fc.descFatal}</td></tr>
+          <tr><td>Canal / Skill</td><td><strong>${fc.segmento}</strong> (${fc.dimension})</td></tr>
+          <tr><td>Tasa en este segmento</td><td><span style="color:var(--hia-red);font-weight:700;">${fc.tasaSegmento}%</span> (${fc.errores}/${fc.total})</td></tr>
+          <tr><td>Tasa promedio general</td><td>${fc.tasaGeneral}%</td></tr>
+          <tr><td>Ratio vs promedio</td><td><span style="color:var(--hia-red);font-weight:700;">${fc.ratio}x</span></td></tr>
+        </tbody></table></div>`;
+      }
+      if (h.tipo === 'agente_sin_monitoreo') {
+        const d = h.datos;
+        let html = `<div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>
+          <tr><td>Agentes sin monitoreo</td><td><span style="color:var(--hia-orange);font-weight:700;">${d.cantAgentes}</span></td></tr>
+          <tr><td>Umbral</td><td>>${CONFIG.umbrales.sinMonitoreoDias} días sin auditoría</td></tr>
+        </tbody></table></div>`;
+        if (d.agentes && d.agentes.length > 0) {
+          html += `<div style="margin-top:12px;font-weight:700;font-size:13px;margin-bottom:8px;">Detalle:</div>
+            <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Agente</th><th>Supervisor</th><th>BPO</th><th class="num">Última Auditoría</th><th class="num">Días Sin</th><th class="num">Evals Total</th></tr></thead><tbody>`;
+          d.agentes.slice(0,10).forEach(a => {
+            html += `<tr><td>${(a.nombre||'').substring(0,22)}</td><td>${(a.supervisor||'').substring(0,18)}</td><td>${a.bpo}</td><td class="num">${a.ultimaFechaStr}</td><td class="num" style="color:var(--hia-red);font-weight:700;">${a.diasSinMonitoreo}</td><td class="num">${a.totalEvals}</td></tr>`;
+          });
+          html += `</tbody></table></div>`;
+        }
+        return html;
+      }
       const d = h.datos;
       let rows = '';
       if (d.puntajeMaximo !== undefined) rows += `<tr><td>Puntaje máximo</td><td>${d.puntajeMaximo}</td></tr>`;
@@ -1473,178 +1802,6 @@
       return `<div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>${rows}</tbody></table></div>`;
     }
 
-    function renderInsightData(h) {
-      if (!h.insight) return '<p style="color:var(--hia-text-sec);font-size:13px;">No hay insights disponibles.</p>';
-      const ins = h.insight;
-      let html = `<div class="hia-narrative">${ins.narrativa}</div>`;
-      html += `<div style="font-weight:700;font-size:14px;margin-bottom:10px;">Causas raíz probables:</div><ul class="hia-causes">`;
-      ins.causasRaiz.forEach(c => { html += `<li>${c}</li>`; });
-      html += `</ul>`;
-      if (ins.impactoNegocio.indicadores.length > 0) {
-        html += `<div style="margin-top:16px;padding:14px;background:#f8fafc;border-radius:8px;">
-          <div style="font-weight:700;font-size:13px;margin-bottom:8px;">Impacto en negocio (Severidad: ${ins.impactoNegocio.severidad})</div>`;
-        ins.impactoNegocio.indicadores.forEach(i => {
-          html += `<div style="font-size:13px;padding:4px 0;"><strong>${i.indicador}:</strong> ${i.descripcion}</div>`;
-        });
-        html += `</div>`;
-      }
-      if (ins.patrones.length > 0) {
-        html += `<div style="margin-top:14px;font-weight:700;font-size:13px;margin-bottom:8px;">Patrones detectados:</div>`;
-        ins.patrones.forEach(p => {
-          html += `<div style="font-size:13px;padding:4px 0;">• ${p.descripcion}${p.detalle ? ': ' + p.detalle.join(', ') : ''}</div>`;
-        });
-      }
-      return html;
-    }
-
-    function renderAccionData(h) {
-      if (!h.acciones || h.acciones.length === 0) return '<p style="color:var(--hia-text-sec);font-size:13px;">No hay acciones sugeridas.</p>';
-      let html = '';
-      h.acciones.forEach((acc, i) => {
-        const prioEmoji = acc.prioridad === 'CRITICA' ? '🔴' : acc.prioridad === 'ALTA' ? '🟡' : '🟢';
-        html += `<div class="hia-action" style="border-left:4px solid ${prioColor(acc.prioridad)};">
-          <div class="hia-action-header">
-            <span class="hia-badge ${prioBadge(acc.prioridad)}">${prioEmoji} ${acc.prioridad}</span>
-            <span class="hia-action-title">${acc.titulo}</span>
-          </div>
-          <div class="hia-action-obj"><strong>Objetivo:</strong> ${acc.objetivo}</div>
-          <div class="hia-tactics">`;
-        acc.tacticas.forEach(t => { html += `<div class="hia-tactic">${t}</div>`; });
-        html += `</div>
-          <div class="hia-smart">
-            <div><strong>🎯 Meta SMART:</strong> ${acc.meta_smart}</div>
-            <div style="margin-top:4px;"><strong>📏 Métrica:</strong> ${acc.metrica}</div>
-          </div>
-        </div>`;
-      });
-      return html;
-    }
-
-    // ── SECTION 5: Resumen Ejecutivo ──────────────────────────────────
-    function renderResumen(hallazgos, analisis) {
-      const m = analisis.metricas;
-      const prioCounts = { CRITICA:0, ALTA:0, MEDIA:0 };
-      let totalAcciones = 0;
-      hallazgos.forEach(h => { prioCounts[h.prioridadCalculada]++; totalAcciones += (h.acciones||[]).length; });
-      const metaScore = _round(m.scorePromedio * 1.1);
-
-      let html = `<div class="hia-section-title"><span class="icon" style="background:var(--hia-green-light);color:var(--hia-green);">📋</span> Resumen Ejecutivo y Metas a 90 Días</div>`;
-
-      html += `<div class="hia-kpi-grid">
-        <div class="hia-kpi"><div class="label">Hallazgos Detectados</div><div class="value">${hallazgos.length}</div></div>
-        <div class="hia-kpi red"><div class="label">Prioridad Crítica</div><div class="value" style="color:var(--hia-red);">${prioCounts.CRITICA}</div></div>
-        <div class="hia-kpi yellow"><div class="label">Prioridad Alta</div><div class="value" style="color:var(--hia-yellow);">${prioCounts.ALTA}</div></div>
-        <div class="hia-kpi green"><div class="label">Total Acciones</div><div class="value" style="color:var(--hia-green);">${totalAcciones}</div></div>
-      </div>`;
-
-      // Metas a 90 días
-      html += `<div class="hia-card"><div class="hia-card-title">🎯 Metas a 90 Días</div>
-        <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Meta</th><th class="num">Baseline</th><th class="num">Objetivo</th><th>Plazo</th></tr></thead><tbody>
-          <tr><td>Score promedio</td><td class="num">${m.scorePromedio}</td><td class="num" style="color:var(--hia-green);font-weight:700;">≥${metaScore}</td><td>90 días</td></tr>
-          <tr><td>Cuartil Q4 (crítico)</td><td class="num">${m.cuartiles.Q4?.porcentaje||0}%</td><td class="num" style="color:var(--hia-green);font-weight:700;">&lt;${_round((m.cuartiles.Q4?.porcentaje||0)*0.5)}%</td><td>90 días</td></tr>
-          <tr><td>Cuartil Q1 (excelente)</td><td class="num">${m.cuartiles.Q1?.porcentaje||0}%</td><td class="num" style="color:var(--hia-green);font-weight:700;">≥${_round((m.cuartiles.Q1?.porcentaje||0)*1.3)}%</td><td>90 días</td></tr>
-          <tr><td>Agentes en riesgo</td><td class="num">${analisis.agentes.enRiesgo.length}</td><td class="num" style="color:var(--hia-green);font-weight:700;">&lt;${Math.ceil(analisis.agentes.enRiesgo.length*0.3)}</td><td>60 días</td></tr>
-          <tr><td>Agentes score=0</td><td class="num">${analisis.agentes.conScoreCero.length}</td><td class="num" style="color:var(--hia-green);font-weight:700;">0</td><td>14 días</td></tr>
-        </tbody></table></div></div>`;
-
-      // ROI
-      html += `<div class="hia-card"><div class="hia-card-title">💰 Estimación de ROI</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;">
-          <div style="padding:16px;background:var(--hia-blue-light);border-radius:10px;">
-            <div style="font-weight:700;font-size:13px;margin-bottom:4px;">Inversión estimada</div>
-            <div style="font-size:12px;color:var(--hia-text-sec);">Horas de coaching, training y desarrollo de herramientas</div>
-          </div>
-          <div style="padding:16px;background:var(--hia-green-light);border-radius:10px;">
-            <div style="font-weight:700;font-size:13px;margin-bottom:4px;">Ahorro errores fatales</div>
-            <div style="font-size:12px;color:var(--hia-text-sec);">Menor rotación, menos escalamientos, mejor NPS</div>
-          </div>
-          <div style="padding:16px;background:var(--hia-yellow-light);border-radius:10px;">
-            <div style="font-weight:700;font-size:13px;margin-bottom:4px;">Beneficio por score</div>
-            <div style="font-size:12px;color:var(--hia-text-sec);">Cada punto de mejora reduce recontactos ~2-3%</div>
-          </div>
-          <div style="padding:16px;background:var(--hia-purple-light);border-radius:10px;">
-            <div style="font-weight:700;font-size:13px;margin-bottom:4px;">ROI estimado</div>
-            <div style="font-size:12px;color:var(--hia-text-sec);">3-5x en 6 meses por mejora en FCR y reducción de costos</div>
-          </div>
-        </div></div>`;
-
-      document.getElementById('secResumen').innerHTML = html;
-    }
-
-    // ── SECTION 6: Roadmap ────────────────────────────────────────────
-    function renderRoadmap() {
-      const rm = CONFIG.roadmap;
-      let html = `<div class="hia-section-title"><span class="icon" style="background:#fef3c7;color:#b45309;">🗓️</span> Roadmap de Implementación</div>`;
-
-      html += `<div class="hia-timeline">`;
-      const mesConfig = [
-        { key:'mes1', cls:'mes1', icon:'🔴' },
-        { key:'mes2', cls:'mes2', icon:'🟡' },
-        { key:'mes3', cls:'mes3', icon:'🟢' }
-      ];
-      mesConfig.forEach(mc => {
-        const mes = rm[mc.key];
-        html += `<div class="hia-timeline-col ${mc.cls}">
-          <div class="hia-timeline-title">${mc.icon} ${mes.titulo}</div>
-          <div class="hia-timeline-period">${mes.periodo}</div>`;
-        mes.acciones.forEach(a => {
-          html += `<div class="hia-timeline-item">
-            <div class="sem">${a.semana}</div>
-            <div>${a.accion}</div>
-            <div class="resp">📌 ${a.responsable}</div>
-          </div>`;
-        });
-        html += `</div>`;
-      });
-      html += `</div>`;
-
-      // Detailed table
-      html += `<div class="hia-card"><div class="hia-card-title">Detalle de Acciones por Mes</div>`;
-      mesConfig.forEach(mc => {
-        const mes = rm[mc.key];
-        html += `<div style="font-weight:700;font-size:14px;margin:16px 0 8px;">${mc.icon} ${mes.titulo} (${mes.periodo})</div>
-          <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Semana</th><th>Acción</th><th>Responsable</th><th>Entregable</th></tr></thead><tbody>`;
-        mes.acciones.forEach(a => {
-          html += `<tr><td>${a.semana}</td><td>${a.accion}</td><td>${a.responsable}</td><td>${a.entregable}</td></tr>`;
-        });
-        html += `</tbody></table></div>`;
-      });
-      html += `</div>`;
-
-      document.getElementById('secRoadmap').innerHTML = html;
-    }
-
-    // ── SECTION 7: Governance ─────────────────────────────────────────
-    function renderGovernance() {
-      const gov = CONFIG.governance;
-      let html = `<div class="hia-section-title"><span class="icon" style="background:var(--hia-purple-light);color:var(--hia-purple);">🏛️</span> Governance y Seguimiento</div>`;
-
-      html += `<div class="hia-grid-2">
-        <div class="hia-gov-card"><div class="hia-card-title">📅 Cadencia de Reuniones</div>
-          <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Reunión</th><th>Frecuencia</th><th>Participantes</th><th>Objetivo</th></tr></thead><tbody>`;
-      gov.reuniones.forEach(r => {
-        html += `<tr><td><strong>${r.nombre}</strong></td><td>${r.frecuencia}</td><td>${r.participantes}</td><td>${r.objetivo}</td></tr>`;
-      });
-      html += `</tbody></table></div></div>`;
-
-      html += `<div class="hia-gov-card"><div class="hia-card-title">👤 Dueños por Hallazgo</div>
-          <div class="hia-table-wrap"><table class="hia-table"><thead><tr><th>Hallazgo</th><th>Owner</th><th>Soporte</th><th>Escalamiento</th></tr></thead><tbody>`;
-      gov.duenos.forEach(d => {
-        html += `<tr><td><strong>${d.hallazgo}</strong></td><td>${d.owner}</td><td>${d.soporte}</td><td>${d.escalamiento}</td></tr>`;
-      });
-      html += `</tbody></table></div></div></div>`;
-
-      html += `<div class="hia-card"><div class="hia-card-title">📊 Dashboard de Seguimiento Recomendado</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
-          ${['Score promedio por semana (tendencia)','Distribución de cuartiles (evolución)','Errores fatales por semana (tendencia)','Agentes en riesgo (cantidad y progreso)','Avance de acciones (% completado)','Comparativo BPO/Canal/Skill (brechas)'].map((item,i) => `
-            <div style="padding:14px;background:#f8fafc;border-radius:8px;border-left:3px solid var(--hia-purple);font-size:13px;">
-              <span style="font-weight:700;color:var(--hia-purple);">${i+1}.</span> ${item}
-            </div>`).join('')}
-        </div></div>`;
-
-      document.getElementById('secGovernance').innerHTML = html;
-    }
-
     // ── Toggle helpers ────────────────────────────────────────────────
     function toggleHallazgo(id) {
       const el = document.getElementById(id);
@@ -1652,20 +1809,17 @@
       setTimeout(notifyHeight, 100);
     }
 
-    function switchLayer(hallazgoId, layer) {
-      const parent = document.getElementById(hallazgoId);
-      // Reset buttons
-      parent.querySelectorAll('.hia-layer-btn').forEach(b => {
-        b.className = 'hia-layer-btn';
-      });
-      // Activate button
-      const btns = parent.querySelectorAll('.hia-layer-btn');
-      const idx = layer === 'hallazgo' ? 0 : layer === 'insight' ? 1 : 2;
-      btns[idx].classList.add(layer === 'hallazgo' ? 'active-hallazgo' : layer === 'insight' ? 'active-insight' : 'active-accion');
-      // Toggle content
-      parent.querySelectorAll('.hia-layer-content').forEach(c => c.classList.remove('active'));
-      document.getElementById(`${hallazgoId}-${layer}`).classList.add('active');
-      setTimeout(notifyHeight, 50);
+    function toggleExpand(id) {
+      const el = document.getElementById(id);
+      const btn = document.getElementById(id + '-btn');
+      if (el.style.display === 'none') {
+        el.style.display = '';
+        btn.textContent = '▲ Ver menos';
+      } else {
+        el.style.display = 'none';
+        btn.textContent = btn.getAttribute('data-label');
+      }
+      setTimeout(notifyHeight, 100);
     }
 
 
