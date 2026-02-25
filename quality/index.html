@@ -156,6 +156,33 @@
                     </select>
                 </div>
                 
+                <div class="filter-group">
+                    <label for="filterCumpleProceso">Cumple Proceso</label>
+                    <select id="filterCumpleProceso">
+                        <option value="">Todos</option>
+                        <option value="1">Sí</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="filterRecontacto">Recontacto</label>
+                    <select id="filterRecontacto">
+                        <option value="">Todos</option>
+                        <option value="1">Sí</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="filterPoliticas">Políticas</label>
+                    <select id="filterPoliticas">
+                        <option value="">Todos</option>
+                        <option value="1">Sí</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+                
                 <div class="filter-group" style="grid-column: 1 / -1;">
                     <label for="filterComentarios">Búsqueda en Comentarios</label>
                     <input type="text" id="filterComentarios" placeholder='Ejemplo: "error AND sistema" o "tipificación OR tiempo"'>
@@ -256,6 +283,9 @@
                 agente: params.get('agente') || '',
                 supervisor: params.get('supervisor') || '',
                 analista: params.get('analista') || '',
+                cumpleProceso: params.get('cumpleProceso') || '',
+                recontacto: params.get('recontacto') || '',
+                politicas: params.get('politicas') || '',
                 comentarios: params.get('comentarios') || ''
             };
         }
@@ -275,6 +305,9 @@
             if (params.agente) document.getElementById('filterAgente').value = params.agente;
             if (params.supervisor) document.getElementById('filterSupervisor').value = params.supervisor;
             if (params.analista) document.getElementById('filterAnalista').value = params.analista;
+            if (params.cumpleProceso) document.getElementById('filterCumpleProceso').value = params.cumpleProceso;
+            if (params.recontacto) document.getElementById('filterRecontacto').value = params.recontacto;
+            if (params.politicas) document.getElementById('filterPoliticas').value = params.politicas;
             if (params.comentarios) document.getElementById('filterComentarios').value = params.comentarios;
         }
         
@@ -329,6 +362,15 @@
             const analista = document.getElementById('filterAnalista')?.value;
             if (analista) params.set('analista', analista);
             
+            const cumpleProceso = document.getElementById('filterCumpleProceso')?.value;
+            if (cumpleProceso) params.set('cumpleProceso', cumpleProceso);
+            
+            const recontacto = document.getElementById('filterRecontacto')?.value;
+            if (recontacto) params.set('recontacto', recontacto);
+            
+            const politicas = document.getElementById('filterPoliticas')?.value;
+            if (politicas) params.set('politicas', politicas);
+            
             const comentarios = document.getElementById('filterComentarios')?.value.trim();
             if (comentarios) params.set('comentarios', comentarios);
             
@@ -355,6 +397,9 @@
             url.searchParams.delete('agente');
             url.searchParams.delete('supervisor');
             url.searchParams.delete('analista');
+            url.searchParams.delete('cumpleProceso');
+            url.searchParams.delete('recontacto');
+            url.searchParams.delete('politicas');
             url.searchParams.delete('comentarios');
             
             // Agregar filtros activos
@@ -396,6 +441,15 @@
             
             const analista = document.getElementById('filterAnalista')?.value;
             if (analista) url.searchParams.set('analista', analista);
+            
+            const cumpleProceso = document.getElementById('filterCumpleProceso')?.value;
+            if (cumpleProceso) url.searchParams.set('cumpleProceso', cumpleProceso);
+            
+            const recontacto = document.getElementById('filterRecontacto')?.value;
+            if (recontacto) url.searchParams.set('recontacto', recontacto);
+            
+            const politicas = document.getElementById('filterPoliticas')?.value;
+            if (politicas) url.searchParams.set('politicas', politicas);
             
             const comentarios = document.getElementById('filterComentarios')?.value.trim();
             if (comentarios) url.searchParams.set('comentarios', comentarios);
@@ -526,7 +580,8 @@
             if (urlParams.interaccion || urlParams.fechaIntDesde || urlParams.fechaIntHasta ||
                 urlParams.tipoMonitoreo || urlParams.canal || urlParams.skill || urlParams.subSkill ||
                 urlParams.bpo || urlParams.fechaMonDesde || urlParams.fechaMonHasta ||
-                urlParams.agente || urlParams.supervisor || urlParams.analista || urlParams.comentarios) {
+                urlParams.agente || urlParams.supervisor || urlParams.analista ||
+                urlParams.cumpleProceso || urlParams.recontacto || urlParams.politicas || urlParams.comentarios) {
                 hasFilters = true;
             }
             
@@ -661,6 +716,9 @@
                 url.searchParams.delete('agente');
                 url.searchParams.delete('supervisor');
                 url.searchParams.delete('analista');
+                url.searchParams.delete('cumpleProceso');
+                url.searchParams.delete('recontacto');
+                url.searchParams.delete('politicas');
                 url.searchParams.delete('comentarios');
                 
                 // Actualizar URL

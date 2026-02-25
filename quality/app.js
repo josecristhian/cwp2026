@@ -141,6 +141,9 @@ function applyFilters() {
         agente: document.getElementById('filterAgente')?.value,
         supervisor: document.getElementById('filterSupervisor')?.value,
         analista: document.getElementById('filterAnalista')?.value,
+        cumpleProceso: document.getElementById('filterCumpleProceso')?.value,
+        recontacto: document.getElementById('filterRecontacto')?.value,
+        politicas: document.getElementById('filterPoliticas')?.value,
         comentarios: document.getElementById('filterComentarios')?.value.trim()
     };
     
@@ -232,6 +235,21 @@ function applyFilters() {
             return false;
         }
         
+        // Filtro por Cumple Proceso
+        if (filters.cumpleProceso && record['CUMPLE PROCESO'] !== filters.cumpleProceso) {
+            return false;
+        }
+        
+        // Filtro por Recontacto
+        if (filters.recontacto && record.RECONTACTO !== filters.recontacto) {
+            return false;
+        }
+        
+        // Filtro por Políticas
+        if (filters.politicas && record.POLITICAS !== filters.politicas) {
+            return false;
+        }
+        
         // Filtro por Comentarios (con AND/OR)
         if (filters.comentarios) {
             const comentario = record.COMENTARIOS || '';
@@ -282,7 +300,10 @@ function clearFilters() {
         'filterBPO',
         'filterAgente',
         'filterSupervisor',
-        'filterAnalista'
+        'filterAnalista',
+        'filterCumpleProceso',
+        'filterRecontacto',
+        'filterPoliticas'
     ];
     selects.forEach(id => {
         const select = document.getElementById(id);
@@ -321,6 +342,9 @@ function updateFilterIndicators() {
     if (document.getElementById('filterAgente')?.value) activeFiltersCount++;
     if (document.getElementById('filterSupervisor')?.value) activeFiltersCount++;
     if (document.getElementById('filterAnalista')?.value) activeFiltersCount++;
+    if (document.getElementById('filterCumpleProceso')?.value) activeFiltersCount++;
+    if (document.getElementById('filterRecontacto')?.value) activeFiltersCount++;
+    if (document.getElementById('filterPoliticas')?.value) activeFiltersCount++;
     if (document.getElementById('filterComentarios')?.value.trim()) activeFiltersCount++;
     
     // Actualizar badge
@@ -408,4 +432,12 @@ if (typeof window !== 'undefined') {
     window.groupBy = groupBy;
     window.countBy = countBy;
     window.parseDate = parseDate;
+    window.formatBinaryValue = formatBinaryValue;
+}
+
+// Función para convertir valores binarios (1/0) a Sí/No
+function formatBinaryValue(value) {
+    if (value === '1' || value === 1) return 'Sí';
+    if (value === '0' || value === 0) return 'No';
+    return value || '-';
 }
