@@ -1,5 +1,5 @@
 {
-  "fecha_generacion": "2026-02-24T13:59:33.867Z",
+  "fecha_generacion": "2026-02-25T15:42:14.295Z",
   "base_excel": [
     {
       "ID_INTERACCIÓN": "33708908",
@@ -99121,205 +99121,365 @@
     },
     {
       "columna": "COMENTARIOS",
-      "descripcion": "Comentarios Adicionales que aportan contexto a la Interacción. El Analista de Calidad detalla un resumen de la consulta del cliente y da apertura a las oportunidades de mejora para el agente."
+      "descripcion": "Comentarios Adicionales que aportan contexto a la Interacción."
     },
     {
       "columna": "Q1",
       "descripcion": "Amabilidad y empatía",
+      "descripcion_detallada": "Amabilidad y empatía ¿muestra amabilidad y empatía durante la llamada utilizando frases de poder en la petición de datos? (Sí / No)",
+      "grupo": "habilidades",
       "puntaje": 1,
+      "criticidad": 3,
       "indicadores": [
         "NPS"
+      ],
+      "factores_entrenamiento": [
+        "No demuestra interés por la petición del cliente ni se implica en dar una solución",
+        "Utiliza expresiones cortantes en la petición de datos o cuando facilita indicaciones al cliente"
       ],
       "atributo": 1
     },
     {
       "columna": "Q2",
       "descripcion": "Escucha Activa",
+      "descripcion_detallada": "Escucha Activa, ¿atiende a la explicación del cliente para comprender el motivo del contacto?  (Sí / No)",
+      "grupo": "habilidades",
       "puntaje": 3,
+      "criticidad": 2,
       "indicadores": [
         "NPS",
         "AHT"
+      ],
+      "factores_entrenamiento": [
+        "Por sus comentarios demuestra que no ha entendido escuchado al cliente",
+        "Interrumpe al cliente",
+        "No realiza un resumen de lo solicitado por el cliente"
       ],
       "atributo": 1
     },
     {
       "columna": "Q3",
       "descripcion": "Sondeo",
+      "descripcion_detallada": "Sondeo, ¿realiza un sondeo adecuado? (Sí / No)",
+      "grupo": "habilidades",
       "puntaje": 3,
+      "criticidad": 2,
       "indicadores": [
         "AHT"
+      ],
+      "factores_entrenamiento": [
+        "No realiza las preguntas adecuadas con un orden lógico",
+        "No recaba la información necesaria para la gestión del cliente"
       ],
       "atributo": 1
     },
     {
       "columna": "Q4",
       "descripcion": "Dirección de la conversación (Error Crítico)",
+      "descripcion_detallada": "Dirección de la conversación, ¿impone la estructura de llamada y lleva la conversación?  (Sí / No)",
+      "grupo": "habilidades",
       "puntaje": 19,
+      "criticidad": 1,
       "indicadores": [
         "NPS",
         "AHT",
         "Ventas"
+      ],
+      "factores_entrenamiento": [
+        "No establece una estructura de llamada adecuada",
+        "Es el cliente el que marca el ritmo de la conversación",
+        "Genera confusión o indecisión en el cliente por exceso de opciones",
+        "Ofrece varias promociones o productos al mismo tiempo sin orden ni contexto",
+        "No valida si la primera oferta es adecuada o del interés del cliente antes de pasar a la siguiente",
+        "El asesor no se esfuerza por manejar las objeciones presentadas por el cliente"
       ],
       "atributo": 1
     },
     {
       "columna": "Q5",
       "descripcion": "Expresión",
+      "descripcion_detallada": "Expresión, ¿tiene una expresión oral adecuada? (Sí / No)",
+      "grupo": "habilidades",
       "puntaje": 1,
+      "criticidad": 3,
       "indicadores": [
         "NPS"
+      ],
+      "factores_entrenamiento": [
+        "No se expresa de forma correcta",
+        "Utiliza tecnicismos durante la convesación que dificultan la comprensión del cliente",
+        "Hace uso de localismos y/o muletillas durante la conversación, lo que dificulta la comprensión  del cliente"
       ],
       "atributo": 1
     },
     {
       "columna": "Q6",
       "descripcion": "Capacidad de síntesis",
+      "descripcion_detallada": "Capacidad de síntexis en la comunicación de la resolución, ¿facilita que el cliente entienda la solución propuesta?  (Sí / No)",
+      "grupo": "habilidades",
       "puntaje": 3,
+      "criticidad": 2,
       "indicadores": [
         "NPS",
         "AHT",
         "FCR"
       ],
+      "factores_entrenamiento": [],
       "atributo": 1
     },
     {
       "columna": "Q7",
       "descripcion": "Comprobaciones previas",
+      "descripcion_detallada": "Lleva a cabo las comprobaciones previas según el caso, (está al corriente de pago, por ejemplo) (Sí / No / NA)",
+      "grupo": "operativas",
       "puntaje": 1,
+      "criticidad": 4,
       "indicadores": [
         "AHT"
       ],
+      "factores_entrenamiento": [],
       "atributo": 1
     },
     {
       "columna": "Q8",
       "descripcion": "Conocimientos",
+      "descripcion_detallada": "Conocimientos, ¿muestra conocimiento de los servicios y productos?  (Sí / No)",
+      "grupo": "operativas",
       "puntaje": 2,
+      "criticidad": 3,
       "indicadores": [
         "NPS",
         "AHT",
         "Ventas"
+      ],
+      "factores_entrenamiento": [
+        "Entrega Ofertas no vigentes o mal aplicadas.",
+        "Omite ofertas disponibles que aplican para el cliente.",
+        "No consulta el Recomendador de ofertas activas.",
+        "El agente no explica correctamente el proceso de emisión y recepción de la factura."
       ],
       "atributo": 1
     },
     {
       "columna": "Q9",
       "descripcion": "Uso de sistemas",
+      "descripcion_detallada": "Sistemas informáticos, ¿utiliza los sistemas informáticos de forma adecuada?  (Sí / No)",
+      "grupo": "operativas",
       "puntaje": 2,
+      "criticidad": 3,
       "indicadores": [
         "AHT"
+      ],
+      "factores_entrenamiento": [
+        "No máximiza el uso de herramientas a su disposición",
+        "No hace un uso ágil de las herramientas"
       ],
       "atributo": 1
     },
     {
       "columna": "Q10",
       "descripcion": "Autonomía",
+      "descripción_detallada": "Autonomía, ¿agota los métodos de búsqueda para encontrar la solución antes de consultar a un superior? (Sí / No / NA)",
+      "grupo": "operativas",
       "puntaje": 1,
+      "criticidad": 4,
       "indicadores": [
         "AHT"
       ],
+      "factores_entrenamiento": [],
       "atributo": 1
     },
     {
       "columna": "Q11",
       "descripcion": "Solución (Error Crítico)",
+      "descripcion_detallada": "Solución: ¿aplica el proceso o procedimiento adecuado para la solicitud?  (Sí / No)",
+      "grupo": "operativas",
       "puntaje": 30,
+      "criticidad": 1,
       "indicadores": [
         "NPS",
         "AHT",
         "Ventas"
       ],
+      "factores_entrenamiento": [
+        "Aplica el proceso o procedimiento incorrecto",
+        "Aplica el proceso o procedimiento parcialmente",
+        "En el caso de venta, el agente no explica los beneficios y/o condiciones del plan",
+        "No informa al cliente del motivo por el cual no puede avanzar con la venta.",
+        "El asesor no realiza ofrecimiento comercial según las políticas de S2S",
+        "El agente no valida correctamente la cobertura antes de ofrecer los servicios, y no ajusta su propuesta comercial según la disponibilidad real",
+        "Ofrece productos o promociones sin validar primero el estatus de la cuenta."
+      ],
+      "atributo": 1
+    },
+    {
+      "columna": "Q12",
+      "descripcion": "Recontacto (Error Fatal, lleva a cero la evaluación)",
+      "descripcion_detallada": "Recontacto: ¿se evita el recontacto?  (Sí / No)",
+      "grupo": "operativas",
+      "factores_entrenamiento": [
+        "Transfiere o deriva a otra instancia (se quita la interacción de en medio)",
+        "No aporta información suficiente que el cliente seguro va a necesitar con posterioridad"
+      ],
+      "error_fatal": true,
       "atributo": 1
     },
     {
       "columna": "Q13",
       "descripcion": "Escalamiento a 2º Nivel",
+      "descripcion_detallada": "Escalamiento a 2º Nivel, ¿cumplimenta la orden de forma correcta?  (Sí / No /NA)",
+      "grupo": "operativas",
       "puntaje": 4,
+      "criticidad": 2,
       "indicadores": [
         "FCR"
       ],
+      "factores_entrenamiento": [],
       "atributo": 1
     },
     {
       "columna": "Q14",
       "descripcion": "Saludo y acogida",
+      "descripcion_detallada": "Saludo y acogida ¿efectúa correctamente el saludo corporativo y acogida del cliente?  (Sí / No)",
+      "grupo": "protocolos",
       "puntaje": 1,
+      "criticidad": 3,
       "indicadores": [
         "NPS"
       ],
+      "factores_entrenamiento": [],
+      "atributo": 1
+    },
+    {
+      "columna": "Q15",
+      "descripcion": "Política de Seguridad (Error Fatal, lleva a cero la evaluación)",
+      "descripcion_detallada": "Política Seguridad y Conducta ética y Legal: ¿aplica la política de seguridad según el protocolo establecido?  (Sí / No / NA)",
+      "grupo": "protocolos",
+      "factores_entrenamiento": [
+        "No valida al cliente",
+        "Valida de forma incorrecta",
+        "Facilita información reservada a una persona que no es el titular",
+        "El agente incita, sugiere o facilita acciones fraudulentas",
+        "El agente no obtiene de forma clara y válida el consentimiento informado del titular antes de proceder con la contratación o gestión del servicio",
+        "No tiene una conducta ética en cuanto al tratamiento al cliente"
+      ],
+      "error_fatal": true,
       "atributo": 1
     },
     {
       "columna": "Q16",
       "descripcion": "Tratamiento y personalización",
+      "descripcion_detallada": "Tratamiento de usted y personalización, ¿se ajusta al tratamiento y al protocolo de personalización? (Sí / No)",
+      "grupo": "protocolos",
       "puntaje": 1,
+      "criticidad": 3,
       "indicadores": [
         "NPS"
+      ],
+      "factores_entrenamiento": [
+        "No personaliza de forma adecuada",
+        "Tutea al cliente"
       ],
       "atributo": 1
     },
     {
       "columna": "Q17",
       "descripcion": "Gestión de esperas y hold",
+      "descripcion_detallada": "Gestión de esperas y uso de hold, ¿sigue el proceso de hold?  (Sí / No / NA)",
+      "grupo": "protocolos",
       "puntaje": 2,
+      "criticidad": 2,
       "indicadores": [
         "NPS",
         "AHT"
+      ],
+      "factores_entrenamiento": [
+        "Avisa al cliente de que estará un tiempo en espera y agradece al retomar",
+        "Excede los 60 segundos sin retomar",
+        "Uso del hold"
       ],
       "atributo": 1
     },
     {
       "columna": "Q18",
       "descripcion": "Responsabilidad corporativa",
+      "descripcion_detallada": "Responsabilidad corporativa, ¿a través de la convesación se aprecia identificación con la marca? (Sí / No)",
+      "grupo": "protocolos",
       "puntaje": 1,
+      "criticidad": 3,
       "indicadores": [
         "NPS"
+      ],
+      "factores_entrenamiento": [
+        "No utiliza el plural corporativo",
+        "Se excusa como si no fuese parte de +M"
       ],
       "atributo": 1
     },
     {
       "columna": "Q19",
       "descripcion": "Autogestión",
+      "descripcion_detallada": "Autogestión, ¿promueve la autogestión? (Sí / No / NA)",
+      "grupo": "protocolos",
       "puntaje": 2,
+      "criticidad": 2,
       "indicadores": [
         "Negocio"
+      ],
+      "factores_entrenamiento": [
+        "No ofrece la autogestión cuando debería",
+        "Ofrece la autogestión cuando no debería",
+        "Realiza un mal ofrecimiento de la autogestión"
       ],
       "atributo": 1
     },
     {
       "columna": "Q20",
       "descripcion": "Tipificación y comentarios (Error Crítico)",
+      "descripcion_detallada": "Tipificación y comentarios  (Sí / No)",
+      "grupo": "protocolos",
       "puntaje": 20,
+      "criticidad": 1,
       "indicadores": [
         "Negocio"
+      ],
+      "factores_entrenamiento": [
+        "No tipifica o tipifica de forma incorrecta",
+        "No deja comentarios o los comentarios son inconsistentes",
+        "No indica número de contacto"
       ],
       "atributo": 1
     },
     {
       "columna": "Q21",
       "descripcion": "Transferencia",
+      "descripcion_detallada": "Transferencia, ¿se aplica el protocolo de transferencia?  (Sí / No / NA)",
+      "grupo": "protocolos",
       "puntaje": 2,
+      "criticidad": 2,
       "indicadores": [
         "FCR"
       ],
+      "factores_entrenamiento": [],
       "atributo": 1
     },
     {
       "columna": "Q22",
       "descripcion": "Despedida y cierre",
+      "descripcion_detallada": "Despedida y cierre ¿efectúa correctamente el cierre de llamada?  (Sí / No / NA)",
+      "grupo": "protocolos",
       "puntaje": 1,
+      "criticidad": 3,
       "indicadores": [
         "NPS"
       ],
+      "factores_entrenamiento": [
+        "No se utiliza el cierre de llamada",
+        "No ofrece asistencia adicional",
+        "No realiza el paso a encuesta",
+        "Condiciona la respuesta de la encuesta"
+      ],
       "atributo": 1
-    },
-    {
-      "columna": "Q12",
-      "descripcion": "Recontacto (Error Fatal, lleva a cero la evaluación)"
-    },
-    {
-      "columna": "Q15",
-      "descripcion": "Política de Seguridad (Error Fatal, lleva a cero la evaluación)"
     },
     {
       "columna": "QA SCORE",

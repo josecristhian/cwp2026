@@ -34,6 +34,7 @@
         .kpi-warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
         .kpi-orange  { background: linear-gradient(135deg, #f97316 0%, #c2410c 100%); }
         .kpi-blue    { background: linear-gradient(135deg, #1b98e0 0%, #1d4ed8 100%); }
+        .kpi-slate   { background: linear-gradient(135deg, #64748b 0%, #334155 100%); }
 
         /* Sección con tarjeta */
         .section-card {
@@ -51,6 +52,13 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-wrap: wrap;
+        }
+        .section-subtitle {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 400;
+            margin-left: 8px;
         }
 
         /* Tablas */
@@ -73,6 +81,7 @@
             position: sticky;
             top: 0;
             white-space: nowrap;
+            z-index: 2;
         }
         .err-table thead th:first-child { border-radius: 8px 0 0 0; }
         .err-table thead th:last-child  { border-radius: 0 8px 0 0; }
@@ -86,6 +95,36 @@
             white-space: nowrap;
         }
         .err-table tbody td.num { text-align: center; font-variant-numeric: tabular-nums; }
+
+        /* Sticky columns para tablas de evolución */
+        .err-table .sticky-col {
+            position: sticky;
+            z-index: 1;
+        }
+        .err-table thead .sticky-col { z-index: 3; }
+        .err-table .sticky-col-1 { left: 0; min-width: 180px; max-width: 200px; }
+        .err-table .sticky-col-2 { left: 180px; min-width: 150px; max-width: 170px; }
+        .err-table tbody tr:nth-child(even) .sticky-col { background: #f8fafc; }
+        .err-table tbody tr:nth-child(odd) .sticky-col  { background: #fff; }
+        .err-table tbody tr:hover .sticky-col { background: #eef2ff; }
+        .err-table thead .sticky-col { background: #f1f5f9; }
+
+        /* Heatmap cells */
+        .heat-cell {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            padding: 0 6px;
+            height: 28px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .heat-ok    { background: #d1fae5; color: #065f46; }
+        .heat-warn  { background: #fef3c7; color: #92400e; }
+        .heat-bad   { background: #fee2e2; color: #991b1b; }
+        .heat-empty { background: #f1f5f9; color: #cbd5e1; }
 
         /* Semáforo */
         .sem { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
@@ -123,6 +162,99 @@
             color: #94a3b8;
             font-size: 15px;
         }
+
+        /* Scroll horizontal para tablas anchas */
+        .table-scroll {
+            overflow-x: auto;
+            max-height: 520px;
+            overflow-y: auto;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Legend inline */
+        .legend-inline {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+            font-size: 12px;
+            color: #64748b;
+        }
+        .legend-inline span {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        /* ── Text Mining ── */
+        .tm-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        @media (max-width: 900px) { .tm-grid { grid-template-columns: 1fr; } }
+
+        .tm-phrase-list { list-style: none; padding: 0; margin: 0; }
+        .tm-phrase-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
+            transition: background .15s;
+        }
+        .tm-phrase-list li:hover { background: #f8fafc; }
+        .tm-phrase-list li:last-child { border-bottom: none; }
+        .tm-rank {
+            min-width: 24px; height: 24px;
+            border-radius: 50%; background: #e2e8f0; color: #475569;
+            font-size: 11px; font-weight: 700;
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .tm-phrase-text { flex: 1; color: #334155; }
+        .tm-phrase-count {
+            font-weight: 700; font-variant-numeric: tabular-nums;
+            color: #1e293b; min-width: 32px; text-align: right;
+        }
+        .tm-bar-bg {
+            width: 80px; height: 8px; background: #f1f5f9;
+            border-radius: 4px; overflow: hidden; flex-shrink: 0;
+        }
+        .tm-bar-fill { height: 100%; border-radius: 4px; transition: width .3s; }
+
+        .tm-tabs {
+            display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+        }
+        .tm-tab {
+            padding: 6px 16px; border-radius: 20px; border: 1px solid #e2e8f0;
+            background: #fff; cursor: pointer; font-size: 12px; font-weight: 600;
+            color: #64748b; transition: all .2s;
+        }
+        .tm-tab:hover { border-color: #94a3b8; color: #334155; }
+        .tm-tab.active { background: #1e293b; color: #fff; border-color: #1e293b; }
+
+        .tm-panel { display: none; }
+        .tm-panel.active { display: block; }
+
+        .tm-bpo-compare {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 700px) { .tm-bpo-compare { grid-template-columns: 1fr; } }
+        .tm-bpo-col h4 {
+            font-size: 13px; font-weight: 600; margin: 0 0 10px 0;
+            display: flex; align-items: center; gap: 6px;
+        }
     </style>
 </head>
 <body style="background: transparent; padding: 0;">
@@ -141,42 +273,36 @@
        COMUNICACIÓN CON EL PADRE (PATRÓN OBLIGATORIO)
        ================================================================ */
     function notifyHeight() {
-        const height = document.body.scrollHeight;
+        var height = document.body.scrollHeight;
         window.parent.postMessage({ type: 'RESIZE', height: height }, '*');
     }
 
     /* ================================================================
        CONSTANTES Y UTILIDADES
        ================================================================ */
-    // Referencias a instancias de Chart.js para destruirlas en re-renders
     var chartInstances = [];
     function destroyCharts() {
-        chartInstances.forEach(c => c.destroy());
+        chartInstances.forEach(function(c) { c.destroy(); });
         chartInstances = [];
     }
 
-    const ERRORES_CONFIG = [
-        { key: 'Q4',  label: 'Dirección de Conversación', max: 19, tipo: 'critico' },
-        { key: 'Q11', label: 'Solución',                  max: 30, tipo: 'critico' },
-        { key: 'Q20', label: 'Tipificación',              max: 20, tipo: 'critico' },
-        { key: 'Q12', label: 'Recontacto',                max: 1,  tipo: 'fatal'   },
-        { key: 'Q15', label: 'Políticas',                 max: 1,  tipo: 'fatal'   }
+    /*  Criterios críticos: Q11, Q12, Q13, Q21
+        Evaluación binaria: 1 = cumple, 0 = no cumple (error)       */
+    var ERRORES_CONFIG = [
+        { key: 'Q11', label: 'Solución',    tipo: 'fatal', icon: '🔧', color: '#ef4444' },
+        { key: 'Q12', label: 'Recontacto',  tipo: 'fatal', icon: '🔄', color: '#f59e0b' },
+        { key: 'Q13', label: 'Escalamiento', tipo: 'fatal', icon: '✅', color: '#f97316' },
+        { key: 'Q21', label: 'Transferencia',    tipo: 'fatal', icon: '📝', color: '#8b5cf6' }
     ];
 
-    function val(record, field) {
-        return parseFloat(record[field]) || 0;
-    }
+    var Q_KEYS = ERRORES_CONFIG.map(function(e) { return e.key; });
 
-    function pct(num, den) {
-        return den === 0 ? 0 : (num / den * 100);
-    }
-
-    function fmtPct(v) {
-        return v.toFixed(1) + '%';
-    }
+    function val(r, f) { return parseFloat(r[f]) || 0; }
+    function pct(n, d) { return d === 0 ? 0 : (n / d * 100); }
+    function fmtPct(v)  { return v.toFixed(1) + '%'; }
 
     function semaforo(porcentaje) {
-        if (porcentaje < 5)  return '<span class="sem sem-green">'  + fmtPct(porcentaje) + '</span>';
+        if (porcentaje < 5)   return '<span class="sem sem-green">'  + fmtPct(porcentaje) + '</span>';
         if (porcentaje <= 10) return '<span class="sem sem-yellow">' + fmtPct(porcentaje) + '</span>';
         return '<span class="sem sem-red">' + fmtPct(porcentaje) + '</span>';
     }
@@ -187,14 +313,129 @@
         return '<span class="bpo-badge bpo-equal">—</span>';
     }
 
-    /** Detecta si un registro tiene error en un criterio dado */
-    function tieneError(record, cfg) {
-        return val(record, cfg.key) < cfg.max;
+    /** Error = valor es 0 (o vacío) */
+    function tieneError(r, cfg) { return val(r, cfg.key) === 0; }
+
+    /** ¿Tiene al menos 1 error crítico? */
+    function tieneAlgunError(r) {
+        return ERRORES_CONFIG.some(function(cfg) { return tieneError(r, cfg); });
     }
 
-    /** Detecta si un registro tiene al menos un error fatal */
-    function tieneErrorFatal(record) {
-        return val(record, 'Q12') !== 1 || val(record, 'Q15') !== 1;
+    function semanaNum(s) { return parseInt(String(s).replace(/\D/g, '')) || 0; }
+
+    /** Heatmap cell */
+    function heatCell(errores, total) {
+        if (total === 0) return '<span class="heat-cell heat-empty">—</span>';
+        if (errores === 0) return '<span class="heat-cell heat-ok">0</span>';
+        if (errores === 1) return '<span class="heat-cell heat-warn">1</span>';
+        return '<span class="heat-cell heat-bad">' + errores + '</span>';
+    }
+
+    function truncar(txt, max) {
+        if (!txt) return '';
+        return txt.length > max ? txt.substring(0, max - 1) + '…' : txt;
+    }
+
+    /* ================================================================
+       TEXT MINING — UTILIDADES
+       ================================================================ */
+    var STOPWORDS = new Set([
+        'de','la','el','en','que','y','a','los','del','las','se','un','una','por','con','no','es',
+        'lo','para','al','como','su','más','pero','sus','le','ya','fue','este','ha','sí','si',
+        'sin','sobre','también','me','hasta','hay','donde','quien','desde','todo','nos','durante',
+        'todos','uno','les','ni','contra','otros','ese','eso','ante','ellos','e','esto','mí','antes',
+        'algunos','qué','unos','yo','otro','otras','otra','él','tanto','esa','estos','mucho','quién',
+        'nada','muchos','cual','poco','ella','entre','poder','ser','tiene','le','sido','era','muy',
+        'tiene','tiene','puede','está','están','ser','hay','hace','hacer','hizo','hecho','fue','ser',
+        'el','la','los','las','un','una','unos','unas','al','del','lo','le','les','se','nos',
+        'te','ti','tu','tú','mi','mí','me','él','ella','ello','nosotros','ellos','ellas',
+        'este','esta','estos','estas','ese','esa','esos','esas','aquel','aquella','aquellos','aquellas',
+        'que','cual','cuales','quien','quienes','cuanto','cuanta','cuantos','cuantas',
+        'donde','como','cuando','cuanto','porque','pues','sino','aunque','mientras',
+        'aquí','ahí','allí','así','bien','después','entonces','luego','más','menos','nunca',
+        'siempre','solo','sólo','ya','aún','aun','también','tampoco','casi','quizá','quizás',
+        'algo','alguien','alguno','alguna','algunos','algunas','ningún','ninguno','ninguna',
+        'cada','demás','mismo','misma','mismos','mismas','propio','propia','todo','toda','todos','todas',
+        'da','dan','dio','dió','al','del','etc','sr','sra','dr','dra','cia','ltda','sa',
+        'agente','asesor','cliente','llamada','interacción','interaccion','monitoreo','evaluación',
+        'evaluacion','auditoría','auditoria','cumple','cumplimiento','acuerdo','proceso',
+        'acorde','debe','realiza','indica','menciona','comenta','informa','refiere',
+        'sin embargo','embargo','manera','forma','momento','parte','vez','caso','día','dia',
+        'ser','estar','tener','haber','poder','deber','ir','venir','decir','hacer','dar','ver',
+        'saber','querer','llegar','poner','parecer','quedar','creer','dejar','seguir','llevar',
+        'el/la','o','u','ó','i'
+    ]);
+
+    function limpiarTexto(texto) {
+        if (!texto) return '';
+        return texto
+            .toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quitar acentos
+            .replace(/[^a-záéíóúñü\s]/gi, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function tokenizar(texto) {
+        return limpiarTexto(texto).split(' ').filter(function(w) {
+            return w.length > 2 && !STOPWORDS.has(w);
+        });
+    }
+
+    function extraerNgramas(tokens, n) {
+        var ngramas = [];
+        for (var i = 0; i <= tokens.length - n; i++) {
+            ngramas.push(tokens.slice(i, i + n).join(' '));
+        }
+        return ngramas;
+    }
+
+    function contarFrecuencias(items) {
+        var freq = {};
+        items.forEach(function(item) {
+            freq[item] = (freq[item] || 0) + 1;
+        });
+        return Object.keys(freq).map(function(k) {
+            return { texto: k, count: freq[k] };
+        }).sort(function(a, b) { return b.count - a.count; });
+    }
+
+    function analizarComentarios(registros, topN) {
+        topN = topN || 15;
+        var unigramas = [];
+        var bigramas = [];
+        var trigramas = [];
+
+        registros.forEach(function(r) {
+            var comentario = r.COMENTARIOS || r.comentarios || '';
+            var tokens = tokenizar(comentario);
+            unigramas = unigramas.concat(tokens);
+            bigramas = bigramas.concat(extraerNgramas(tokens, 2));
+            trigramas = trigramas.concat(extraerNgramas(tokens, 3));
+        });
+
+        return {
+            unigramas: contarFrecuencias(unigramas).slice(0, topN),
+            bigramas: contarFrecuencias(bigramas).slice(0, topN),
+            trigramas: contarFrecuencias(trigramas).slice(0, topN)
+        };
+    }
+
+    function renderPhraseList(items, color) {
+        if (items.length === 0) return '<p style="color:#94a3b8;font-size:13px;padding:12px;">Sin datos suficientes.</p>';
+        var maxCount = items[0].count;
+        var html = '<ul class="tm-phrase-list">';
+        items.forEach(function(item, i) {
+            var pctWidth = Math.max(8, (item.count / maxCount) * 100);
+            html += '<li>' +
+                '<span class="tm-rank">' + (i + 1) + '</span>' +
+                '<span class="tm-phrase-text">' + item.texto + '</span>' +
+                '<span class="tm-phrase-count">' + item.count + '</span>' +
+                '<span class="tm-bar-bg"><span class="tm-bar-fill" style="width:' + pctWidth + '%;background:' + color + ';"></span></span>' +
+            '</li>';
+        });
+        html += '</ul>';
+        return html;
     }
 
     /* ================================================================
@@ -205,8 +446,8 @@
 
         destroyCharts();
 
-        const records = data.base_excel;
-        const total = records.length;
+        var records = data.base_excel;
+        var total = records.length;
 
         if (total === 0) {
             document.getElementById('contenidoPrincipal').innerHTML =
@@ -215,381 +456,545 @@
             return;
         }
 
-        /* ── Pre-cálculos globales ── */
-        const conFatal = records.filter(tieneErrorFatal);
-        const totalFatal = conFatal.length;
-        const pctFatal = pct(totalFatal, total);
+        // ── Leer etiquetas desde atributos_evaluacion si están disponibles ──
+        if (data.atributos_evaluacion && Array.isArray(data.atributos_evaluacion)) {
+            data.atributos_evaluacion.forEach(function(attr) {
+                var col = attr.columna || attr.COLUMNA || '';
+                ERRORES_CONFIG.forEach(function(cfg) {
+                    if (col === cfg.key) {
+                        var desc = attr.descripcion || attr.DESCRIPCION || attr.nombre || attr.NOMBRE || '';
+                        if (desc) cfg.label = desc;
+                    }
+                });
+            });
+        }
 
-        const errQ4  = records.filter(r => tieneError(r, ERRORES_CONFIG[0])).length;
-        const errQ11 = records.filter(r => tieneError(r, ERRORES_CONFIG[1])).length;
-        const errQ20 = records.filter(r => tieneError(r, ERRORES_CONFIG[2])).length;
+        /* ────────────────────────────────────────────
+           PRE-CÁLCULOS
+           ──────────────────────────────────────────── */
+        var conError = records.filter(tieneAlgunError);
+        var totalConError = conError.length;
+        var pctConError = pct(totalConError, total);
 
-        /* ── Análisis por error para tabla principal ── */
-        const analisisErrores = ERRORES_CONFIG.map(cfg => {
-            const casosError = records.filter(r => tieneError(r, cfg));
-            const totalCasos = casosError.length;
-            const incidencia = pct(totalCasos, total);
-            const ptosPerdidos = casosError.reduce((sum, r) => sum + (cfg.max - val(r, cfg.key)), 0);
+        // Conteos individuales
+        var conteosPorQ = {};
+        ERRORES_CONFIG.forEach(function(cfg) {
+            conteosPorQ[cfg.key] = records.filter(function(r) { return tieneError(r, cfg); }).length;
+        });
 
-            // BPO más afectado
-            const porBPO = {};
-            casosError.forEach(r => {
-                const b = r.BPO || 'N/A';
+        /* ── Análisis por error (tabla principal) ── */
+        var analisisErrores = ERRORES_CONFIG.map(function(cfg) {
+            var casosError = records.filter(function(r) { return tieneError(r, cfg); });
+            var totalCasos = casosError.length;
+            var incidencia = pct(totalCasos, total);
+
+            // BPO más afectado por tasa
+            var porBPO = {};
+            var totalPorBPO = {};
+            records.forEach(function(r) {
+                var b = r.BPO || 'N/A';
+                totalPorBPO[b] = (totalPorBPO[b] || 0) + 1;
+            });
+            casosError.forEach(function(r) {
+                var b = r.BPO || 'N/A';
                 porBPO[b] = (porBPO[b] || 0) + 1;
             });
-            let peorBPO = '—';
-            let peorBPOCount = 0;
-            Object.entries(porBPO).forEach(([b, c]) => {
-                if (c > peorBPOCount) { peorBPO = b; peorBPOCount = c; }
+            var peorBPO = '—', peorTasa = 0;
+            Object.keys(porBPO).forEach(function(b) {
+                var tasa = pct(porBPO[b], totalPorBPO[b] || 1);
+                if (tasa > peorTasa) { peorBPO = b; peorTasa = tasa; }
             });
 
-            return { ...cfg, totalCasos, incidencia, ptosPerdidos, peorBPO };
-        }).sort((a, b) => b.incidencia - a.incidencia);
+            return { key: cfg.key, label: cfg.label, tipo: cfg.tipo,
+                     totalCasos: totalCasos, incidencia: incidencia,
+                     peorBPO: peorBPO, peorTasa: peorTasa };
+        }).sort(function(a, b) { return b.incidencia - a.incidencia; });
 
-        /* ── Top 10 agentes con más errores fatales ── */
-        const fatalesPorAgente = {};
-        records.forEach(r => {
-            const nombre = r.AGENTE || 'Sin nombre';
-            if (!fatalesPorAgente[nombre]) fatalesPorAgente[nombre] = 0;
-            if (tieneErrorFatal(r)) fatalesPorAgente[nombre]++;
-        });
-        const top10Agentes = Object.entries(fatalesPorAgente)
-            .filter(([, c]) => c > 0)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 10);
-
-        /* ── Evolución semanal de errores fatales ── */
-        const porSemana = {};
-        records.forEach(r => {
-            const sem = r.SEMANA || 'N/A';
-            if (!porSemana[sem]) porSemana[sem] = { total: 0, q12: 0, q15: 0 };
+        /* ── Evolución semanal ── */
+        var porSemana = {};
+        records.forEach(function(r) {
+            var sem = r.SEMANA || 'N/A';
+            if (!porSemana[sem]) {
+                porSemana[sem] = { total: 0 };
+                Q_KEYS.forEach(function(q) { porSemana[sem][q] = 0; });
+            }
             porSemana[sem].total++;
-            if (val(r, 'Q12') !== 1) porSemana[sem].q12++;
-            if (val(r, 'Q15') !== 1) porSemana[sem].q15++;
+            ERRORES_CONFIG.forEach(function(cfg) {
+                if (tieneError(r, cfg)) porSemana[sem][cfg.key]++;
+            });
         });
-        // Ordenar semanas numéricamente
-        const semanasOrdenadas = Object.keys(porSemana).sort((a, b) => {
-            const na = parseInt(a.replace(/\D/g, '')) || 0;
-            const nb = parseInt(b.replace(/\D/g, '')) || 0;
-            return na - nb;
+        var semanasOrdenadas = Object.keys(porSemana).sort(function(a, b) {
+            return semanaNum(a) - semanaNum(b);
+        });
+
+        // Últimas 12 semanas
+        var ultimas12 = semanasOrdenadas.slice(-12);
+        var ultimas12Set = {};
+        ultimas12.forEach(function(s) { ultimas12Set[s] = true; });
+        var recsUlt12 = records.filter(function(r) { return ultimas12Set[r.SEMANA]; });
+
+        /* ── Evolución por asesor (todas las semanas) ── */
+        var asesoresData = {};
+        records.forEach(function(r) {
+            var ag  = r.AGENTE || 'Sin nombre';
+            var sup = r.SUPERVISOR || 'Sin supervisor';
+            var sem = r.SEMANA;
+            if (!asesoresData[ag]) asesoresData[ag] = { supervisor: sup, bpo: r.BPO || 'N/A', semanas: {} };
+            if (!asesoresData[ag].semanas[sem]) asesoresData[ag].semanas[sem] = { errores: 0, total: 0 };
+            asesoresData[ag].semanas[sem].total++;
+            if (tieneAlgunError(r)) asesoresData[ag].semanas[sem].errores++;
+        });
+        var asesoresConError = Object.keys(asesoresData).filter(function(ag) {
+            return Object.keys(asesoresData[ag].semanas).some(function(s) {
+                return asesoresData[ag].semanas[s].errores > 0;
+            });
+        }).sort(function(a, b) {
+            var eA = 0, eB = 0;
+            Object.keys(asesoresData[a].semanas).forEach(function(s) { eA += asesoresData[a].semanas[s].errores; });
+            Object.keys(asesoresData[b].semanas).forEach(function(s) { eB += asesoresData[b].semanas[s].errores; });
+            return eB - eA;
+        });
+
+        /* ── Evolución por supervisor (cantidad de asesores con errores) ── */
+        var supervisoresData = {};
+        recsUlt12.forEach(function(r) {
+            var sup = r.SUPERVISOR || 'Sin supervisor';
+            var sem = r.SEMANA;
+            var ag  = r.AGENTE || 'Sin nombre';
+            if (!supervisoresData[sup]) supervisoresData[sup] = { bpo: r.BPO || 'N/A', semanas: {} };
+            if (!supervisoresData[sup].semanas[sem]) supervisoresData[sup].semanas[sem] = { agentesConError: {}, totalAgentes: {}, total: 0 };
+            supervisoresData[sup].semanas[sem].total++;
+            supervisoresData[sup].semanas[sem].totalAgentes[ag] = true;
+            if (tieneAlgunError(r)) supervisoresData[sup].semanas[sem].agentesConError[ag] = true;
+        });
+        var supervisoresConError = Object.keys(supervisoresData).filter(function(sup) {
+            return Object.keys(supervisoresData[sup].semanas).some(function(s) {
+                return Object.keys(supervisoresData[sup].semanas[s].agentesConError).length > 0;
+            });
+        }).sort(function(a, b) {
+            var eA = 0, eB = 0;
+            Object.keys(supervisoresData[a].semanas).forEach(function(s) { eA += Object.keys(supervisoresData[a].semanas[s].agentesConError).length; });
+            Object.keys(supervisoresData[b].semanas).forEach(function(s) { eB += Object.keys(supervisoresData[b].semanas[s].agentesConError).length; });
+            return eB - eA;
         });
 
         /* ── Pareto ── */
-        const paretoData = analisisErrores
-            .slice()
-            .sort((a, b) => b.totalCasos - a.totalCasos);
-        const totalErroresPareto = paretoData.reduce((s, e) => s + e.totalCasos, 0);
+        var paretoData = analisisErrores.slice().sort(function(a, b) { return b.totalCasos - a.totalCasos; });
+        var totalErroresPareto = paretoData.reduce(function(s, e) { return s + e.totalCasos; }, 0);
 
         /* ── Comparativo BPO ── */
-        const recKN = records.filter(r => r.BPO === 'KN');
-        const recAT = records.filter(r => r.BPO === 'AT');
-
-        const comparativoBPO = ERRORES_CONFIG.map(cfg => {
-            const knErr = recKN.filter(r => tieneError(r, cfg)).length;
-            const atErr = recAT.filter(r => tieneError(r, cfg)).length;
-            const knPct = pct(knErr, recKN.length);
-            const atPct = pct(atErr, recAT.length);
-            let peor = 'equal';
-            if (knPct > atPct) peor = 'KN';
-            else if (atPct > knPct) peor = 'AT';
-            return { ...cfg, knErr, knPct, atErr, atPct, peor };
+        var recKN = records.filter(function(r) { return r.BPO === 'KN'; });
+        var recAT = records.filter(function(r) { return r.BPO === 'AT'; });
+        var comparativoBPO = ERRORES_CONFIG.map(function(cfg) {
+            var knErr = recKN.filter(function(r) { return tieneError(r, cfg); }).length;
+            var atErr = recAT.filter(function(r) { return tieneError(r, cfg); }).length;
+            var knP = pct(knErr, recKN.length);
+            var atP = pct(atErr, recAT.length);
+            var peor = 'equal';
+            if (knP > atP) peor = 'KN';
+            else if (atP > knP) peor = 'AT';
+            return { key: cfg.key, label: cfg.label, knErr: knErr, knPct: knP, atErr: atErr, atPct: atP, peor: peor };
         });
 
         /* ================================================================
-           RENDER
+           R E N D E R
            ================================================================ */
-        let html = '';
+        var html = '';
 
         /* ── 1. KPIs ── */
-        html += `
-        <div class="kpi-grid-errores">
-            <div class="kpi-card-err kpi-fatal">
-                <div class="kpi-icon">⛔</div>
-                <div class="kpi-label">Auditorías con Error Fatal</div>
-                <div class="kpi-value">${totalFatal}</div>
-                <div class="kpi-sub">${fmtPct(pctFatal)} del total (${total})</div>
-            </div>
-            <div class="kpi-card-err kpi-fatal">
-                <div class="kpi-icon">📊</div>
-                <div class="kpi-label">% Auditorías con Error Fatal</div>
-                <div class="kpi-value">${fmtPct(pctFatal)}</div>
-                <div class="kpi-sub">Q12 ≠ 1 ó Q15 ≠ 1</div>
-            </div>
-            <div class="kpi-card-err kpi-warning">
-                <div class="kpi-icon">🗣️</div>
-                <div class="kpi-label">Errores en Dirección (Q4)</div>
-                <div class="kpi-value">${errQ4}</div>
-                <div class="kpi-sub">${fmtPct(pct(errQ4, total))} — Max 19 pts</div>
-            </div>
-            <div class="kpi-card-err kpi-orange">
-                <div class="kpi-icon">🔧</div>
-                <div class="kpi-label">Errores en Solución (Q11)</div>
-                <div class="kpi-value">${errQ11}</div>
-                <div class="kpi-sub">${fmtPct(pct(errQ11, total))} — Max 30 pts</div>
-            </div>
-            <div class="kpi-card-err kpi-blue">
-                <div class="kpi-icon">🏷️</div>
-                <div class="kpi-label">Errores en Tipificación (Q20)</div>
-                <div class="kpi-value">${errQ20}</div>
-                <div class="kpi-sub">${fmtPct(pct(errQ20, total))} — Max 20 pts</div>
-            </div>
-        </div>`;
+        var kpiGradients = ['kpi-orange', 'kpi-warning', 'kpi-blue', 'kpi-slate'];
+        html += '<div class="kpi-grid-errores">';
+        html += '<div class="kpi-card-err kpi-fatal">' +
+                    '<div class="kpi-icon">⛔</div>' +
+                    '<div class="kpi-label">Auditorías con Error Crítico</div>' +
+                    '<div class="kpi-value">' + totalConError + '</div>' +
+                    '<div class="kpi-sub">' + fmtPct(pctConError) + ' del total (' + total + ')</div>' +
+                '</div>';
+        ERRORES_CONFIG.forEach(function(cfg, i) {
+            var cnt = conteosPorQ[cfg.key];
+            html += '<div class="kpi-card-err ' + kpiGradients[i] + '">' +
+                        '<div class="kpi-icon">' + cfg.icon + '</div>' +
+                        '<div class="kpi-label">Error ' + cfg.key + ' — ' + cfg.label + '</div>' +
+                        '<div class="kpi-value">' + cnt + '</div>' +
+                        '<div class="kpi-sub">' + fmtPct(pct(cnt, total)) + ' de incidencia</div>' +
+                    '</div>';
+        });
+        html += '</div>';
 
         /* ── 2. Tabla Análisis de Errores Críticos ── */
-        html += `
-        <div class="section-card">
-            <h3>📋 Análisis de Errores Críticos</h3>
-            <div style="overflow-x:auto;">
-            <table class="err-table">
-                <thead>
-                    <tr>
-                        <th>Criterio</th>
-                        <th>Descripción</th>
-                        <th>Puntos Max</th>
-                        <th>Casos con Error</th>
-                        <th>% Incidencia</th>
-                        <th>Puntos Perdidos</th>
-                        <th>BPO más Afectado</th>
-                    </tr>
-                </thead>
-                <tbody>`;
+        html += '<div class="section-card">' +
+                    '<h3>📋 Análisis de Errores Críticos</h3>' +
+                    '<div style="overflow-x:auto;"><table class="err-table">' +
+                    '<thead><tr>' +
+                        '<th>Criterio</th><th>Descripción</th><th>Tipo</th>' +
+                        '<th>Total Auditorías</th><th>Casos con Error</th><th>% Incidencia</th>' +
+                        '<th>BPO más Afectado</th><th>Tasa BPO</th>' +
+                    '</tr></thead><tbody>';
+        analisisErrores.forEach(function(e) {
+            html += '<tr>' +
+                '<td><strong>' + e.key + '</strong></td>' +
+                '<td>' + e.label + '</td>' +
+                '<td class="num"><span class="sem sem-red" style="font-size:10px;">FATAL</span></td>' +
+                '<td class="num">' + total + '</td>' +
+                '<td class="num">' + e.totalCasos + '</td>' +
+                '<td class="num">' + semaforo(e.incidencia) + '</td>' +
+                '<td class="num">' + bpoBadge(e.peorBPO) + '</td>' +
+                '<td class="num">' + fmtPct(e.peorTasa) + '</td>' +
+            '</tr>';
+        });
+        html += '</tbody></table></div></div>';
 
-        analisisErrores.forEach(e => {
-            const tipoTag = e.tipo === 'fatal'
-                ? '<span class="sem sem-red" style="font-size:10px;">FATAL</span>'
-                : '<span class="sem sem-yellow" style="font-size:10px;">CRÍTICO</span>';
-            html += `
-                    <tr>
-                        <td><strong>${e.key}</strong> ${tipoTag}</td>
-                        <td>${e.label}</td>
-                        <td class="num">${e.max === 1 ? 'Fatal (1)' : e.max}</td>
-                        <td class="num">${e.totalCasos}</td>
-                        <td class="num">${semaforo(e.incidencia)}</td>
-                        <td class="num">${e.ptosPerdidos.toLocaleString()}</td>
-                        <td class="num">${bpoBadge(e.peorBPO)}</td>
-                    </tr>`;
+        /* ── 3. Gráficos de Evolución (% y cantidades) ── */
+        html += '<div class="charts-duo">' +
+                    '<div class="section-card">' +
+                        '<h3>📈 Evolución Semanal — % de Errores</h3>' +
+                        '<div class="chart-wrap"><canvas id="chartEvoPct"></canvas></div>' +
+                    '</div>' +
+                    '<div class="section-card">' +
+                        '<h3>📊 Evolución Semanal — Cantidad de Errores</h3>' +
+                        '<div class="chart-wrap"><canvas id="chartEvoCant"></canvas></div>' +
+                    '</div>' +
+                '</div>';
+
+        /* ── 4. Tabla evolución por asesores ── */
+        html += '<div class="section-card">' +
+                    '<h3>👤 Evolución Semanal por Asesor' +
+                    '<span class="section-subtitle">Todas las semanas · Solo asesores con evaluaciones en 0</span></h3>';
+        if (asesoresConError.length === 0) {
+            html += '<div class="no-data-msg" style="padding:24px;">No se encontraron asesores con errores críticos.</div>';
+        } else {
+            html += '<div class="table-scroll"><table class="err-table">' +
+                    '<thead><tr>' +
+                    '<th class="sticky-col sticky-col-1">Asesor</th>' +
+                    '<th class="sticky-col sticky-col-2">Supervisor</th>' +
+                    '<th>BPO</th>';
+            semanasOrdenadas.forEach(function(s) { html += '<th class="num">' + s + '</th>'; });
+            html += '<th class="num">Total Err</th></tr></thead><tbody>';
+
+            asesoresConError.forEach(function(ag) {
+                var d = asesoresData[ag];
+                var totalErr = 0;
+
+                html += '<tr><td class="sticky-col sticky-col-1" title="' + ag + '">' + truncar(ag, 25) + '</td>' +
+                         '<td class="sticky-col sticky-col-2" title="' + d.supervisor + '">' + truncar(d.supervisor, 22) + '</td>' +
+                         '<td class="num">' + bpoBadge(d.bpo) + '</td>';
+                semanasOrdenadas.forEach(function(s) {
+                    var sw = d.semanas[s];
+                    var err = sw ? sw.errores : 0;
+                    var tot = sw ? sw.total : 0;
+                    totalErr += err;
+                    html += '<td class="num">' + heatCell(err, tot) + '</td>';
+                });
+                html += '<td class="num"><strong>' + totalErr + '</strong></td>';
+                html += '</tr>';
+            });
+            html += '</tbody></table></div>';
+            html += '<div class="legend-inline">' +
+                '<span><span class="legend-dot" style="background:#d1fae5;"></span> 0 errores</span>' +
+                '<span><span class="legend-dot" style="background:#fef3c7;"></span> 1 error</span>' +
+                '<span><span class="legend-dot" style="background:#fee2e2;"></span> 2+ errores</span>' +
+                '<span><span class="legend-dot" style="background:#f1f5f9;"></span> Sin evaluaciones</span>' +
+            '</div>';
+        }
+        html += '</div>';
+
+        /* ── 5. Tabla evolución por supervisores ── */
+        html += '<div class="section-card">' +
+                    '<h3>👥 Evolución Semanal por Supervisor' +
+                    '<span class="section-subtitle">Últimas 12 semanas · Cantidad de asesores con errores</span></h3>';
+        if (supervisoresConError.length === 0) {
+            html += '<div class="no-data-msg" style="padding:24px;">No se encontraron supervisores con asesores con errores críticos en las últimas 12 semanas.</div>';
+        } else {
+            html += '<div class="table-scroll"><table class="err-table">' +
+                    '<thead><tr><th class="sticky-col sticky-col-1">Supervisor</th>' +
+                    '<th>BPO</th>';
+            ultimas12.forEach(function(s) { html += '<th class="num">' + s + '</th>'; });
+            html += '<th class="num">Total Asesores c/Err</th><th class="num">Total Eval</th><th class="num">% Asesores c/Err</th></tr></thead><tbody>';
+            supervisoresConError.forEach(function(sup) {
+                var d = supervisoresData[sup];
+                var totalAgErr = 0, totalEval = 0, totalAgUnicos = {};
+                html += '<tr><td class="sticky-col sticky-col-1" title="' + sup + '">' + truncar(sup, 25) + '</td>' +
+                         '<td class="num">' + bpoBadge(d.bpo) + '</td>';
+                ultimas12.forEach(function(s) {
+                    var sw = d.semanas[s];
+                    var agErr = sw ? Object.keys(sw.agentesConError).length : 0;
+                    var tot   = sw ? Object.keys(sw.totalAgentes).length : 0;
+                    totalEval += sw ? sw.total : 0;
+                    if (sw) {
+                        Object.keys(sw.agentesConError).forEach(function(a) { totalAgUnicos[a] = true; });
+                    }
+                    // Mostrar agentes con error / total agentes
+                    if (tot === 0) {
+                        html += '<td class="num"><span class="heat-cell heat-empty">—</span></td>';
+                    } else if (agErr === 0) {
+                        html += '<td class="num"><span class="heat-cell heat-ok">0/' + tot + '</span></td>';
+                    } else if (agErr === 1) {
+                        html += '<td class="num"><span class="heat-cell heat-warn">' + agErr + '/' + tot + '</span></td>';
+                    } else {
+                        html += '<td class="num"><span class="heat-cell heat-bad">' + agErr + '/' + tot + '</span></td>';
+                    }
+                });
+                totalAgErr = Object.keys(totalAgUnicos).length;
+                // Calcular total agentes únicos evaluados en últimas 12 sem
+                var totalAgEvaluados = {};
+                ultimas12.forEach(function(s) {
+                    var sw = d.semanas[s];
+                    if (sw) Object.keys(sw.totalAgentes).forEach(function(a) { totalAgEvaluados[a] = true; });
+                });
+                var pctAgErr = pct(totalAgErr, Object.keys(totalAgEvaluados).length);
+                html += '<td class="num"><strong>' + totalAgErr + '</strong></td>' +
+                        '<td class="num">' + totalEval + '</td>' +
+                        '<td class="num">' + semaforo(pctAgErr) + '</td></tr>';
+            });
+            html += '</tbody></table></div>';
+            html += '<div class="legend-inline">' +
+                '<span><span class="legend-dot" style="background:#d1fae5;"></span> 0 asesores con error / total</span>' +
+                '<span><span class="legend-dot" style="background:#fef3c7;"></span> 1 asesor con error / total</span>' +
+                '<span><span class="legend-dot" style="background:#fee2e2;"></span> 2+ asesores con error / total</span>' +
+                '<span><span class="legend-dot" style="background:#f1f5f9;"></span> Sin evaluaciones</span>' +
+            '</div>';
+        }
+        html += '</div>';
+
+        /* ── 6. Pareto ── */
+        html += '<div class="section-card">' +
+                    '<h3>📊 Análisis de Pareto — 80/20 de Errores Críticos</h3>' +
+                    '<div class="chart-wrap" style="max-width:700px;margin:0 auto;"><canvas id="chartPareto"></canvas></div>' +
+                '</div>';
+
+        /* ── 7. Comparativo BPO ── */
+        html += '<div class="section-card">' +
+                    '<h3>🏢 Comparativo por BPO</h3>' +
+                    '<div style="overflow-x:auto;"><table class="err-table">' +
+                    '<thead><tr>' +
+                        '<th>Error</th><th>KN (casos)</th><th>KN (%)</th>' +
+                        '<th>AT (casos)</th><th>AT (%)</th><th>Peor</th>' +
+                    '</tr></thead><tbody>';
+        comparativoBPO.forEach(function(e) {
+            var knCl = e.peor === 'KN' ? ' worst-cell' : '';
+            var atCl = e.peor === 'AT' ? ' worst-cell' : '';
+            html += '<tr>' +
+                '<td><strong>' + e.key + '</strong> — ' + e.label + '</td>' +
+                '<td class="num' + knCl + '">' + e.knErr + '</td>' +
+                '<td class="num' + knCl + '">' + semaforo(e.knPct) + '</td>' +
+                '<td class="num' + atCl + '">' + e.atErr + '</td>' +
+                '<td class="num' + atCl + '">' + semaforo(e.atPct) + '</td>' +
+                '<td class="num">' + bpoBadge(e.peor === 'equal' ? '' : e.peor) + '</td>' +
+            '</tr>';
+        });
+        html += '</tbody></table></div></div>';
+
+        /* ── 8. Text Mining de Comentarios con Errores ── */
+        // Análisis global de todos los registros con error
+        var recsConError = records.filter(tieneAlgunError);
+        var tmGlobal = analizarComentarios(recsConError);
+
+        // Análisis por cada Q
+        var tmPorQ = {};
+        ERRORES_CONFIG.forEach(function(cfg) {
+            var recsQ = records.filter(function(r) { return tieneError(r, cfg); });
+            tmPorQ[cfg.key] = { data: analizarComentarios(recsQ), total: recsQ.length, label: cfg.label, color: cfg.color };
         });
 
-        html += `
-                </tbody>
-            </table>
-            </div>
-        </div>`;
+        // Análisis por BPO (solo registros con error)
+        var tmKN = analizarComentarios(recsConError.filter(function(r) { return r.BPO === 'KN'; }));
+        var tmAT = analizarComentarios(recsConError.filter(function(r) { return r.BPO === 'AT'; }));
 
-        /* ── 3 & 4. Gráficos Top Agentes + Evolución Semanal ── */
-        html += `
-        <div class="charts-duo">
-            <div class="section-card">
-                <h3>👤 Top 10 Agentes con Más Errores Fatales</h3>
-                <div class="chart-wrap"><canvas id="chartTopAgentes"></canvas></div>
-            </div>
-            <div class="section-card">
-                <h3>📈 Evolución Semanal de Errores Fatales</h3>
-                <div class="chart-wrap"><canvas id="chartEvolucion"></canvas></div>
-            </div>
-        </div>`;
+        html += '<div class="section-card">' +
+                    '<h3>🔍 Análisis de Comentarios — Registros con Errores' +
+                    '<span class="section-subtitle">' + recsConError.length + ' registros analizados</span></h3>';
 
-        /* ── 5. Pareto ── */
-        html += `
-        <div class="section-card">
-            <h3>📊 Análisis de Pareto — 80/20 de Errores</h3>
-            <div class="chart-wrap" style="max-width:700px;margin:0 auto;"><canvas id="chartPareto"></canvas></div>
-        </div>`;
+        // Tabs: Global | Por Q | Por BPO
+        html += '<div class="tm-tabs">' +
+                    '<span class="tm-tab active" data-tm-tab="tm-global">Global</span>';
+        ERRORES_CONFIG.forEach(function(cfg) {
+            html += '<span class="tm-tab" data-tm-tab="tm-' + cfg.key + '">' + cfg.key + ' — ' + cfg.label + ' (' + tmPorQ[cfg.key].total + ')</span>';
+        });
+        html += '<span class="tm-tab" data-tm-tab="tm-bpo">Comparativo BPO</span>' +
+                '</div>';
 
-        /* ── 6. Comparativo BPO ── */
-        html += `
-        <div class="section-card">
-            <h3>🏢 Comparativo por BPO</h3>
-            <div style="overflow-x:auto;">
-            <table class="err-table">
-                <thead>
-                    <tr>
-                        <th>Error</th>
-                        <th>KN (casos)</th>
-                        <th>KN (%)</th>
-                        <th>AT (casos)</th>
-                        <th>AT (%)</th>
-                        <th>Peor</th>
-                    </tr>
-                </thead>
-                <tbody>`;
+        // Panel Global
+        html += '<div class="tm-panel active" id="tm-global">' +
+                    '<div class="tm-grid">' +
+                        '<div><h4 style="font-size:14px;font-weight:600;margin:0 0 12px 0;color:#1e293b;">Bigramas más frecuentes</h4>' +
+                            renderPhraseList(tmGlobal.bigramas, '#3b82f6') +
+                        '</div>' +
+                        '<div><h4 style="font-size:14px;font-weight:600;margin:0 0 12px 0;color:#1e293b;">Trigramas más frecuentes</h4>' +
+                            renderPhraseList(tmGlobal.trigramas, '#6366f1') +
+                        '</div>' +
+                    '</div>' +
+                    '<h4 style="font-size:14px;font-weight:600;margin:18px 0 12px 0;color:#1e293b;">Palabras clave más frecuentes</h4>' +
+                    renderPhraseList(tmGlobal.unigramas, '#0ea5e9') +
+                '</div>';
 
-        comparativoBPO.forEach(e => {
-            const knClass = e.peor === 'KN' ? ' class="worst-cell"' : '';
-            const atClass = e.peor === 'AT' ? ' class="worst-cell"' : '';
-            html += `
-                    <tr>
-                        <td><strong>${e.key}</strong> — ${e.label}</td>
-                        <td${knClass} class="num">${e.knErr}</td>
-                        <td${knClass} class="num">${semaforo(e.knPct)}</td>
-                        <td${atClass} class="num">${e.atErr}</td>
-                        <td${atClass} class="num">${semaforo(e.atPct)}</td>
-                        <td class="num">${bpoBadge(e.peor === 'equal' ? '' : e.peor)}</td>
-                    </tr>`;
+        // Panel por cada Q
+        ERRORES_CONFIG.forEach(function(cfg) {
+            var tm = tmPorQ[cfg.key];
+            html += '<div class="tm-panel" id="tm-' + cfg.key + '">' +
+                        '<div class="tm-grid">' +
+                            '<div><h4 style="font-size:14px;font-weight:600;margin:0 0 12px 0;color:#1e293b;">Bigramas — ' + cfg.key + '</h4>' +
+                                renderPhraseList(tm.data.bigramas, cfg.color) +
+                            '</div>' +
+                            '<div><h4 style="font-size:14px;font-weight:600;margin:0 0 12px 0;color:#1e293b;">Trigramas — ' + cfg.key + '</h4>' +
+                                renderPhraseList(tm.data.trigramas, cfg.color) +
+                            '</div>' +
+                        '</div>' +
+                        '<h4 style="font-size:14px;font-weight:600;margin:18px 0 12px 0;color:#1e293b;">Palabras clave — ' + cfg.key + '</h4>' +
+                        renderPhraseList(tm.data.unigramas, cfg.color) +
+                    '</div>';
         });
 
-        html += `
-                </tbody>
-            </table>
-            </div>
-        </div>`;
+        // Panel BPO
+        html += '<div class="tm-panel" id="tm-bpo">' +
+                    '<h4 style="font-size:14px;font-weight:600;margin:0 0 16px 0;color:#1e293b;">Bigramas más frecuentes por BPO</h4>' +
+                    '<div class="tm-bpo-compare">' +
+                        '<div class="tm-bpo-col">' +
+                            '<h4>' + bpoBadge('KN') + ' Konecta</h4>' +
+                            renderPhraseList(tmKN.bigramas.slice(0, 10), '#3b82f6') +
+                        '</div>' +
+                        '<div class="tm-bpo-col">' +
+                            '<h4>' + bpoBadge('AT') + ' Atlantic</h4>' +
+                            renderPhraseList(tmAT.bigramas.slice(0, 10), '#ec4899') +
+                        '</div>' +
+                    '</div>' +
+                    '<h4 style="font-size:14px;font-weight:600;margin:24px 0 16px 0;color:#1e293b;">Trigramas más frecuentes por BPO</h4>' +
+                    '<div class="tm-bpo-compare">' +
+                        '<div class="tm-bpo-col">' +
+                            '<h4>' + bpoBadge('KN') + ' Konecta</h4>' +
+                            renderPhraseList(tmKN.trigramas.slice(0, 10), '#3b82f6') +
+                        '</div>' +
+                        '<div class="tm-bpo-col">' +
+                            '<h4>' + bpoBadge('AT') + ' Atlantic</h4>' +
+                            renderPhraseList(tmAT.trigramas.slice(0, 10), '#ec4899') +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
 
+        html += '</div>'; // cierre section-card text mining
+
+        /* ── Inyectar HTML ── */
         document.getElementById('contenidoPrincipal').innerHTML = html;
 
+        /* ── Tabs interactivos para Text Mining ── */
+        document.querySelectorAll('.tm-tab').forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tm-tab').forEach(function(t) { t.classList.remove('active'); });
+                document.querySelectorAll('.tm-panel').forEach(function(p) { p.classList.remove('active'); });
+                tab.classList.add('active');
+                var panelId = tab.getAttribute('data-tm-tab');
+                var panel = document.getElementById(panelId);
+                if (panel) panel.classList.add('active');
+                setTimeout(notifyHeight, 50);
+            });
+        });
+
         /* ================================================================
-           CHART.JS — GRÁFICOS
+           CHART.JS
            ================================================================ */
 
-        /* ── Chart: Top 10 Agentes ── */
-        if (top10Agentes.length > 0) {
-            const ctxAgentes = document.getElementById('chartTopAgentes').getContext('2d');
-            const labels = top10Agentes.map(([n]) => n.length > 22 ? n.substring(0, 20) + '…' : n);
-            chartInstances.push(new Chart(ctxAgentes, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Errores Fatales',
-                        data: top10Agentes.map(([, c]) => c),
-                        backgroundColor: 'rgba(239,68,68,.8)',
-                        borderColor: '#ef4444',
-                        borderWidth: 1,
-                        borderRadius: 6,
-                        maxBarThickness: 38
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                title: (items) => top10Agentes[items[0].dataIndex][0]
-                            }
-                        }
-                    },
-                    scales: {
-                        x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f1f5f9' } },
-                        y: { grid: { display: false }, ticks: { font: { size: 11 } } }
-                    }
-                }
-            }));
-        }
-
-        /* ── Chart: Evolución Semanal ── */
+        /* ── Evolución % ── */
         if (semanasOrdenadas.length > 0) {
-            const ctxEvo = document.getElementById('chartEvolucion').getContext('2d');
-            chartInstances.push(new Chart(ctxEvo, {
+            var ctxPct = document.getElementById('chartEvoPct').getContext('2d');
+            chartInstances.push(new Chart(ctxPct, {
                 type: 'line',
                 data: {
                     labels: semanasOrdenadas,
-                    datasets: [
-                        {
-                            label: 'Recontacto (Q12)',
-                            data: semanasOrdenadas.map(s => pct(porSemana[s].q12, porSemana[s].total)),
-                            borderColor: '#ef4444',
-                            backgroundColor: 'rgba(239,68,68,.12)',
-                            fill: true,
-                            tension: .35,
-                            pointRadius: 4,
-                            pointBackgroundColor: '#ef4444'
-                        },
-                        {
-                            label: 'Políticas (Q15)',
-                            data: semanasOrdenadas.map(s => pct(porSemana[s].q15, porSemana[s].total)),
-                            borderColor: '#f59e0b',
-                            backgroundColor: 'rgba(245,158,11,.12)',
-                            fill: true,
-                            tension: .35,
-                            pointRadius: 4,
-                            pointBackgroundColor: '#f59e0b'
-                        }
-                    ]
+                    datasets: ERRORES_CONFIG.map(function(cfg) {
+                        return {
+                            label: cfg.key + ' — ' + cfg.label,
+                            data: semanasOrdenadas.map(function(s) { return pct(porSemana[s][cfg.key], porSemana[s].total); }),
+                            borderColor: cfg.color,
+                            backgroundColor: cfg.color + '18',
+                            fill: true, tension: .35,
+                            pointRadius: 3, pointBackgroundColor: cfg.color, borderWidth: 2
+                        };
+                    })
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
+                    responsive: true, maintainAspectRatio: true,
                     plugins: {
-                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16 } },
-                        tooltip: {
-                            callbacks: {
-                                label: (ctx) => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '%'
-                            }
-                        }
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 14, font: { size: 11 } } },
+                        tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + c.parsed.y.toFixed(1) + '%'; } } }
                     },
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { callback: v => v + '%' },
-                            grid: { color: '#f1f5f9' }
-                        },
-                        x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+                        y: { beginAtZero: true, ticks: { callback: function(v) { return v + '%'; } }, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
                     }
                 }
             }));
         }
 
-        /* ── Chart: Pareto ── */
-        if (paretoData.length > 0 && totalErroresPareto > 0) {
-            const ctxPareto = document.getElementById('chartPareto').getContext('2d');
-            let acumulado = 0;
-            const acumulados = paretoData.map(e => {
-                acumulado += e.totalCasos;
-                return pct(acumulado, totalErroresPareto);
-            });
-
-            // Índice donde se cruza el 80 %
-            const idx80 = acumulados.findIndex(v => v >= 80);
-
-            chartInstances.push(new Chart(ctxPareto, {
+        /* ── Evolución Cantidades ── */
+        if (semanasOrdenadas.length > 0) {
+            var ctxCant = document.getElementById('chartEvoCant').getContext('2d');
+            chartInstances.push(new Chart(ctxCant, {
                 type: 'bar',
                 data: {
-                    labels: paretoData.map(e => e.key + ' – ' + e.label),
+                    labels: semanasOrdenadas,
+                    datasets: ERRORES_CONFIG.map(function(cfg) {
+                        return {
+                            label: cfg.key + ' — ' + cfg.label,
+                            data: semanasOrdenadas.map(function(s) { return porSemana[s][cfg.key]; }),
+                            backgroundColor: cfg.color + 'CC',
+                            borderColor: cfg.color,
+                            borderWidth: 1, borderRadius: 4, maxBarThickness: 28
+                        };
+                    })
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 14, font: { size: 11 } } },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                    }
+                }
+            }));
+        }
+
+        /* ── Pareto ── */
+        if (paretoData.length > 0 && totalErroresPareto > 0) {
+            var ctxP = document.getElementById('chartPareto').getContext('2d');
+            var acum = 0;
+            var acumulados = paretoData.map(function(e) { acum += e.totalCasos; return pct(acum, totalErroresPareto); });
+            var idx80 = acumulados.findIndex(function(v) { return v >= 80; });
+            if (idx80 === -1) idx80 = acumulados.length - 1;
+
+            chartInstances.push(new Chart(ctxP, {
+                type: 'bar',
+                data: {
+                    labels: paretoData.map(function(e) { return e.key + ' – ' + e.label; }),
                     datasets: [
                         {
                             label: 'Frecuencia',
-                            data: paretoData.map(e => e.totalCasos),
-                            backgroundColor: paretoData.map((_, i) => i <= idx80 ? 'rgba(239,68,68,.75)' : 'rgba(148,163,184,.5)'),
-                            borderRadius: 6,
-                            yAxisID: 'y',
-                            order: 2
+                            data: paretoData.map(function(e) { return e.totalCasos; }),
+                            backgroundColor: paretoData.map(function(_, i) { return i <= idx80 ? 'rgba(239,68,68,.75)' : 'rgba(148,163,184,.5)'; }),
+                            borderRadius: 6, yAxisID: 'y', order: 2
                         },
                         {
                             label: '% Acumulado',
-                            data: acumulados,
-                            type: 'line',
-                            borderColor: '#1e293b',
-                            backgroundColor: 'transparent',
-                            borderWidth: 2,
-                            pointRadius: 5,
-                            pointBackgroundColor: acumulados.map((_, i) => i === idx80 ? '#10b981' : '#1e293b'),
-                            pointBorderColor: acumulados.map((_, i) => i === idx80 ? '#10b981' : '#1e293b'),
-                            pointBorderWidth: acumulados.map((_, i) => i === idx80 ? 3 : 1),
-                            yAxisID: 'y1',
-                            order: 1
+                            data: acumulados, type: 'line',
+                            borderColor: '#1e293b', backgroundColor: 'transparent', borderWidth: 2,
+                            pointRadius: 6,
+                            pointBackgroundColor: acumulados.map(function(_, i) { return i === idx80 ? '#10b981' : '#1e293b'; }),
+                            pointBorderColor:     acumulados.map(function(_, i) { return i === idx80 ? '#10b981' : '#1e293b'; }),
+                            pointBorderWidth:      acumulados.map(function(_, i) { return i === idx80 ? 3 : 1; }),
+                            yAxisID: 'y1', order: 1
                         }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
+                    responsive: true, maintainAspectRatio: true,
                     plugins: {
                         legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16 } },
-                        tooltip: {
-                            callbacks: {
-                                afterLabel: (ctx) => {
-                                    if (ctx.datasetIndex === 1) return '';
-                                    return '% Acumulado: ' + acumulados[ctx.dataIndex].toFixed(1) + '%';
-                                }
-                            }
-                        },
-                        annotation: undefined // no plugin needed, we use point styling
+                        tooltip: { callbacks: { afterLabel: function(c) { return c.datasetIndex === 1 ? '' : '% Acumulado: ' + acumulados[c.dataIndex].toFixed(1) + '%'; } } }
                     },
                     scales: {
                         y:  { beginAtZero: true, position: 'left',  ticks: { precision: 0 }, grid: { color: '#f1f5f9' }, title: { display: true, text: 'Frecuencia' } },
-                        y1: { beginAtZero: true, position: 'right', min: 0, max: 105, ticks: { callback: v => v + '%' }, grid: { drawOnChartArea: false }, title: { display: true, text: '% Acumulado' } },
+                        y1: { beginAtZero: true, position: 'right', min: 0, max: 105, ticks: { callback: function(v) { return v + '%'; } }, grid: { drawOnChartArea: false }, title: { display: true, text: '% Acumulado' } },
                         x:  { grid: { display: false }, ticks: { font: { size: 11 }, maxRotation: 25 } }
                     }
                 }
@@ -603,9 +1008,9 @@
     }
 
     /* ================================================================
-       INICIALIZACIÓN — Escuchar mensajes y cargar datos
+       INICIALIZACIÓN
        ================================================================ */
-    window.addEventListener('message', (event) => {
+    window.addEventListener('message', function(event) {
         if (event.data.type === 'FILTERED_DATA') {
             cargarPagina(event.data.data);
         }
