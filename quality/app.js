@@ -162,14 +162,23 @@ function applyFilters() {
             const recordDateNum = recordDate.getFullYear() * 10000 + (recordDate.getMonth() + 1) * 100 + recordDate.getDate();
             
             if (filters.fechaInteraccionDesde) {
-                const fromDate = new Date(filters.fechaInteraccionDesde + 'T00:00:00');
-                const fromDateNum = fromDate.getFullYear() * 10000 + (fromDate.getMonth() + 1) * 100 + fromDate.getDate();
+                // Parsear fecha desde el input directamente
+                const parts = filters.fechaInteraccionDesde.split('-');
+                const fromDateNum = parseInt(parts[0]) * 10000 + parseInt(parts[1]) * 100 + parseInt(parts[2]);
+                
+                // Debug
+                if (window.DEBUG_FILTERS) {
+                    console.log('Fecha Interacción Desde:', filters.fechaInteraccionDesde, '→', fromDateNum);
+                    console.log('Registro:', record['FECHA DE INTERACCIÓN'], '→', recordDateNum);
+                }
+                
                 if (recordDateNum < fromDateNum) return false;
             }
             
             if (filters.fechaInteraccionHasta) {
-                const toDate = new Date(filters.fechaInteraccionHasta + 'T00:00:00');
-                const toDateNum = toDate.getFullYear() * 10000 + (toDate.getMonth() + 1) * 100 + toDate.getDate();
+                // Parsear fecha desde el input directamente
+                const parts = filters.fechaInteraccionHasta.split('-');
+                const toDateNum = parseInt(parts[0]) * 10000 + parseInt(parts[1]) * 100 + parseInt(parts[2]);
                 if (recordDateNum > toDateNum) return false;
             }
         }
@@ -208,14 +217,16 @@ function applyFilters() {
             const recordDateNum = recordDate.getFullYear() * 10000 + (recordDate.getMonth() + 1) * 100 + recordDate.getDate();
             
             if (filters.fechaMonitoreoDesde) {
-                const fromDate = new Date(filters.fechaMonitoreoDesde + 'T00:00:00');
-                const fromDateNum = fromDate.getFullYear() * 10000 + (fromDate.getMonth() + 1) * 100 + fromDate.getDate();
+                // Parsear fecha desde el input directamente
+                const parts = filters.fechaMonitoreoDesde.split('-');
+                const fromDateNum = parseInt(parts[0]) * 10000 + parseInt(parts[1]) * 100 + parseInt(parts[2]);
                 if (recordDateNum < fromDateNum) return false;
             }
             
             if (filters.fechaMonitoreoHasta) {
-                const toDate = new Date(filters.fechaMonitoreoHasta + 'T00:00:00');
-                const toDateNum = toDate.getFullYear() * 10000 + (toDate.getMonth() + 1) * 100 + toDate.getDate();
+                // Parsear fecha desde el input directamente
+                const parts = filters.fechaMonitoreoHasta.split('-');
+                const toDateNum = parseInt(parts[0]) * 10000 + parseInt(parts[1]) * 100 + parseInt(parts[2]);
                 if (recordDateNum > toDateNum) return false;
             }
         }
@@ -265,6 +276,12 @@ function applyFilters() {
         ...window.rawData,
         base_excel: filtered
     };
+    
+    // Debug
+    console.log(`Filtros aplicados: ${window.rawData.base_excel.length} → ${filtered.length} registros`);
+    if (filters.fechaInteraccionDesde || filters.fechaInteraccionHasta) {
+        console.log(`Rango fechas: ${filters.fechaInteraccionDesde} a ${filters.fechaInteraccionHasta}`);
+    }
     
     // Actualizar indicadores visuales de filtro
     updateFilterIndicators();

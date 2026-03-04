@@ -40,6 +40,14 @@
                     Inicio
                 </button>
                 
+                <button class="btn-calendar" id="btnCalendar" title="Ver calendario de semanas">
+                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                        <rect x="3" y="4" width="14" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
+                        <path d="M3 8H17M7 2V6M13 2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    Semanas
+                </button>
+                
                 <button class="btn-share" id="btnShare" title="Copiar enlace con filtros actuales">
                     <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                         <circle cx="5" cy="10" r="2" stroke="currentColor" stroke-width="1.5"/>
@@ -875,14 +883,45 @@
                 .sort((a, b) => b - a); // Descendente
             const ultimoMonitoreoAT = fechasAT[0];
             
+            // === FECHAS DE INDICADORES DEL NEGOCIO (KPIs) ===
+            let kpiMasAntiguo = null;
+            let kpiMasReciente = null;
+            let fechaGeneracionKPI = null;
+            
+            if (data.kpis && data.kpis.length > 0) {
+                const fechasKPIs = data.kpis
+                    .map(k => window.parseDate(k.FECHA_REAL))
+                    .filter(d => d !== null)
+                    .sort((a, b) => a - b);
+                
+                if (fechasKPIs.length > 0) {
+                    kpiMasAntiguo = fechasKPIs[0];
+                    kpiMasReciente = fechasKPIs[fechasKPIs.length - 1];
+                }
+            }
+            
+            // Fecha de generación/actualización de KPIs
+            if (data.fecha_generacion_kpi) {
+                fechaGeneracionKPI = new Date(data.fecha_generacion_kpi);
+            }
+            
+            // === FECHA DE ACTUALIZACIÓN GENAI ===
+            let fechaGenAI = null;
+            if (data.fecha_actualizacion_genai) {
+                fechaGenAI = new Date(data.fecha_actualizacion_genai);
+            }
+            
             // === FECHA DE GENERACIÓN DEL JSON ===
             let fechaGeneracion = null;
             if (data.fecha_generacion) {
                 fechaGeneracion = new Date(data.fecha_generacion);
             }
             
-            // === CONSTRUIR MENSAJE HTML ===
+            // === CONSTRUIR MENSAJE HTML CON DOS COLUMNAS ===
             let html = '<div class="info-section">';
+            
+            // ========== COLUMNA 1 (IZQUIERDA) ==========
+            html += '<div class="info-column">';
             
             // Fecha de generación (si existe)
             if (fechaGeneracion && !isNaN(fechaGeneracion.getTime())) {
@@ -914,6 +953,7 @@
                 `;
             }
             
+            // Últimos Monitoreos por BPO
             html += '<div class="info-item"><strong>🏢 Últimos Monitoreos por BPO</strong>';
             
             if (ultimoMonitoreoKN) {
@@ -924,7 +964,44 @@
                 html += `<div>AT: ${ultimoMonitoreoAT.toLocaleDateString('es-ES', opciones)}</div>`;
             }
             
-            html += '</div></div>';
+            html += '</div>'; // Cierre info-item BPO
+            
+            html += '</div>'; // Fin columna 1
+            
+            // ========== COLUMNA 2 (DERECHA) ==========
+            html += '<div class="info-column">';
+            
+            // Indicadores del Negocio (KPIs)
+            if (kpiMasAntiguo && kpiMasReciente) {
+                html += `
+                    <div class="info-item">
+                        <strong>📊 Indicadores del Negocio</strong>
+                        <div>Desde ${kpiMasAntiguo.toLocaleDateString('es-ES', opciones)}</div>
+                        <div>Hasta ${kpiMasReciente.toLocaleDateString('es-ES', opciones)}</div>`;
+                
+                // Agregar fecha de actualización si existe
+                if (fechaGeneracionKPI && !isNaN(fechaGeneracionKPI.getTime())) {
+                    html += `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);">Actualización: ${fechaGeneracionKPI.toLocaleDateString('es-ES', opcionesCompletas)}</div>`;
+                }
+                
+                html += `
+                    </div>
+                `;
+            }
+            
+            // GenAI - Fecha de Actualización
+            if (fechaGenAI && !isNaN(fechaGenAI.getTime())) {
+                html += `
+                    <div class="info-item">
+                        <strong>🤖 GenAI</strong>
+                        <div>Actualización: ${fechaGenAI.toLocaleDateString('es-ES', opcionesCompletas)}</div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>'; // Fin columna 2
+            
+            html += '</div>'; // Fin info-section
             
             const infoElement = document.getElementById('dataRangeInfo');
             if (infoElement) {
@@ -1081,6 +1158,189 @@
             
             return 'bienvenida';
         }
+    </script>
+    
+    <!-- Modal de Calendario de Semanas -->
+    <div class="modal-overlay" id="calendarModal">
+        <div class="modal-content calendar-modal">
+            <!-- Header del modal -->
+            <div class="modal-header">
+                <h3 style="margin: 0; color: var(--text-primary); font-size: 20px; font-weight: 700;">📅 Calendario de Semanas</h3>
+                <button class="modal-close" id="closeCalendarModal" title="Cerrar">×</button>
+            </div>
+            
+            <!-- Selector de año -->
+            <div class="year-selector">
+                <button class="year-nav-btn" id="prevYear" title="Año anterior">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M12 4L6 10L12 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <select id="yearSelect" class="year-select">
+                    <option value="2025">2025</option>
+                    <option value="2026" selected>2026</option>
+                    <option value="2027">2027</option>
+                    <option value="2028">2028</option>
+                    <option value="2029">2029</option>
+                    <option value="2030">2030</option>
+                </select>
+                <button class="year-nav-btn" id="nextYear" title="Año siguiente">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M8 4L14 10L8 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Tabla de semanas -->
+            <div class="weeks-table-container">
+                <table class="weeks-table">
+                    <thead>
+                        <tr>
+                            <th>Semana</th>
+                            <th>Inicio</th>
+                            <th>Fin</th>
+                        </tr>
+                    </thead>
+                    <tbody id="weeksTableBody">
+                        <!-- Generado dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ==================== CALENDARIO DE SEMANAS ====================
+        
+        // Función para obtener todas las semanas de un año (ISO 8601)
+        function getWeeksOfYear(year) {
+            const weeks = [];
+            
+            // Encontrar el primer lunes del año (o el lunes de la semana que contiene el 1 de enero)
+            const jan1 = new Date(year, 0, 1);
+            const dayOfWeek = jan1.getDay();
+            
+            // Calcular cuántos días hasta el lunes
+            let daysToMonday;
+            if (dayOfWeek === 0) { // Domingo
+                daysToMonday = 1;
+            } else if (dayOfWeek === 1) { // Lunes
+                daysToMonday = 0;
+            } else { // Martes a Sábado
+                daysToMonday = -(dayOfWeek - 1);
+            }
+            
+            let currentMonday = new Date(year, 0, 1);
+            currentMonday.setDate(currentMonday.getDate() + daysToMonday);
+            
+            let weekNumber = 1;
+            
+            // Generar semanas mientras estemos en el año
+            while (currentMonday.getFullYear() === year || 
+                   (currentMonday.getFullYear() === year - 1 && weekNumber === 1)) {
+                
+                const weekStart = new Date(currentMonday);
+                const weekEnd = new Date(currentMonday);
+                weekEnd.setDate(weekEnd.getDate() + 6); // Domingo
+                
+                // Solo agregar si al menos 4 días están en el año objetivo
+                const daysInYear = 7;
+                if (weekStart.getFullYear() === year || weekEnd.getFullYear() === year) {
+                    weeks.push({
+                        number: weekNumber,
+                        start: weekStart,
+                        end: weekEnd
+                    });
+                    weekNumber++;
+                }
+                
+                currentMonday.setDate(currentMonday.getDate() + 7);
+                
+                // Detener si ya pasamos al siguiente año y tenemos suficientes semanas
+                if (currentMonday.getFullYear() > year && weekNumber > 52) {
+                    break;
+                }
+            }
+            
+            return weeks;
+        }
+        
+        // Función para formatear fecha en formato corto "15 feb 2026"
+        function formatDateShort(date) {
+            const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 
+                           'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+            const day = date.getDate();
+            const month = months[date.getMonth()];
+            const year = date.getFullYear();
+            return `${day} ${month} ${year}`;
+        }
+        
+        // Función para renderizar la tabla de semanas
+        function renderWeeksTable(year) {
+            const weeks = getWeeksOfYear(year);
+            const tbody = document.getElementById('weeksTableBody');
+            
+            const html = weeks.map(week => `
+                <tr>
+                    <td><strong>Semana ${week.number}</strong></td>
+                    <td>${formatDateShort(week.start)}</td>
+                    <td>${formatDateShort(week.end)}</td>
+                </tr>
+            `).join('');
+            
+            tbody.innerHTML = html;
+        }
+        
+        // Event Listeners para el calendario
+        document.getElementById('btnCalendar').addEventListener('click', () => {
+            document.getElementById('calendarModal').classList.add('show');
+            const yearSelect = document.getElementById('yearSelect');
+            renderWeeksTable(parseInt(yearSelect.value));
+        });
+        
+        // Cerrar modal
+        document.getElementById('closeCalendarModal').addEventListener('click', () => {
+            document.getElementById('calendarModal').classList.remove('show');
+        });
+        
+        // Cerrar modal al hacer click en el overlay
+        document.getElementById('calendarModal').addEventListener('click', (e) => {
+            if (e.target.id === 'calendarModal') {
+                document.getElementById('calendarModal').classList.remove('show');
+            }
+        });
+        
+        // Cambiar año con selector
+        document.getElementById('yearSelect').addEventListener('change', (e) => {
+            renderWeeksTable(parseInt(e.target.value));
+        });
+        
+        // Botón año anterior
+        document.getElementById('prevYear').addEventListener('click', () => {
+            const select = document.getElementById('yearSelect');
+            const currentYear = parseInt(select.value);
+            if (currentYear > 2025) {
+                select.value = currentYear - 1;
+                renderWeeksTable(currentYear - 1);
+            }
+        });
+        
+        // Botón año siguiente
+        document.getElementById('nextYear').addEventListener('click', () => {
+            const select = document.getElementById('yearSelect');
+            const currentYear = parseInt(select.value);
+            if (currentYear < 2030) {
+                select.value = currentYear + 1;
+                renderWeeksTable(currentYear + 1);
+            }
+        });
+        
+        // Cerrar modal con tecla Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.getElementById('calendarModal').classList.remove('show');
+            }
+        });
     </script>
 </body>
 </html>

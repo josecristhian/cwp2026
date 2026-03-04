@@ -235,8 +235,8 @@ body::before {
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-xl);
     padding: var(--space-xl);
-    min-width: 420px;
-    max-width: 520px;
+    min-width: 700px;
+    max-width: 850px;
     position: relative;
 }
 
@@ -294,6 +294,12 @@ body::before {
 }
 
 .info-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-lg);
+}
+
+.info-column {
     display: flex;
     flex-direction: column;
     gap: var(--space-md);
@@ -334,6 +340,7 @@ body::before {
 
 /* ==================== BUTTONS ==================== */
 .btn-home,
+.btn-calendar,
 .btn-share,
 .filter-toggle {
     display: flex;
@@ -935,6 +942,10 @@ body::before {
         max-width: calc(100vw - 40px);
     }
     
+    .info-section {
+        grid-template-columns: 1fr;
+    }
+    
     .filters-grid {
         grid-template-columns: 1fr;
     }
@@ -1183,4 +1194,227 @@ body::before {
 .score-light-red {
     color: #f87171;
     font-weight: 700;
+}
+/* ==================== MODAL DE CALENDARIO ==================== */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(13, 27, 42, 0.75);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    padding: 20px;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.modal-content.calendar-modal {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    max-width: 700px;
+    width: 100%;
+    max-height: 90vh;
+    overflow: hidden;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    border-bottom: 2px solid var(--border);
+    background: linear-gradient(135deg, rgba(27, 152, 224, 0.05) 0%, transparent 100%);
+}
+
+.modal-close {
+    background: transparent;
+    border: none;
+    font-size: 32px;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    transition: all var(--transition);
+    line-height: 1;
+    padding: 0;
+}
+
+.modal-close:hover {
+    background: var(--background);
+    color: var(--text-primary);
+    transform: rotate(90deg);
+}
+
+.year-selector {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    padding: 24px;
+    background: var(--background);
+    border-bottom: 1px solid var(--border);
+}
+
+.year-select {
+    padding: 12px 20px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--transition);
+    font-family: var(--font-primary);
+    min-width: 120px;
+    text-align: center;
+}
+
+.year-select:hover {
+    border-color: var(--primary-color);
+}
+
+.year-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(27, 152, 224, 0.1);
+}
+
+.year-nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--transition);
+    color: var(--text-secondary);
+}
+
+.year-nav-btn:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    transform: scale(1.05);
+}
+
+.year-nav-btn:active {
+    transform: scale(0.95);
+}
+
+.weeks-table-container {
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.weeks-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.weeks-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.weeks-table th {
+    background: var(--color-navy);
+    color: white;
+    padding: 16px 24px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 3px solid var(--primary-color);
+}
+
+.weeks-table td {
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.weeks-table td:first-child {
+    color: var(--text-primary);
+}
+
+.weeks-table tbody tr {
+    transition: all var(--transition);
+}
+
+.weeks-table tbody tr:hover {
+    background: linear-gradient(90deg, rgba(27, 152, 224, 0.08) 0%, transparent 100%);
+    transform: translateX(4px);
+}
+
+.weeks-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Scrollbar personalizado para la tabla */
+.weeks-table-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.weeks-table-container::-webkit-scrollbar-track {
+    background: var(--background);
+}
+
+.weeks-table-container::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+
+.weeks-table-container::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .modal-content.calendar-modal {
+        max-width: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+    
+    .weeks-table th,
+    .weeks-table td {
+        padding: 12px 16px;
+        font-size: 13px;
+    }
+    
+    .year-selector {
+        padding: 16px;
+    }
 }

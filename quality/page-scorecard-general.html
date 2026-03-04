@@ -58,12 +58,12 @@ html, body {
         }
         
         .global-toggle-btn {
-            padding: 8px 20px;
+            padding: 8px 16px;
             border: none;
             background: transparent;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             transition: all 0.2s;
             color: #64748b;
@@ -191,6 +191,9 @@ html, body {
         <div class="page-header">
             <h2 class="page-title">Análisis de Tendencias</h2>
             <div class="global-toggle">
+                <button class="global-toggle-btn" onclick="cambiarPeriodoGlobal('dia')">
+                    📅 Por Día
+                </button>
                 <button class="global-toggle-btn active" onclick="cambiarPeriodoGlobal('semana')">
                     📅 Por Semana
                 </button>
@@ -342,7 +345,7 @@ html, body {
     <script>
         // Variables globales
         let currentData = null;
-        let currentPeriod = 'semana'; // Global único
+        let currentPeriod = 'semana'; // Global único: 'dia', 'semana', o 'mes'
         
         // Almacenar instancias de gráficos
         let charts = {
@@ -366,6 +369,142 @@ html, body {
             '#10b981', '#06b6d4', '#ef4444', '#6366f1',
             '#14b8a6', '#f97316', '#84cc16', '#a855f7'
         ];
+        
+        // ============================================
+        // FUNCIONES DE CÁLCULO DE FECHA
+        // ============================================
+        
+        /**
+         * Obtiene el número de semana ISO del año para una fecha dada
+         */
+        function getISOWeek(date) {
+            const d = new Date(date);
+            d.setHours(0, 0, 0, 0);
+            // Jueves en la semana actual decide el año
+            d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
+            // Enero 4 siempre está en semana 1
+            const week1 = new Date(d.getFullYear(), 0, 4);
+            // Calcular número de semana
+            const weekNum = 1 + Math.round(((d - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+            
+            return {
+                year: d.getFullYear(),
+                week: weekNum
+            };
+        }
+        
+        /**
+         * Parsea fecha del formato "MM/DD/YY" a objeto Date
+         */
+        function parseFechaInteraccion(fechaStr) {
+            if (!fechaStr) return null;
+            
+            const parts = fechaStr.split('/');
+            if (parts.length !== 3) return null;
+            
+            const month = parseInt(parts[0]);
+            const day = parseInt(parts[1]);
+            let year = parseInt(parts[2]);
+            
+            // Convertir año de 2 dígitos a 4 dígitos
+            if (year < 50) {
+                year += 2000;
+            } else if (year < 100) {
+                year += 1900;
+            }
+            
+            return new Date(year, month - 1, day);
+        }
+        
+        /**
+         * Formatea una fecha para display día
+         */
+        function formatearFechaDia(fecha) {
+            if (!fecha) return 'N/A';
+            
+            const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 
+                          'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            
+            const day = fecha.getDate();
+            const month = months[fecha.getMonth()];
+            
+            return `${day} ${month}`;
+        }
+        
+        /**
+         * Formatea semana ISO para display
+         */
+        function formatearSemanaISO(isoWeek) {
+            return `SEM ${isoWeek.week}`;
+        }
+        
+        /**
+         * Formatea mes para display
+         */
+        function formatearMes(fecha) {
+            if (!fecha) return 'N/A';
+            
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            
+            const month = months[fecha.getMonth()];
+            const year = fecha.getFullYear().toString().slice(-2);
+            
+            return `${month}-${year}`;
+        }
+        
+        /**
+         * Agrupa registros por periodo calculado dinámicamente
+         */
+        function agruparPorPeriodo(records, tipoPeriodo) {
+            const agrupado = {};
+            
+            records.forEach(record => {
+                const fecha = parseFechaInteraccion(record['FECHA DE INTERACCIÓN']);
+                if (!fecha) return;
+                
+                let key, label;
+                
+                if (tipoPeriodo === 'dia') {
+                    // Agrupar por día
+                    key = fecha.toISOString().split('T')[0]; // "2025-12-01"
+                    label = formatearFechaDia(fecha); // "1 Dic"
+                    
+                } else if (tipoPeriodo === 'semana') {
+                    // Agrupar por semana ISO
+                    const isoWeek = getISOWeek(fecha);
+                    key = `${isoWeek.year}-W${String(isoWeek.week).padStart(2, '0')}`; // "2024-W49"
+                    label = formatearSemanaISO(isoWeek); // "SEM 49"
+                    
+                } else {
+                    // Agrupar por mes
+                    key = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`; // "2025-12"
+                    label = formatearMes(fecha); // "Dec-25"
+                }
+                
+                if (!agrupado[key]) {
+                    agrupado[key] = {
+                        key: key,
+                        label: label,
+                        fecha: fecha,
+                        records: []
+                    };
+                }
+                
+                agrupado[key].records.push(record);
+            });
+            
+            return agrupado;
+        }
+        
+        /**
+         * Ordena los periodos cronológicamente
+         */
+        function ordenarPeriodosDinamicos(periodos) {
+            return periodos.sort((a, b) => {
+                return new Date(a.fecha) - new Date(b.fecha);
+            });
+        }
         
         // PATRÓN OBLIGATORIO: Función para notificar altura al padre
         function notifyHeight() {
@@ -435,10 +574,10 @@ html, body {
         // SECCIÓN: GENERAL
         // ============================================
         function renderGeneralSection(records) {
-            const campoTemporal = currentPeriod === 'semana' ? 'SEMANA' : 'MES';
+            const tipoPeriodo = currentPeriod; // 'dia', 'semana', o 'mes'
             
             // Calcular tendencia general
-            const tendencia = calcularTendenciaGeneral(records, campoTemporal);
+            const tendencia = calcularTendenciaGeneral(records, tipoPeriodo);
             
             // Renderizar KPIs
             renderGeneralKPIs(tendencia, records);
@@ -449,17 +588,23 @@ html, body {
             renderGeneralMetaChart(tendencia);
         }
         
-        function calcularTendenciaGeneral(records, campoTemporal) {
-            const porPeriodo = groupBy(records, campoTemporal);
-            const periodos = ordenarPeriodos(Object.keys(porPeriodo).filter(Boolean), campoTemporal);
+        function calcularTendenciaGeneral(records, tipoPeriodo) {
+            // Agrupar por periodo dinámicamente
+            const agrupado = agruparPorPeriodo(records, tipoPeriodo);
             
-            return periodos.map(periodo => {
-                const recordsPeriodo = porPeriodo[periodo];
+            // Convertir a array y ordenar
+            const periodosArray = Object.values(agrupado);
+            const periodosOrdenados = ordenarPeriodosDinamicos(periodosArray);
+            
+            return periodosOrdenados.map(periodoData => {
+                const recordsPeriodo = periodoData.records;
                 const scores = recordsPeriodo.map(r => parseFloat(r['QA SCORE']) || 0);
                 const cuartiles = groupBy(recordsPeriodo, 'CUARTIL');
                 
                 return {
-                    periodo,
+                    periodo: periodoData.label,
+                    periodoKey: periodoData.key,
+                    fecha: periodoData.fecha,
                     score: scores.reduce((a, b) => a + b, 0) / scores.length,
                     cantidad: recordsPeriodo.length,
                     cuartiles: {
@@ -667,7 +812,7 @@ html, body {
                             borderWidth: 3,
                             fill: false,
                             pointRadius: 0,
-                            borderDash: [0] // Línea sólida
+                            borderDash: [0]
                         }
                     ]
                 },
@@ -708,10 +853,10 @@ html, body {
         // SECCIÓN: SKILL
         // ============================================
         function renderSkillSection(records) {
-            const campoTemporal = currentPeriod === 'semana' ? 'SEMANA' : 'MES';
+            const tipoPeriodo = currentPeriod;
             
             // Calcular métricas
-            const metrics = calcularTendenciaPorDimension(records, 'DATA_SKILL', campoTemporal);
+            const metrics = calcularTendenciaPorDimension(records, 'DATA_SKILL', tipoPeriodo);
             
             // Renderizar stats
             renderSummaryStats('skillStats', metrics.summary);
@@ -726,10 +871,10 @@ html, body {
         // SECCIÓN: CANAL
         // ============================================
         function renderCanalSection(records) {
-            const campoTemporal = currentPeriod === 'semana' ? 'SEMANA' : 'MES';
+            const tipoPeriodo = currentPeriod;
             
             // Calcular métricas
-            const metrics = calcularTendenciaPorDimension(records, 'DATA_CANAL', campoTemporal);
+            const metrics = calcularTendenciaPorDimension(records, 'DATA_CANAL', tipoPeriodo);
             
             // Renderizar stats
             renderSummaryStats('canalStats', metrics.summary);
@@ -744,10 +889,10 @@ html, body {
         // SECCIÓN: BPO
         // ============================================
         function renderBPOSection(records) {
-            const campoTemporal = currentPeriod === 'semana' ? 'SEMANA' : 'MES';
+            const tipoPeriodo = currentPeriod;
             
             // Calcular métricas
-            const metrics = calcularTendenciaPorDimension(records, 'BPO', campoTemporal);
+            const metrics = calcularTendenciaPorDimension(records, 'BPO', tipoPeriodo);
             
             // Renderizar stats
             renderSummaryStats('bpoStats', metrics.summary);
@@ -761,27 +906,51 @@ html, body {
         // ============================================
         // FUNCIONES DE CÁLCULO
         // ============================================
-        function calcularTendenciaPorDimension(records, dimension, campoTemporal) {
-            // Agrupar por dimensión
+        function calcularTendenciaPorDimension(records, dimension, tipoPeriodo) {
+            // Agrupar por dimensión primero
             const porDimension = groupBy(records, dimension);
             const dimensiones = Object.keys(porDimension).filter(d => d && d !== 'Sin especificar');
             
-            // Obtener todos los periodos únicos y ordenarlos
-            const todosLosPeriodos = [...new Set(records.map(r => r[campoTemporal]))].filter(Boolean);
-            const periodosOrdenados = ordenarPeriodos(todosLosPeriodos, campoTemporal);
+            // Obtener todos los periodos únicos del dataset completo
+            const agrupado = agruparPorPeriodo(records, tipoPeriodo);
+            const todosLosPeriodos = Object.values(agrupado);
+            const periodosOrdenados = ordenarPeriodosDinamicos(todosLosPeriodos);
             
             // Calcular tendencias por cada dimensión
             const tendencias = {};
             dimensiones.forEach((dim, idx) => {
                 tendencias[dim] = {
                     color: colorPalette[idx % colorPalette.length],
-                    data: periodosOrdenados.map(periodo => {
-                        const recordsPeriodo = porDimension[dim].filter(r => r[campoTemporal] === periodo);
-                        if (recordsPeriodo.length === 0) return { periodo, score: null, cantidad: 0 };
+                    data: periodosOrdenados.map(periodoData => {
+                        // Filtrar registros de esta dimensión en este periodo
+                        const recordsPeriodo = porDimension[dim].filter(r => {
+                            const fecha = parseFechaInteraccion(r['FECHA DE INTERACCIÓN']);
+                            if (!fecha) return false;
+                            
+                            let matchPeriodo = false;
+                            
+                            if (tipoPeriodo === 'dia') {
+                                const key = fecha.toISOString().split('T')[0];
+                                matchPeriodo = key === periodoData.key;
+                            } else if (tipoPeriodo === 'semana') {
+                                const isoWeek = getISOWeek(fecha);
+                                const key = `${isoWeek.year}-W${String(isoWeek.week).padStart(2, '0')}`;
+                                matchPeriodo = key === periodoData.key;
+                            } else {
+                                const key = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
+                                matchPeriodo = key === periodoData.key;
+                            }
+                            
+                            return matchPeriodo;
+                        });
+                        
+                        if (recordsPeriodo.length === 0) {
+                            return { periodo: periodoData.label, score: null, cantidad: 0 };
+                        }
                         
                         const scores = recordsPeriodo.map(r => parseFloat(r['QA SCORE']) || 0);
                         return {
-                            periodo,
+                            periodo: periodoData.label,
                             score: scores.reduce((a, b) => a + b, 0) / scores.length,
                             cantidad: recordsPeriodo.length
                         };
@@ -789,7 +958,7 @@ html, body {
                 };
             });
             
-            // Calcular ranking actual (último periodo)
+            // Calcular ranking actual (todos los registros de cada dimensión)
             const ranking = dimensiones.map(dim => {
                 const recordsDim = porDimension[dim];
                 const scores = recordsDim.map(r => parseFloat(r['QA SCORE']) || 0);
@@ -809,25 +978,6 @@ html, body {
             };
             
             return { tendencias, ranking, summary, periodos: periodosOrdenados };
-        }
-        
-        function ordenarPeriodos(periodos, campo) {
-            if (campo === 'SEMANA') {
-                return periodos.sort((a, b) => {
-                    const numA = parseInt(a.replace('SEM ', '')) || 0;
-                    const numB = parseInt(b.replace('SEM ', '')) || 0;
-                    return numA - numB;
-                });
-            } else {
-                // MES
-                const ordenMeses = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                return periodos.sort((a, b) => {
-                    const [mesA, yearA] = a.split('-');
-                    const [mesB, yearB] = b.split('-');
-                    if (yearA !== yearB) return yearA - yearB;
-                    return ordenMeses.indexOf(mesA) - ordenMeses.indexOf(mesB);
-                });
-            }
         }
         
         function groupBy(records, field) {
@@ -884,7 +1034,6 @@ html, body {
                 pointHoverRadius: 5
             }));
             
-            // Agregar línea de meta si es necesario
             if (showMeta) {
                 datasets.push({
                     label: 'Meta (85)',
@@ -971,9 +1120,9 @@ html, body {
             const labels = ranking.map(r => r.dimension);
             const data = ranking.map(r => r.score);
             const colors = ranking.map((r, idx) => {
-                if (idx === 0) return '#10b981'; // Mejor
-                if (idx === ranking.length - 1) return '#ef4444'; // Peor
-                return '#1b98e0'; // Resto
+                if (idx === 0) return '#10b981';
+                if (idx === ranking.length - 1) return '#ef4444';
+                return '#1b98e0';
             });
             
             chartsObj[chartKey] = new Chart(ctx, {
@@ -1003,8 +1152,8 @@ html, body {
                     },
                     scales: {
                         x: {
-                            beginAtZero: false,
-                            min: 60,
+                            beginAtZero: true,
+                            min: 0,
                             max: 100
                         }
                     }
@@ -1012,111 +1161,103 @@ html, body {
             });
         }
         
-       // Gráfico mejorado para BPO - SIN plugin externo, usando datasets nativos
-function renderBPOComparisonChart(canvasId, chartsObj, chartKey, ranking) {
-    const ctx = document.getElementById(canvasId);
-    
-    // IMPORTANTE: Destruir gráfico anterior correctamente
-    if (chartsObj[chartKey]) {
-        chartsObj[chartKey].destroy();
-        chartsObj[chartKey] = null;
-    }
-    
-    // Validar que hay datos
-    if (!ranking || ranking.length === 0) {
-        console.warn('No hay datos de BPO para mostrar');
-        return;
-    }
-    
-    const labels = ranking.map(r => r.dimension);
-    const scores = ranking.map(r => r.score);
-    const meta = 85;
-    const colors = scores.map(score => score >= meta ? '#10b981' : '#ef4444');
-    
-    // Crear dataset con las barras de scores
-    const datasets = [
-        {
-            label: 'QA Score Actual',
-            data: scores,
-            backgroundColor: colors,
-            borderRadius: 6,
-            barThickness: 30
-        }
-    ];
-    
-    chartsObj[chartKey] = new Chart(ctx, {
-        type: 'bar',
-        data: { labels, datasets },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const score = context.parsed.x;
-                            const gap = score - meta;
-                            return [
-                                `Score: ${score.toFixed(1)}`,
-                                `Meta: ${meta}`,
-                                `Gap: ${gap >= 0 ? '+' : ''}${gap.toFixed(1)} pts`,
-                                gap >= 0 ? '✓ Cumple meta' : '✗ No cumple meta'
-                            ];
-                        }
-                    }
+        function renderBPOComparisonChart(canvasId, chartsObj, chartKey, ranking) {
+            const ctx = document.getElementById(canvasId);
+            
+            if (chartsObj[chartKey]) {
+                chartsObj[chartKey].destroy();
+                chartsObj[chartKey] = null;
+            }
+            
+            if (!ranking || ranking.length === 0) {
+                console.warn('No hay datos de BPO para mostrar');
+                return;
+            }
+            
+            const labels = ranking.map(r => r.dimension);
+            const scores = ranking.map(r => r.score);
+            const meta = 85;
+            const colors = scores.map(score => score >= meta ? '#10b981' : '#ef4444');
+            
+            const datasets = [
+                {
+                    label: 'QA Score Actual',
+                    data: scores,
+                    backgroundColor: colors,
+                    borderRadius: 6,
+                    barThickness: 30
                 }
-            },
-            scales: {
-                x: {
-                    beginAtZero: true,  // ← CAMBIO: Ahora empieza en 0
-                    min: 0,             // ← CAMBIO: Cambió de 60 a 0
-                    max: 100,
-                    title: { display: true, text: 'QA Score' },
-                    grid: {
-                        color: function(context) {
-                            // Línea verde gruesa en x=85 (meta)
-                            if (context.tick && context.tick.value === 85) {
-                                return '#10b981';
+            ];
+            
+            chartsObj[chartKey] = new Chart(ctx, {
+                type: 'bar',
+                data: { labels, datasets },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const score = context.parsed.x;
+                                    const gap = score - meta;
+                                    return [
+                                        `Score: ${score.toFixed(1)}`,
+                                        `Meta: ${meta}`,
+                                        `Gap: ${gap >= 0 ? '+' : ''}${gap.toFixed(1)} pts`,
+                                        gap >= 0 ? '✓ Cumple meta' : '✗ No cumple meta'
+                                    ];
+                                }
                             }
-                            return 'rgba(0, 0, 0, 0.1)';
-                        },
-                        lineWidth: function(context) {
-                            if (context.tick && context.tick.value === 85) {
-                                return 3;
-                            }
-                            return 1;
                         }
                     },
-                    ticks: {
-                        callback: function(value) {
-                            // Agregar etiqueta "META" en el tick de 85
-                            if (value === 85) {
-                                return '← META ' + value;
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            min: 0,
+                            max: 100,
+                            title: { display: true, text: 'QA Score' },
+                            grid: {
+                                color: function(context) {
+                                    if (context.tick && context.tick.value === 85) {
+                                        return '#10b981';
+                                    }
+                                    return 'rgba(0, 0, 0, 0.1)';
+                                },
+                                lineWidth: function(context) {
+                                    if (context.tick && context.tick.value === 85) {
+                                        return 3;
+                                    }
+                                    return 1;
+                                }
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    if (value === 85) {
+                                        return '← META ' + value;
+                                    }
+                                    return value;
+                                },
+                                color: function(context) {
+                                    if (context.tick && context.tick.value === 85) {
+                                        return '#10b981';
+                                    }
+                                    return '#666';
+                                },
+                                font: function(context) {
+                                    if (context.tick && context.tick.value === 85) {
+                                        return { weight: 'bold', size: 12 };
+                                    }
+                                    return { size: 11 };
+                                }
                             }
-                            return value;
-                        },
-                        color: function(context) {
-                            // Validar que context.tick existe
-                            if (context.tick && context.tick.value === 85) {
-                                return '#10b981';
-                            }
-                            return '#666';
-                        },
-                        font: function(context) {
-                            // Validar que context.tick existe
-                            if (context.tick && context.tick.value === 85) {
-                                return { weight: 'bold', size: 12 };
-                            }
-                            return { size: 11 };
                         }
                     }
                 }
-            }
+            });
         }
-    });
-}
     
     </script>
 </body>

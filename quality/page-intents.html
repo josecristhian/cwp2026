@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inteligencia de Intenciones</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --blue:    #1b98e0;
+            --green:   #10b981;
+            --amber:   #f59e0b;
+            --red:     #ef4444;
+            --navy:    #0f172a;
+            --slate:   #1e293b;
+            --muted:   #64748b;
+            --border:  #e2e8f0;
+            --bg:      #f8fafc;
+            --white:   #ffffff;
+            --radius:  10px;
+            --shadow:  0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: transparent;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: var(--slate);
+            padding: 0;
+        }
+
+        /* ── Section headers ── */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 40px 0 20px;
+        }
+        .section-header:first-of-type { margin-top: 0; }
+        .section-icon {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--navy);
+            letter-spacing: -0.3px;
+        }
+        .section-subtitle {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+        .section-divider {
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ── KPI strip ── */
+        .kpi-strip {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+        .kpi-tile {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        .kpi-tile::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 4px; height: 100%;
+            border-radius: 4px 0 0 4px;
+        }
+        .kpi-tile.blue::before  { background: var(--blue); }
+        .kpi-tile.green::before { background: var(--green); }
+        .kpi-tile.amber::before { background: var(--amber); }
+        .kpi-tile.red::before   { background: var(--red); }
+        .kpi-tile.navy::before  { background: var(--navy); }
+
+        .kpi-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+        .kpi-value { font-size: 28px; font-weight: 800; color: var(--navy); margin: 4px 0 2px; line-height: 1; }
+        .kpi-desc  { font-size: 11px; color: var(--muted); }
+
+        /* ── Two-column grid ── */
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        @media (max-width: 900px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+
+        /* ── Card ── */
+        .card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+        .card-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-title span { font-size: 15px; }
+
+        /* ── Chart wrapper ── */
+        .chart-wrap {
+            position: relative;
+            width: 100%;
+        }
+        .chart-wrap canvas { max-height: 260px; }
+
+        /* ── Table ── */
+        .intent-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .intent-table th {
+            background: var(--bg);
+            color: var(--muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            font-size: 10px;
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        .intent-table td {
+            padding: 9px 10px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        .intent-table tr:last-child td { border-bottom: none; }
+        .intent-table tr:hover td { background: #f8fafc; }
+
+        /* ── Score pill ── */
+        .score-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .score-high   { background: #d1fae5; color: #065f46; }
+        .score-mid    { background: #fef3c7; color: #92400e; }
+        .score-low    { background: #fee2e2; color: #991b1b; }
+
+        /* ── Bar mini ── */
+        .mini-bar-wrap { display: flex; align-items: center; gap: 6px; }
+        .mini-bar-bg   { flex: 1; height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+        .mini-bar-fill { height: 100%; border-radius: 4px; transition: width .4s ease; }
+
+        /* ── Heatmap ── */
+        .heatmap-grid { overflow-x: auto; }
+        .heatmap-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .heatmap-table th {
+            background: var(--bg);
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            padding: 7px 10px;
+            border: 1px solid var(--border);
+            white-space: nowrap;
+            text-align: center;
+        }
+        .heatmap-table th.row-header { text-align: left; }
+        .heatmap-table td {
+            padding: 7px 10px;
+            border: 1px solid var(--border);
+            text-align: center;
+            font-weight: 600;
+            transition: opacity .2s;
+        }
+        .heatmap-table td.label-cell {
+            text-align: left;
+            font-weight: 600;
+            color: var(--slate);
+            background: var(--bg);
+            white-space: nowrap;
+            font-size: 11px;
+        }
+
+        /* ── Alert rows ── */
+        .alert-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        .alert-row:last-child { margin-bottom: 0; }
+        .alert-row.danger  { background: #fff1f2; border: 1px solid #fecdd3; }
+        .alert-row.warning { background: #fffbeb; border: 1px solid #fde68a; }
+        .alert-row.ok      { background: #f0fdf4; border: 1px solid #bbf7d0; }
+        .alert-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .alert-row.danger  .alert-dot { background: var(--red); }
+        .alert-row.warning .alert-dot { background: var(--amber); }
+        .alert-row.ok      .alert-dot { background: var(--green); }
+        .alert-text { flex: 1; color: var(--slate); }
+        .alert-val  { font-weight: 700; color: var(--navy); }
+
+        /* ── Recontact tag ── */
+        .tag {
+            display: inline-block;
+            padding: 1px 7px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .tag-red    { background: #fee2e2; color: #991b1b; }
+        .tag-green  { background: #d1fae5; color: #065f46; }
+        .tag-amber  { background: #fef3c7; color: #92400e; }
+
+        /* ── Empty state ── */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .empty-state .icon { font-size: 36px; margin-bottom: 10px; }
+
+        /* ── No-data field replacement ── */
+        .no-data-field { color: #cbd5e1; font-style: italic; font-size: 11px; }
+
+        /* ── Section separator ── */
+
+        /* ── Trend dot ── */
+        .trend-up   { color: var(--green); font-size: 11px; font-weight: 700; }
+        .trend-down { color: var(--red);   font-size: 11px; font-weight: 700; }
+        .trend-flat { color: var(--muted); font-size: 11px; }
+
+        /* ── Scrollable table wrapper ── */
+        .table-scroll { overflow-x: auto; }
+
+        /* ── Page title ── */
+        .page-title {
+            margin-bottom: 28px;
+            font-family: var(--font-display, 'Segoe UI');
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--color-navy, #0f172a) 0%, var(--color-electric, #1b98e0) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        /* ── Narrow two-col for heatmap+chart ── */
+        .col-55-45 { display: grid; grid-template-columns: 55fr 45fr; gap: 16px; margin-bottom: 24px; }
+        @media (max-width: 900px) { .col-55-45 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body style="background: transparent; padding: 0;">
+<div style="padding: 0;">
+
+    <h2 class="page-title">🧠 Inteligencia de Intenciones</h2>
+
+    <!-- ══════════════════════════════════════════════
+         SECCIÓN A — MAPA DE INTENCIONES
+    ══════════════════════════════════════════════ -->
+    <div class="section-header">
+        <div class="section-icon" style="background:#eff6ff;">🗺️</div>
+        <div>
+            <div class="section-title">A · Mapa de Intenciones</div>
+            <div class="section-subtitle">Distribución de categorías e intenciones detectadas por IA</div>
+        </div>
+        <div class="section-divider"></div>
+    </div>
+
+    <!-- KPIs A -->
+    <div class="kpi-strip" id="kpiA"></div>
+
+    <!-- Charts A: donut + top intents bar -->
+    <div class="two-col">
+        <div class="card">
+            <div class="card-title"><span>🍩</span> Distribución por Categoría</div>
+            <div class="chart-wrap"><canvas id="chartDonutCat"></canvas></div>
+        </div>
+        <div class="card">
+            <div class="card-title"><span>📊</span> Top 10 Intenciones por Volumen</div>
+            <div class="chart-wrap"><canvas id="chartTopIntents"></canvas></div>
+        </div>
+    </div>
+
+
+
+
+    <!-- ══════════════════════════════════════════════
+         SECCIÓN B — CALIDAD POR INTENCIÓN
+    ══════════════════════════════════════════════ -->
+    <div class="section-header">
+        <div class="section-icon" style="background:#f0fdf4;">📉</div>
+        <div>
+            <div class="section-title">B · Calidad por Intención</div>
+            <div class="section-subtitle">Intenciones con mayor brecha de calidad — foco de coaching</div>
+        </div>
+        <div class="section-divider"></div>
+    </div>
+
+    <!-- KPIs B -->
+    <div class="kpi-strip" id="kpiB"></div>
+
+    <!-- Charts B: worst intents + KN vs AT -->
+    <div class="two-col">
+        <div class="card">
+            <div class="card-title"><span>⚠️</span> Intenciones con Peor QA Score</div>
+            <div class="chart-wrap"><canvas id="chartWorstIntents"></canvas></div>
+        </div>
+        <div class="card">
+            <div class="card-title"><span>🏢</span> Score Promedio por Categoría — KN vs AT</div>
+            <div class="chart-wrap"><canvas id="chartBpoComp"></canvas></div>
+        </div>
+    </div>
+
+
+
+
+    <!-- ══════════════════════════════════════════════
+         SECCIÓN C — MAPA DE RESOLUCIÓN
+    ══════════════════════════════════════════════ -->
+    <div class="section-header">
+        <div class="section-icon" style="background:#fff7ed;">🎯</div>
+        <div>
+            <div class="section-title">C · Mapa de Resolución</div>
+            <div class="section-subtitle">Relación intención → resolución y tasa de efectividad</div>
+        </div>
+        <div class="section-divider"></div>
+    </div>
+
+    <!-- KPIs C -->
+    <div class="kpi-strip" id="kpiC"></div>
+
+    <!-- Heatmap -->
+    <div class="card" style="margin-bottom:24px;">
+        <div class="card-title"><span>🔥</span> Heatmap: Categoría × Canal — Score QA</div>
+        <div class="heatmap-grid" id="heatmapContainer"></div>
+    </div>
+
+    <!-- Table C: intención × resolución -->
+    <div class="card" style="margin-bottom:24px;">
+        <div class="card-title"><span>🔗</span> Intención → Resolución (Top 15 combinaciones)</div>
+        <div class="table-scroll">
+            <table class="intent-table" id="tableResolution">
+                <thead>
+                    <tr>
+                        <th>Intención</th>
+                        <th>Resolución</th>
+                        <th style="text-align:center;">Interacciones</th>
+                        <th style="text-align:center;">Score QA</th>
+                        <th style="text-align:center;">Recontacto %</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════
+         SECCIÓN D — PANEL OPERATIVO
+    ══════════════════════════════════════════════ -->
+    <div class="section-header">
+        <div class="section-icon" style="background:#faf5ff;">⚙️</div>
+        <div>
+            <div class="section-title">D · Panel Operativo</div>
+            <div class="section-subtitle">Tendencias temporales, agentes y alertas operativas</div>
+        </div>
+        <div class="section-divider"></div>
+    </div>
+
+    <!-- Chart D: trend by week -->
+    <div class="card card-full">
+        <div class="card-title"><span>📈</span> Volumen de Intenciones por Semana</div>
+        <div style="position:relative;height:300px;width:100%;"><canvas id="chartWeeklyTrend"></canvas></div>
+    </div>
+
+
+
+
+    <!-- ══ HEATMAP INTENCIÓN × CRITERIO Q ══ -->
+    <div class="card" style="margin-top:24px;">
+        <div class="card-title" style="margin-bottom:16px;">
+            🔥 Heatmap Intención × Criterio Q
+            <span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:6px;">% cumplimiento por criterio Q — top 1°, 2°, 3° más fallados resaltados</span>
+        </div>
+        <div style="overflow-x:auto;" id="hmQWrap">
+            <div id="hmQContent"></div>
+        </div>
+    </div>
+
+</div><!-- /wrapper -->
+
+<script>
+// ─────────────────────────────────────────────
+// CHART REGISTRY — destroy before recreate
+// ─────────────────────────────────────────────
+const _charts = {};
+function makeChart(id, config) {
+    if (_charts[id]) {
+        _charts[id].destroy();
+        delete _charts[id];
+    }
+    const ctx = document.getElementById(id);
+    if (!ctx) return;
+    _charts[id] = new Chart(ctx, config);
+    return _charts[id];
+}
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let _rawRecords = [];       // all records received from parent
+let _filterIntent = false;  // when true, exclude records without intent
+
+// ─────────────────────────────────────────────
+// UTILITIES
+// ─────────────────────────────────────────────
+function notifyHeight() {
+    const h = document.body.scrollHeight;
+    window.parent.postMessage({ type: 'RESIZE', height: h }, '*');
+}
+
+function groupBy(records, field) {
+    return records.reduce((acc, r) => {
+        const key = (r[field] || '').toString().trim() || 'Sin especificar';
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(r);
+        return acc;
+    }, {});
+}
+
+function avg(records, field) {
+    const vals = records.map(r => parseFloat(r[field]) || 0).filter(v => v > 0);
+    if (!vals.length) return 0;
+    return vals.reduce((a, b) => a + b, 0) / vals.length;
+}
+
+function pct(num, total) {
+    if (!total) return 0;
+    return Math.round((num / total) * 1000) / 10;
+}
+
+function scorePill(score) {
+    const s = parseFloat(score) || 0;
+    const cls = s >= 85 ? 'score-high' : s >= 70 ? 'score-mid' : 'score-low';
+    return `<span class="score-pill ${cls}">${s.toFixed(1)}</span>`;
+}
+
+function miniBar(value, max, color) {
+    const w = max > 0 ? Math.round((value / max) * 100) : 0;
+    return `<div class="mini-bar-wrap">
+        <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:${w}%;background:${color};"></div></div>
+        <span style="font-size:10px;color:#64748b;min-width:28px;">${value}</span>
+    </div>`;
+}
+
+const PALETTE = [
+    '#1b98e0','#10b981','#f59e0b','#ef4444','#8b5cf6',
+    '#06b6d4','#84cc16','#f97316','#ec4899','#6366f1',
+    '#14b8a6','#a855f7','#eab308','#64748b','#0ea5e9'
+];
+
+function heatColor(score) {
+    if (!score) return { bg: '#f1f5f9', text: '#94a3b8' };
+    const s = parseFloat(score);
+    if (s >= 90) return { bg: '#d1fae5', text: '#065f46' };
+    if (s >= 80) return { bg: '#ecfdf5', text: '#047857' };
+    if (s >= 70) return { bg: '#fef3c7', text: '#92400e' };
+    if (s >= 60) return { bg: '#ffedd5', text: '#c2410c' };
+    return { bg: '#fee2e2', text: '#991b1b' };
+}
+
+// ─────────────────────────────────────────────
+// ACCESSORS
+// ─────────────────────────────────────────────
+function getField(record, field) {
+    if (record[field] !== undefined && record[field] !== '') return record[field];
+    if (record._genai && record._genai[field] !== undefined) return record._genai[field];
+    if (record.interaction_data && record.interaction_data[field] !== undefined) return record.interaction_data[field];
+    return '';
+}
+
+function getCategory(r)    { return (getField(r, 'category') || '').trim() || 'Sin categoría'; }
+function getIntent(r)      { return (getField(r, 'main_intent') || '').trim() || 'Sin intención'; }
+function getResolution(r)  { return (getField(r, 'main_resolution') || '').trim() || 'Sin resolución'; }
+function getCumple(r)      { return parseInt(r['CUMPLE PROCESO'] || r['CUMPLE_PROCESO'] || 0); }
+function getRecontacto(r)  { return parseInt(r['RECONTACTO'] || 0); }
+function getBPO(r)         { return (r['BPO'] || '').trim(); }
+function getCanal(r)       { return (r['DATA_CANAL'] || '').trim(); }
+function getSemana(r)      { return (r['SEMANA'] || '').trim(); }
+function getAgente(r)      { return (r['AGENTE'] || '').trim() || 'Sin nombre'; }
+function hasIntent(r)      { return getIntent(r) !== 'Sin intención'; }
+
+// ─────────────────────────────────────────────
+// INTENT FILTER TOGGLE — renders the pill bar
+// ─────────────────────────────────────────────
+function renderFilterBar(all, withIntent) {
+    const existing = document.getElementById('intentFilterBar');
+    if (existing) {
+        // Just refresh the badge counts in case new filtered data arrived
+        const badgeAll    = document.getElementById('badgeAll');
+        const badgeIntent = document.getElementById('badgeIntent');
+        if (badgeAll)    badgeAll.textContent    = all.toLocaleString();
+        if (badgeIntent) badgeIntent.textContent = withIntent.toLocaleString();
+        return;
+    }
+
+    const bar = document.createElement('div');
+    bar.id = 'intentFilterBar';
+    bar.style.cssText = `
+        display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+        background:#fff; border:1px solid #e2e8f0; border-radius:10px;
+        padding:12px 18px; margin-bottom:24px;
+        box-shadow:0 1px 3px rgba(0,0,0,.06);
+    `;
+    bar.innerHTML = `
+        <span style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;">
+            🔎 Datos a analizar
+        </span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="intentToggleBtns">
+            <button id="btnAllData" onclick="setIntentFilter(false)" style="
+                display:flex;align-items:center;gap:6px;
+                padding:6px 14px; border-radius:20px; border:2px solid #1b98e0;
+                background:#1b98e0; color:#fff; font-size:12px; font-weight:700;
+                cursor:pointer; transition:all .15s;
+            ">
+                📋 Todas las interacciones
+                <span style="background:rgba(255,255,255,.25);border-radius:10px;padding:1px 7px;font-size:11px;" id="badgeAll">${all.toLocaleString()}</span>
+            </button>
+            <button id="btnOnlyIntent" onclick="setIntentFilter(true)" style="
+                display:flex;align-items:center;gap:6px;
+                padding:6px 14px; border-radius:20px; border:2px solid #e2e8f0;
+                background:#fff; color:#64748b; font-size:12px; font-weight:700;
+                cursor:pointer; transition:all .15s;
+            ">
+                🧠 Solo con intención detectada
+                <span style="background:#f1f5f9;border-radius:10px;padding:1px 7px;font-size:11px;color:#475569;" id="badgeIntent">${withIntent.toLocaleString()}</span>
+            </button>
+        </div>
+        <span style="font-size:11px;color:#94a3b8;margin-left:auto;" id="filterStatusText">
+            Mostrando todas las interacciones
+        </span>
+    `;
+
+    // Insert bar right after the page title h2
+    const title = document.querySelector('.page-title');
+    title.insertAdjacentElement('afterend', bar);
+}
+
+function setIntentFilter(onlyWithIntent) {
+    _filterIntent = onlyWithIntent;
+
+    // Update button styles
+    const btnAll    = document.getElementById('btnAllData');
+    const btnIntent = document.getElementById('btnOnlyIntent');
+    const statusTxt = document.getElementById('filterStatusText');
+
+    if (onlyWithIntent) {
+        btnAll.style.background    = '#fff';
+        btnAll.style.color         = '#64748b';
+        btnAll.style.borderColor   = '#e2e8f0';
+        btnIntent.style.background = '#1b98e0';
+        btnIntent.style.color      = '#fff';
+        btnIntent.style.borderColor= '#1b98e0';
+        if (statusTxt) statusTxt.textContent = '⚡ Solo interacciones con intención IA detectada';
+    } else {
+        btnAll.style.background    = '#1b98e0';
+        btnAll.style.color         = '#fff';
+        btnAll.style.borderColor   = '#1b98e0';
+        btnIntent.style.background = '#fff';
+        btnIntent.style.color      = '#64748b';
+        btnIntent.style.borderColor= '#e2e8f0';
+        if (statusTxt) statusTxt.textContent = 'Mostrando todas las interacciones';
+    }
+
+    // Re-render with filtered data
+    const records = _filterIntent
+        ? _rawRecords.filter(r => hasIntent(r))
+        : _rawRecords;
+
+    renderSections(records);
+}
+
+// ─────────────────────────────────────────────
+// MAIN ENTRY
+// ─────────────────────────────────────────────
+function cargarPagina(data) {
+    if (!data || !data.base_excel) return;
+
+    // ── Enrich base_excel with genai data via ID_INTERACCIÓN
+    const genaiMap = {};
+    (data.genai || []).forEach(g => {
+        const id = String(g.interaction_id || '').trim();
+        if (id) genaiMap[id] = g;
+    });
+    data.base_excel.forEach(r => {
+        const id = String(r['ID_INTERACCIÓN'] || '').trim();
+        if (genaiMap[id]) r._genai = genaiMap[id];
+    });
+
+    _rawRecords = data.base_excel;
+    _rawData    = data;
+    const total      = _rawRecords.length;
+    const withIntent = _rawRecords.filter(r => hasIntent(r)).length;
+
+    if (!total) return;
+
+    renderFilterBar(total, withIntent);
+
+    const records = _filterIntent
+        ? _rawRecords.filter(r => hasIntent(r))
+        : _rawRecords;
+
+    renderSections(records);
+}
+
+function renderSections(records) {
+    const total = records.length;
+    if (!total) return;
+    renderSectionA(records, total);
+    renderSectionC(records, total);
+    renderSectionD(records, total);
+    renderHeatmapQ(_rawData);
+    setTimeout(notifyHeight, 150);
+    setTimeout(notifyHeight, 800);
+    setTimeout(notifyHeight, 1600);
+}
+
+// ═══════════════════════════════════════════
+// SECCIÓN A — MAPA DE INTENCIONES
+// ═══════════════════════════════════════════
+function renderSectionA(records, total) {
+    const catGroups  = groupBy(records, 'category');
+    // also try inside interaction_data
+    const cats = Object.keys(catGroups).filter(k => k !== 'Sin especificar' && k !== '');
+    const intents = [...new Set(records.map(r => getIntent(r)))];
+    const categories = [...new Set(records.map(r => getCategory(r)))];
+
+    // ── KPIs
+    const kpiA = document.getElementById('kpiA');
+    const uniqueIntents = [...new Set(records.map(r => getIntent(r)))].filter(i => i !== 'Sin intención');
+    const uniqueCats    = [...new Set(records.map(r => getCategory(r)))].filter(c => c !== 'Sin categoría');
+    const withIntent    = records.filter(r => getIntent(r) !== 'Sin intención').length;
+    const topCat        = categories.reduce((a, c) => {
+        const grp = records.filter(r => getCategory(r) === c);
+        return grp.length > (records.filter(r => getCategory(r) === a).length) ? c : a;
+    }, categories[0] || '—');
+
+    kpiA.innerHTML = `
+        <div class="kpi-tile blue">
+            <div class="kpi-label">Total Interacciones</div>
+            <div class="kpi-value">${total.toLocaleString()}</div>
+            <div class="kpi-desc">Con datos de intención</div>
+        </div>
+        <div class="kpi-tile green">
+            <div class="kpi-label">Categorías Únicas</div>
+            <div class="kpi-value">${uniqueCats.length}</div>
+            <div class="kpi-desc">Grupos de proceso</div>
+        </div>
+        <div class="kpi-tile amber">
+            <div class="kpi-label">Intenciones Únicas</div>
+            <div class="kpi-value">${uniqueIntents.length}</div>
+            <div class="kpi-desc">Detectadas por IA</div>
+        </div>
+        <div class="kpi-tile navy">
+            <div class="kpi-label">Categoría Dominante</div>
+            <div class="kpi-value" style="font-size:14px;padding-top:4px;">${topCat.length > 18 ? topCat.substring(0,16)+'…' : topCat}</div>
+            <div class="kpi-desc">Mayor volumen</div>
+        </div>
+        <div class="kpi-tile blue">
+            <div class="kpi-label">Cobertura IA</div>
+            <div class="kpi-value">${pct(withIntent, total)}%</div>
+            <div class="kpi-desc">Con intención detectada</div>
+        </div>
+    `;
+
+    // ── Donut categorías
+    const catCounts = categories.map(c => ({ cat: c, n: records.filter(r => getCategory(r) === c).length }))
+        .sort((a, b) => b.n - a.n).slice(0, 10);
+
+    makeChart('chartDonutCat', {
+        type: 'doughnut',
+        data: {
+            labels: catCounts.map(c => c.cat),
+            datasets: [{ data: catCounts.map(c => c.n), backgroundColor: PALETTE, borderWidth: 2, borderColor: '#fff' }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: true,
+            cutout: '60%',
+            plugins: {
+                legend: { position: 'right', labels: { font: { size: 11 }, boxWidth: 12, padding: 10 } },
+                tooltip: { callbacks: { label: (ctx) => ` ${ctx.label}: ${ctx.raw} (${pct(ctx.raw, total)}%)` } }
+            }
+        }
+    });
+
+    // ── Top intenciones bar
+    const intentCounts = [...new Set(records.map(r => getIntent(r)))]
+        .map(i => ({ intent: i, n: records.filter(r => getIntent(r) === i).length }))
+        .sort((a, b) => b.n - a.n).slice(0, 10);
+
+    makeChart('chartTopIntents', {
+        type: 'bar',
+        data: {
+            labels: intentCounts.map(i => i.intent.length > 22 ? i.intent.substring(0,20)+'…' : i.intent),
+            datasets: [{ label: 'Interacciones', data: intentCounts.map(i => i.n), backgroundColor: '#1b98e0', borderRadius: 5 }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true, maintainAspectRatio: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 } } },
+                y: { ticks: { font: { size: 10 } } }
+            }
+        }
+    });
+
+
+    // ── Chart: worst intents by QA Score
+    const intentGroups = [...new Set(records.map(r => getIntent(r)))].map(intent => {
+        const recs = records.filter(r => getIntent(r) === intent);
+        const score = avg(recs, 'QA SCORE') || avg(recs, 'QA_SCORE');
+        return { intent, n: recs.length, score };
+    }).filter(g => g.n >= 1);
+
+    const worst10 = [...intentGroups].sort((a, b) => a.score - b.score).slice(0, 10);
+
+    makeChart('chartWorstIntents', {
+        type: 'bar',
+        data: {
+            labels: worst10.map(i => i.intent.length > 22 ? i.intent.substring(0,20)+'…' : i.intent),
+            datasets: [{
+                label: 'Score QA',
+                data: worst10.map(i => parseFloat(i.score.toFixed(1))),
+                backgroundColor: worst10.map(i => i.score < 70 ? '#ef4444' : i.score < 80 ? '#f59e0b' : '#10b981'),
+                borderRadius: 5
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true, maintainAspectRatio: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { min: 0, max: 100, grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 } } },
+                y: { ticks: { font: { size: 10 } } }
+            }
+        }
+    });
+
+    // ── Chart: BPO comparison by category (KN vs AT)
+    const catList  = [...new Set(records.map(r => getCategory(r)))];
+    const knData   = catList.map(cat => {
+        const r = records.filter(rec => getCategory(rec) === cat && getBPO(rec) === 'KN');
+        return r.length ? parseFloat((avg(r, 'QA SCORE') || avg(r, 'QA_SCORE')).toFixed(1)) : null;
+    });
+    const atData   = catList.map(cat => {
+        const r = records.filter(rec => getCategory(rec) === cat && getBPO(rec) === 'AT');
+        return r.length ? parseFloat((avg(r, 'QA SCORE') || avg(r, 'QA_SCORE')).toFixed(1)) : null;
+    });
+    // Total interactions per category (line)
+    const totalData = catList.map(cat => records.filter(rec => getCategory(rec) === cat).length);
+
+    makeChart('chartBpoComp', {
+        type: 'bar',
+        data: {
+            labels: catList.map(cat => cat.length > 18 ? cat.substring(0,16)+'…' : cat),
+            datasets: [
+                { label: 'KN', data: knData, backgroundColor: '#1b98e0', borderRadius: 4, yAxisID: 'y', order: 2 },
+                { label: 'AT', data: atData, backgroundColor: '#10b981', borderRadius: 4, yAxisID: 'y', order: 3 },
+                {
+                    label: 'Interacciones',
+                    data: totalData,
+                    type: 'line',
+                    yAxisID: 'y2',
+                    borderColor: '#f59e0b',
+                    backgroundColor: '#f59e0b22',
+                    borderWidth: 2.5,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#f59e0b',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 1.5,
+                    tension: 0.3,
+                    fill: false,
+                    order: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: true,
+            plugins: {
+                legend: { position: 'bottom', labels: { font: { size: 11 } } }
+            },
+            scales: {
+                y:  { min: 0, max: 100, grid: { color: '#f1f5f9' }, title: { display: true, text: 'Score QA', font: { size: 10 } } },
+                y2: { position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, title: { display: true, text: 'Interacciones', font: { size: 10 } }, ticks: { font: { size: 10 } } },
+                x:  { ticks: { font: { size: 10 } } }
+            }
+        }
+    });
+}
+
+// ═══════════════════════════════════════════
+// SECCIÓN C — MAPA DE RESOLUCIÓN
+// ═══════════════════════════════════════════
+function renderSectionC(records, total) {
+    const withRes    = records.filter(r => getResolution(r) !== 'Sin resolución').length;
+    const recontacts = records.filter(r => getRecontacto(r) === 0).length;
+    const avgScore   = avg(records, 'QA SCORE') || avg(records, 'QA_SCORE');
+
+    // KPIs C
+    document.getElementById('kpiC').innerHTML = `
+        <div class="kpi-tile blue">
+            <div class="kpi-label">Resoluciones Registradas</div>
+            <div class="kpi-value">${pct(withRes, total)}%</div>
+            <div class="kpi-desc">${withRes} de ${total} interacciones</div>
+        </div>
+        <div class="kpi-tile red">
+            <div class="kpi-label">Tasa Recontacto</div>
+            <div class="kpi-value">${pct(recontacts, total)}%</div>
+            <div class="kpi-desc">${recontacts} sin resolución efectiva</div>
+        </div>
+        <div class="kpi-tile green">
+            <div class="kpi-label">Score con Resolución</div>
+            <div class="kpi-value">${withRes > 0 ? (avg(records.filter(r => getResolution(r) !== 'Sin resolución'), 'QA SCORE') || avg(records.filter(r => getResolution(r) !== 'Sin resolución'), 'QA_SCORE')).toFixed(1) : '—'}</div>
+            <div class="kpi-desc">Promedio QA resueltos</div>
+        </div>
+        <div class="kpi-tile amber">
+            <div class="kpi-label">Score sin Resolución</div>
+            <div class="kpi-value">${(total - withRes) > 0 ? (avg(records.filter(r => getResolution(r) === 'Sin resolución'), 'QA SCORE') || avg(records.filter(r => getResolution(r) === 'Sin resolución'), 'QA_SCORE') || 0).toFixed(1) : '—'}</div>
+            <div class="kpi-desc">Promedio QA sin resolución</div>
+        </div>
+    `;
+
+    // ── Heatmap: categoría × canal
+    const categories = [...new Set(records.map(r => getCategory(r)))];
+    const canales    = [...new Set(records.map(r => getCanal(r)))].filter(Boolean);
+
+    const heatContainer = document.getElementById('heatmapContainer');
+    let heatHTML = `<table class="heatmap-table"><thead><tr>
+        <th class="row-header">Categoría</th>
+        ${canales.map(c => `<th>${c}</th>`).join('')}
+        <th>Total</th>
+    </tr></thead><tbody>`;
+
+    categories.forEach(cat => {
+        const catRecs = records.filter(r => getCategory(r) === cat);
+        heatHTML += `<tr><td class="label-cell">${cat}</td>`;
+        canales.forEach(canal => {
+            const cRecs = catRecs.filter(r => getCanal(r) === canal);
+            if (!cRecs.length) {
+                heatHTML += `<td style="background:#f8fafc;color:#cbd5e1;">—</td>`;
+            } else {
+                const s = avg(cRecs, 'QA SCORE') || avg(cRecs, 'QA_SCORE');
+                const { bg, text } = heatColor(s);
+                heatHTML += `<td style="background:${bg};color:${text};">${s.toFixed(0)}</td>`;
+            }
+        });
+        const totalScore = avg(catRecs, 'QA SCORE') || avg(catRecs, 'QA_SCORE');
+        const { bg, text } = heatColor(totalScore);
+        heatHTML += `<td style="background:${bg};color:${text};font-weight:700;">${totalScore.toFixed(0)}</td></tr>`;
+    });
+    heatHTML += '</tbody></table>';
+    heatContainer.innerHTML = heatHTML;
+
+    // ── Table: intención × resolución
+    const pairs = {};
+    records.forEach(r => {
+        const key = `${getIntent(r)}|||${getResolution(r)}`;
+        if (!pairs[key]) pairs[key] = [];
+        pairs[key].push(r);
+    });
+
+    const pairRows = Object.entries(pairs).map(([key, recs]) => {
+        const [intent, resolution] = key.split('|||');
+        const score = avg(recs, 'QA SCORE') || avg(recs, 'QA_SCORE');
+        const rctPct = pct(recs.filter(r => getRecontacto(r) === 0).length, recs.length);
+        return { intent, resolution, n: recs.length, score, rctPct };
+    }).sort((a, b) => b.n - a.n).slice(0, 15);
+
+    const tbodyC = document.querySelector('#tableResolution tbody');
+    tbodyC.innerHTML = pairRows.map(row => {
+        const statusTag = row.rctPct > 30 ? '<span class="tag tag-red">⚠️ Alto recontacto</span>'
+                        : row.score >= 80  ? '<span class="tag tag-green">✅ Efectivo</span>'
+                        : '<span class="tag tag-amber">🔶 Regular</span>';
+        return `<tr>
+            <td><strong>${row.intent}</strong></td>
+            <td style="color:#475569;">${row.resolution}</td>
+            <td style="text-align:center;">${row.n}</td>
+            <td style="text-align:center;">${scorePill(row.score)}</td>
+            <td style="text-align:center;">${row.rctPct}%</td>
+            <td>${statusTag}</td>
+        </tr>`;
+    }).join('');
+}
+
+// ═══════════════════════════════════════════
+// SECCIÓN D — PANEL OPERATIVO
+// ═══════════════════════════════════════════
+function renderSectionD(records, total) {
+    // ── Trend by semana
+    const semanas = [...new Set(records.map(r => getSemana(r)))].filter(Boolean).sort();
+    const categories = [...new Set(records.map(r => getCategory(r)))].slice(0, 5);
+
+    const weeklyDatasets = categories.map((cat, i) => ({
+        label: cat,
+        data: semanas.map(s => records.filter(r => getSemana(r) === s && getCategory(r) === cat).length),
+        borderColor: PALETTE[i],
+        backgroundColor: PALETTE[i] + '22',
+        tension: 0.4,
+        fill: false,
+        pointRadius: 4
+    }));
+
+    makeChart('chartWeeklyTrend', {
+        type: 'line',
+        data: { labels: semanas, datasets: weeklyDatasets },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 10, padding: 8 } } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                x: { ticks: { font: { size: 10 } } }
+            }
+        }
+    });
+
+}
+
+// ─────────────────────────────────────────────
+
+// ═══════════════════════════════════════════
+// HEATMAP INTENCIÓN × CRITERIO Q
+// ═══════════════════════════════════════════
+
+function _hmAvg(arr) {
+    const v = arr.filter(x => x !== null && x !== undefined && !isNaN(x));
+    return v.length ? v.reduce((a, b) => a + b, 0) / v.length : 0;
+}
+
+function _hmPct(n, t) { return t ? Math.round(n / t * 1000) / 10 : 0; }
+
+function _hmHeat(p) {
+    if (p >= 85) return { bg: '#d1fae5', color: '#065f46' };
+    if (p >= 70) return { bg: '#fef3c7', color: '#92400e' };
+    if (p >= 50) return { bg: '#ffedd5', color: '#c2410c' };
+    return { bg: '#fee2e2', color: '#991b1b' };
+}
+
+function _hmCompliance(recs, code, maxVal) {
+    const valid = recs.filter(r => r[code] !== undefined && r[code] !== '' && r[code] !== null);
+    if (!valid.length) return null;
+    return _hmPct(valid.filter(r => parseFloat(r[code]) >= maxVal).length, valid.length);
+}
+
+function _hmBuildQMeta(data) {
+    const qCodes   = Array.from({ length: 22 }, (_, i) => `Q${i + 1}`);
+    const atribs   = data.atributos_evaluacion || [];
+    const columnas = data.columnas || [];
+
+    return qCodes.map(code => {
+        const attr = atribs.find(a =>
+            (a.columna || a.column || a.COLUMNA || '').toString().toUpperCase() === code ||
+            (a.codigo  || a.code   || a.CODIGO  || '').toString().toUpperCase() === code
+        );
+        const col = columnas.find(a =>
+            (a.columna || a.COLUMNA || '').toString().toUpperCase() === code
+        );
+        let maxVal = null, label = code, desc = '';
+        if (attr) {
+            maxVal = parseFloat(attr.maximo || attr.max || attr.MAXIMO || attr.MAX || attr.valor_maximo || 0) || null;
+            label  = attr.nombre || attr.name || attr.NOMBRE || code;
+        }
+        if (col) {
+            desc = (col.descripcion || col.DESCRIPCION || col.description || '').toString().trim();
+            if (label === code && desc) label = desc;
+        }
+        if (!maxVal) {
+            const vals = data.base_excel.map(r => parseFloat(r[code])).filter(v => !isNaN(v) && v > 0);
+            maxVal = vals.length ? Math.max(...vals) : 1;
+        }
+        return { code, label: label.toString(), desc, max: maxVal };
+    }).filter(q => data.base_excel.some(r => r[q.code] !== undefined && r[q.code] !== '' && r[q.code] !== null));
+}
+
+function renderHeatmapQ(data) {
+    const zone = document.getElementById('hmQContent');
+    if (!zone) return;
+
+    const allRecs   = data.base_excel;
+    const intentRecs = allRecs.filter(r => getIntent(r) !== 'Sin intención');
+    if (!intentRecs.length) { zone.innerHTML = '<p style="color:#94a3b8;padding:16px;">Sin datos de intención.</p>'; return; }
+
+    const Q = _hmBuildQMeta(data);
+    if (!Q.length) return;
+
+    // Intent groups sorted by volume desc
+    const iMap = intentRecs.reduce((acc, r) => {
+        const k = getIntent(r);
+        if (!acc[k]) acc[k] = [];
+        acc[k].push(r);
+        return acc;
+    }, {});
+    const topIntents = Object.entries(iMap).sort((a, b) => b[1].length - a[1].length);
+
+    // Global compliance per Q (all intent records)
+    const globalComps = Q.map(q => _hmCompliance(intentRecs, q.code, q.max));
+    const globalAvg   = _hmAvg(globalComps.filter(v => v !== null));
+    const { bg: gab, color: gac } = _hmHeat(globalAvg);
+
+    // Table styles
+    const thStyle  = 'background:#f8fafc;color:#64748b;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;padding:7px 9px;border:1px solid #e2e8f0;white-space:nowrap;text-align:center;';
+    const thLStyle = thStyle + 'text-align:left;min-width:160px;position:sticky;left:0;z-index:2;';
+    const tdLStyle = 'text-align:left;font-size:11px;font-weight:600;color:#1e293b;background:#f8fafc;white-space:nowrap;position:sticky;left:0;z-index:1;border:1px solid #e2e8f0;padding:6px 9px;';
+
+    let html = `<table style="border-collapse:collapse;font-size:11px;min-width:100%;">
+    <thead>
+        <tr>
+            <th style="${thLStyle}">Intención</th>
+            <th style="${thStyle}">Int.</th>
+            ${Q.map(q => `<th title="${(q.desc || q.label).replace(/"/g,"'")}" style="${thStyle}cursor:help;">${q.code}</th>`).join('')}
+            <th style="${thStyle}">Prom.</th>
+        </tr>
+        <tr style="border-bottom:2px solid #e2e8f0;">
+            <td style="${tdLStyle}font-size:10px;font-weight:800;color:#64748b;background:#f1f5f9;letter-spacing:.3px;">PROMEDIO GLOBAL</td>
+            <td style="background:#f1f5f9;text-align:center;font-size:11px;font-weight:700;color:#64748b;border:1px solid #e2e8f0;padding:6px 9px;">${intentRecs.length}</td>
+            ${globalComps.map(gc => {
+                if (gc === null) return `<td style="background:#f8fafc;color:#cbd5e1;border:1px solid #e2e8f0;padding:6px 9px;">—</td>`;
+                const { bg, color } = _hmHeat(gc);
+                return `<td style="background:${bg};color:${color};font-weight:800;font-size:12px;text-align:center;border:1px solid #e2e8f0;padding:6px 9px;">${gc.toFixed(0)}</td>`;
+            }).join('')}
+            <td style="background:${gab};color:${gac};font-weight:800;font-size:12px;text-align:center;border:1px solid #e2e8f0;padding:6px 9px;">${globalAvg.toFixed(0)}</td>
+        </tr>
+    </thead>
+    <tbody>`;
+
+    topIntents.forEach(([intent, recs]) => {
+        const comps = Q.map(q => _hmCompliance(recs, q.code, q.max));
+        const avgC  = _hmAvg(comps.filter(v => v !== null));
+        const { bg: ab, color: ac } = _hmHeat(avgC);
+        const lbl   = intent.length > 28 ? intent.substring(0, 26) + '…' : intent;
+
+        // Top 3 worst indices
+        const ranked = comps.map((v, i) => ({ i, v: v ?? 101 })).sort((a, b) => a.v - b.v);
+        const w1 = ranked[0]?.i, w2 = ranked[1]?.i, w3 = ranked[2]?.i;
+
+        html += `<tr>
+            <td style="${tdLStyle}">${lbl}</td>
+            <td style="text-align:center;font-size:11px;color:#64748b;border:1px solid #e2e8f0;padding:6px 9px;">${recs.length}</td>`;
+
+        comps.forEach((cv, idx) => {
+            if (cv === null) { html += `<td style="background:#f8fafc;color:#cbd5e1;border:1px solid #e2e8f0;padding:6px 9px;text-align:center;">—</td>`; return; }
+            const { bg, color } = _hmHeat(cv);
+            let outline = '';
+            if      (idx === w1) outline = 'outline:2px solid #7f1d1d;outline-offset:-2px;font-weight:800;';
+            else if (idx === w2) outline = 'outline:2px solid #991b1b;outline-offset:-2px;font-weight:800;';
+            else if (idx === w3) outline = 'outline:2px solid #b91c1c;outline-offset:-2px;';
+            html += `<td style="background:${bg};color:${color};${outline}text-align:center;border:1px solid #e2e8f0;padding:6px 9px;">${cv.toFixed(0)}</td>`;
+        });
+
+        html += `<td style="background:${ab};color:${ac};font-weight:800;text-align:center;border:1px solid #e2e8f0;padding:6px 9px;">${avgC.toFixed(0)}</td></tr>`;
+    });
+
+    html += '</tbody></table>';
+    zone.innerHTML = html;
+}
+
+// BOOTSTRAP
+// ─────────────────────────────────────────────
+window.addEventListener('message', (event) => {
+    if (event.data.type === 'FILTERED_DATA') {
+        cargarPagina(event.data.data);
+    }
+});
+
+if (window.parent && (window.parent.filteredData || window.parent.rawData)) {
+    cargarPagina(window.parent.filteredData || window.parent.rawData);
+}
+</script>
+</body>
+</html>

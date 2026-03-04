@@ -164,6 +164,58 @@
             color: #cbd5e1;
         }
 
+        /* ESTILOS PARA MAPA DE CALOR DE GRUPOS */
+        .grupos-heatmap {
+            margin: 24px 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        .grupos-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        .grupos-table th {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .grupos-table td {
+            padding: 16px 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .grupos-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .grupo-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .grupo-icon {
+            font-size: 24px;
+        }
+
+        .atributos-list {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
         /* Estilos para Mapa de Calor de Indicadores */
         .indicators-heatmap {
             margin: 24px 0;
@@ -261,7 +313,7 @@
             color: #ef4444;
         }
 
-        /* NUEVOS ESTILOS PARA EVOLUCIÓN TEMPORAL */
+        /* ESTILOS PARA EVOLUCIÓN TEMPORAL */
         .temporal-evolution {
             margin: 24px 0;
             background: white;
@@ -405,6 +457,215 @@
         .temporal-table tbody tr:hover {
             background: #f8fafc;
         }
+
+        /* ESTILOS PARA DRILL-DOWN DE GRUPOS (ACORDEÓN) */
+        .grupos-drilldown {
+            margin: 24px 0;
+        }
+
+        .grupo-accordion {
+            margin-bottom: 16px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .grupo-accordion-header {
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.2s;
+        }
+
+        .grupo-accordion-header:hover {
+            background: #f8fafc;
+        }
+
+        .grupo-accordion-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .grupo-accordion-icon {
+            font-size: 28px;
+        }
+
+        .grupo-accordion-info h3 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .grupo-accordion-info p {
+            margin: 4px 0 0 0;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .grupo-accordion-stats {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .grupo-stat {
+            text-align: center;
+        }
+
+        .grupo-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .grupo-stat-label {
+            font-size: 11px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .grupo-accordion-toggle {
+            font-size: 24px;
+            color: #64748b;
+            transition: transform 0.3s;
+        }
+
+        .grupo-accordion-toggle.expanded {
+            transform: rotate(180deg);
+        }
+
+        .grupo-accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .grupo-accordion-content.expanded {
+            max-height: 2000px;
+        }
+
+        .grupo-accordion-body {
+            padding: 20px;
+        }
+
+        .criterios-detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+
+        .criterios-detail-table th {
+            background: #f8fafc;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            color: #475569;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .criterios-detail-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 13px;
+        }
+
+        .criterios-detail-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .factores-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .factores-list li {
+            padding: 4px 0;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .factores-list li:before {
+            content: "• ";
+            color: #1b98e0;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .factores-summary {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 16px;
+            border-radius: 6px;
+            margin-top: 16px;
+        }
+
+        .factores-summary h4 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #92400e;
+        }
+
+        .factores-summary ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .factores-summary li {
+            margin: 8px 0;
+            color: #78350f;
+            font-size: 13px;
+        }
+
+        /* NUEVOS ESTILOS PARA GRÁFICO RADAR */
+        .radar-charts-container {
+            margin: 24px 0;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .radar-chart-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        .radar-chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .radar-chart-canvas {
+            max-height: 500px;
+        }
+
+        .bpo-radars-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        @media (max-width: 968px) {
+            .bpo-radars-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body style="background: transparent; padding: 0;">
@@ -413,6 +674,22 @@
         
         <!-- KPIs Resumen -->
         <div id="kpiContainer" class="kpi-grid"></div>
+
+        <!-- Mapa de Calor de Grupos -->
+        <div class="grupos-heatmap">
+            <table class="grupos-table">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Grupo</th>
+                        <th style="width: 10%; text-align: center;">Atributos</th>
+                        <th style="width: 40%;">% Cumplimiento Promedio</th>
+                        <th style="width: 15%; text-align: center;">Estado</th>
+                        <th style="width: 10%; text-align: center;">Brecha</th>
+                    </tr>
+                </thead>
+                <tbody id="gruposBody"></tbody>
+            </table>
+        </div>
 
         <!-- Mapa de Calor de Indicadores de Negocio -->
         <div class="indicators-heatmap">
@@ -426,17 +703,18 @@
                         <th style="width: 10%; text-align: center;">Brecha</th>
                     </tr>
                 </thead>
-                <tbody id="indicatorsBody">
-                    <!-- Se llenará con JavaScript -->
-                </tbody>
+                <tbody id="indicatorsBody"></tbody>
             </table>
         </div>
 
-        <!-- NUEVA SECCIÓN: Evolución Temporal -->
+        <!-- Evolución Temporal (con cálculo dinámico de fechas) -->
         <div class="temporal-evolution">
             <div class="temporal-header">
                 <div class="temporal-title">📈 Evolución Temporal de Cumplimiento</div>
                 <div class="view-toggle">
+                    <button class="toggle-btn" data-view="diaria" onclick="cambiarVista('diaria')">
+                        Diaria
+                    </button>
                     <button class="toggle-btn active" data-view="semanal" onclick="cambiarVista('semanal')">
                         Semanal
                     </button>
@@ -447,12 +725,8 @@
             </div>
             <div class="temporal-table-container">
                 <table class="temporal-table" id="temporalTable">
-                    <thead id="temporalTableHead">
-                        <!-- Se llenará con JavaScript -->
-                    </thead>
-                    <tbody id="temporalTableBody">
-                        <!-- Se llenará con JavaScript -->
-                    </tbody>
+                    <thead id="temporalTableHead"></thead>
+                    <tbody id="temporalTableBody"></tbody>
                 </table>
             </div>
         </div>
@@ -473,10 +747,18 @@
             </div>
         </div>
 
-        <!-- Gráfico de Barras - Ranking de Criterios -->
-        <div class="chart-container">
-            <div class="chart-title">Ranking de Criterios por % de Cumplimiento</div>
-            <canvas id="rankingChart"></canvas>
+        <!-- NUEVO: Perfil de Calidad por Atributo (Gráficos Radar) -->
+        <div class="radar-charts-container">
+            <!-- Gráfico General -->
+            <div class="radar-chart-card">
+                <div class="radar-chart-title">📊 Perfil de Calidad por Atributo - General</div>
+                <canvas id="radarChartGeneral" class="radar-chart-canvas"></canvas>
+            </div>
+
+            <!-- Gráficos por BPO -->
+            <div class="bpo-radars-grid" id="bpoRadarsContainer">
+                <!-- Se llenará dinámicamente -->
+            </div>
         </div>
 
         <!-- Tabla Heatmap -->
@@ -499,6 +781,9 @@
             </table>
         </div>
 
+        <!-- Drill-down de Grupos -->
+        <div class="grupos-drilldown" id="gruposDrilldown"></div>
+
         <!-- Matriz de Impacto -->
         <div class="card" style="margin-top: 24px;">
             <div class="card-title">Matriz de Impacto - Criterios vs Indicadores de Negocio</div>
@@ -515,9 +800,7 @@
                                 <th>Negocio</th>
                             </tr>
                         </thead>
-                        <tbody id="impactBody">
-                            <!-- Se llenará con JavaScript -->
-                        </tbody>
+                        <tbody id="impactBody"></tbody>
                     </table>
                 </div>
             </div>
@@ -542,12 +825,23 @@
             Negocio: '📈'
         };
 
-        let rankingChartInstance = null;
-        let currentView = 'semanal'; // 'semanal' o 'mensual'
-        let globalData = null; // Guardar datos para cambio de vista
-        let columnasMetadata = [];
+        const GRUPO_ICONS = {
+            'habilidades': '📚',
+            'operativas': '⚙️',
+            'protocolos': '📋',
+            'compliance': '✅',
+            'negocio': '💼',
+            'default': '📊'
+        };
 
-        // PATRÓN OBLIGATORIO: Función para notificar altura al padre
+        let radarChartGeneral = null;
+        let radarChartsBPO = {};
+        let currentView = 'semanal';
+        let globalData = null;
+        let columnasMetadata = [];
+        let criteriaStatsGlobal = [];
+
+        // PATRÓN OBLIGATORIO
         function notifyHeight() {
             const height = document.body.scrollHeight;
             window.parent.postMessage({
@@ -556,23 +850,19 @@
             }, '*');
         }
         
-        // PATRÓN OBLIGATORIO: Escuchar mensajes del padre
         window.addEventListener('message', (event) => {
             if (event.data.type === 'FILTERED_DATA') {
                 cargarPagina(event.data.data);
             }
         });
         
-        // PATRÓN OBLIGATORIO: Cargar datos si están disponibles
         if (window.parent.filteredData || window.parent.rawData) {
             cargarPagina(window.parent.filteredData || window.parent.rawData);
         }
 
-        // Función para cambiar vista temporal
         function cambiarVista(vista) {
             currentView = vista;
             
-            // Actualizar botones
             document.querySelectorAll('.toggle-btn').forEach(btn => {
                 if (btn.dataset.view === vista) {
                     btn.classList.add('active');
@@ -581,10 +871,107 @@
                 }
             });
 
-            // Re-renderizar tabla temporal
             if (globalData) {
                 renderTemporalEvolution(globalData);
             }
+        }
+
+        function toggleGrupoAccordion(grupoId) {
+            const content = document.getElementById(`grupo-content-${grupoId}`);
+            const toggle = document.getElementById(`grupo-toggle-${grupoId}`);
+            
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                toggle.classList.remove('expanded');
+            } else {
+                content.classList.add('expanded');
+                toggle.classList.add('expanded');
+            }
+            
+            setTimeout(notifyHeight, 400);
+        }
+
+        // NUEVA FUNCIÓN: Parsear fecha dinámicamente
+        function parseFecha(fechaStr) {
+            if (!fechaStr) return null;
+            
+            // Formato: MM/DD/YY o M/D/YY o MM/DD/YYYY
+            const partes = fechaStr.toString().split('/');
+            if (partes.length === 3) {
+                let [mes, dia, anio] = partes.map(p => parseInt(p));
+                
+                // Ajustar año si es de 2 dígitos
+                if (anio < 100) {
+                    anio += 2000;
+                }
+                
+                // Crear fecha (mes es 0-indexed en JavaScript)
+                return new Date(anio, mes - 1, dia);
+            }
+            
+            return null;
+        }
+
+        // NUEVA FUNCIÓN: Formatear fecha según vista
+        function formatearPeriodo(fecha, vista) {
+            if (!fecha) return 'Sin fecha';
+            
+            const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            
+            if (vista === 'diaria') {
+                const dia = fecha.getDate().toString().padStart(2, '0');
+                const mes = meses[fecha.getMonth()];
+                return `${dia}-${mes}`;
+            } else if (vista === 'semanal') {
+                // Obtener número de semana del año
+                const inicioAnio = new Date(fecha.getFullYear(), 0, 1);
+                const dias = Math.floor((fecha - inicioAnio) / (24 * 60 * 60 * 1000));
+                const semana = Math.ceil((dias + inicioAnio.getDay() + 1) / 7);
+                return `SEM ${semana}`;
+            } else { // mensual
+                const mes = meses[fecha.getMonth()];
+                const anio = fecha.getFullYear().toString().slice(-2);
+                return `${mes}-${anio}`;
+            }
+        }
+
+        // NUEVA FUNCIÓN: Agrupar registros por período
+        function agruparPorPeriodo(records, vista, campoFecha = 'FECHA DE INTERACCIÓN') {
+            const grupos = {};
+            
+            records.forEach(record => {
+                const fechaStr = record[campoFecha];
+                const fecha = parseFecha(fechaStr);
+                
+                if (!fecha) return;
+                
+                let clavePeriodo;
+                
+                if (vista === 'diaria') {
+                    // Agrupar por día exacto
+                    clavePeriodo = fecha.toISOString().split('T')[0]; // YYYY-MM-DD
+                } else if (vista === 'semanal') {
+                    // Agrupar por semana
+                    const inicioAnio = new Date(fecha.getFullYear(), 0, 1);
+                    const dias = Math.floor((fecha - inicioAnio) / (24 * 60 * 60 * 1000));
+                    const semana = Math.ceil((dias + inicioAnio.getDay() + 1) / 7);
+                    clavePeriodo = `${fecha.getFullYear()}-W${semana.toString().padStart(2, '0')}`;
+                } else { // mensual
+                    // Agrupar por mes
+                    clavePeriodo = `${fecha.getFullYear()}-${(fecha.getMonth() + 1).toString().padStart(2, '0')}`;
+                }
+                
+                if (!grupos[clavePeriodo]) {
+                    grupos[clavePeriodo] = {
+                        fecha: fecha,
+                        records: []
+                    };
+                }
+                
+                grupos[clavePeriodo].records.push(record);
+            });
+            
+            return grupos;
         }
         
         // FUNCIÓN PRINCIPAL DE CARGA
@@ -596,11 +983,10 @@
                 return;
             }
             
-            globalData = data; // Guardar datos globalmente
+            globalData = data;
             const records = data.base_excel;
             console.log('Total de registros:', records.length);
             
-            // Buscar descripción de columnas
             if (data.columnas && Array.isArray(data.columnas)) {
                 columnasMetadata = data.columnas;
             } else if (data.atributos_evaluacion && Array.isArray(data.atributos_evaluacion)) {
@@ -609,7 +995,6 @@
             
             console.log('Metadata encontrada:', columnasMetadata.length, 'columnas');
             
-            // Identificar criterios Q1-Q22
             const criterios = [];
             for (let i = 1; i <= 22; i++) {
                 const qKey = `Q${i}`;
@@ -620,13 +1005,9 @@
 
             console.log('Criterios encontrados:', criterios);
 
-            // Función para obtener descripción del criterio
             function getCriterioDescripcion(qKey) {
                 const metadata = columnasMetadata.find(col => {
-                    return col.columna === qKey || 
-                           col.nombre === qKey || 
-                           col.campo === qKey ||
-                           col.id === qKey;
+                    return col.columna === qKey || col.nombre === qKey || col.campo === qKey || col.id === qKey;
                 });
                 
                 if (metadata) {
@@ -637,7 +1018,6 @@
                 return qKey;
             }
 
-            // Calcular estadísticas por criterio
             const criteriaStats = criterios.map(qKey => {
                 const valores = records.map(r => parseFloat(r[qKey]) || 0);
                 
@@ -668,17 +1048,18 @@
             });
 
             console.log('Stats calculadas:', criteriaStats.length, 'criterios');
+            criteriaStatsGlobal = criteriaStats;
 
-            // Renderizar componentes
             renderKPIs(criteriaStats);
+            renderGruposHeatmap(criteriaStats);
             renderIndicatorsHeatmap(criteriaStats);
             renderTemporalEvolution(data);
             renderTopBottom(criteriaStats);
-            renderRankingChart(criteriaStats);
+            renderRadarCharts(data);
             renderHeatmap(criteriaStats);
+            renderGruposDrilldown(criteriaStats);
             renderImpactMatrix(criteriaStats);
 
-            // Notificar altura múltiples veces
             setTimeout(notifyHeight, 100);
             setTimeout(notifyHeight, 500);
             setTimeout(notifyHeight, 1000);
@@ -686,7 +1067,6 @@
             setTimeout(notifyHeight, 3000);
         }
 
-        // Función para obtener color según % cumplimiento
         function getCumplimientoColor(cumplimiento) {
             if (cumplimiento >= 90) return '#10b981';
             if (cumplimiento >= 70) return '#f59e0b';
@@ -735,6 +1115,101 @@
                     <div class="kpi-change">Registros analizados</div>
                 </div>
             `;
+        }
+
+        // Renderizar Mapa de Calor de Grupos
+        function renderGruposHeatmap(stats) {
+            console.log('=== RENDERIZANDO MAPA DE CALOR DE GRUPOS ===');
+            const tbody = document.getElementById('gruposBody');
+            
+            if (!tbody || !stats || stats.length === 0) {
+                console.error('No hay datos para renderizar grupos');
+                return;
+            }
+
+            const atributos = columnasMetadata.filter(col => col.atributo === 1);
+            const gruposUnicos = [...new Set(atributos.map(col => col.grupo).filter(g => g))];
+            
+            console.log('Grupos encontrados dinámicamente:', gruposUnicos);
+
+            const gruposData = gruposUnicos.map(grupo => {
+                const criteriosDelGrupo = atributos
+                    .filter(col => col.grupo === grupo)
+                    .map(col => col.columna);
+                
+                const statsDelGrupo = stats.filter(s => criteriosDelGrupo.includes(s.criterio));
+                
+                if (statsDelGrupo.length === 0) {
+                    return {
+                        nombre: grupo,
+                        criterios: [],
+                        cantidad: 0,
+                        cumplimiento: 0,
+                        brecha: 0
+                    };
+                }
+
+                const cumplimientoPromedio = statsDelGrupo.reduce((a, b) => a + b.cumplimiento, 0) / statsDelGrupo.length;
+                const brecha = 100 - cumplimientoPromedio;
+
+                return {
+                    nombre: grupo,
+                    criterios: criteriosDelGrupo.sort(),
+                    cantidad: criteriosDelGrupo.length,
+                    cumplimiento: cumplimientoPromedio,
+                    brecha: brecha
+                };
+            });
+
+            gruposData.sort((a, b) => b.cumplimiento - a.cumplimiento);
+
+            const rows = gruposData.map(grupo => {
+                const color = getCumplimientoColor(grupo.cumplimiento);
+                const estado = grupo.cumplimiento >= 90 ? 'success' : grupo.cumplimiento >= 70 ? 'warning' : 'error';
+                const estadoText = grupo.cumplimiento >= 90 ? 'Excelente' : grupo.cumplimiento >= 70 ? 'Bueno' : 'Crítico';
+                
+                const grupoKey = grupo.nombre.toLowerCase();
+                const icon = GRUPO_ICONS[grupoKey] || GRUPO_ICONS['default'];
+
+                return `
+                    <tr>
+                        <td>
+                            <div class="grupo-name">
+                                <span class="grupo-icon">${icon}</span>
+                                <div>
+                                    <div style="text-transform: capitalize;">${grupo.nombre}</div>
+                                    <div class="atributos-list">${grupo.criterios.join(', ')}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="text-align: center; font-weight: 600; color: #64748b;">
+                            ${grupo.cantidad}
+                        </td>
+                        <td>
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${grupo.cumplimiento}%; background: ${color};">
+                                        ${grupo.cumplimiento >= 20 ? grupo.cumplimiento.toFixed(1) + '%' : ''}
+                                    </div>
+                                </div>
+                                <div class="progress-percent" style="color: ${color};">
+                                    ${grupo.cumplimiento.toFixed(1)}%
+                                </div>
+                            </div>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="badge badge-${estado}">${estadoText}</span>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="brecha-value brecha-negative">-${grupo.brecha.toFixed(1)}%</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            tbody.innerHTML = rows;
+            console.log('Mapa de calor de grupos renderizado');
+            setTimeout(notifyHeight, 300);
         }
 
         // Renderizar Mapa de Calor de Indicadores
@@ -819,36 +1294,14 @@
             setTimeout(notifyHeight, 300);
         }
 
-        // NUEVA FUNCIÓN: Renderizar Evolución Temporal
-        function renderTemporalEvolution(data) {
-            console.log('=== RENDERIZANDO EVOLUCIÓN TEMPORAL ===');
+        // NUEVA FUNCIÓN: Renderizar Gráficos Radar
+        function renderRadarCharts(data) {
+            console.log('=== RENDERIZANDO GRÁFICOS RADAR ===');
             
-            if (!data || !data.base_excel) {
-                console.error('No hay datos para evolución temporal');
-                return;
-            }
-
+            if (!data || !data.base_excel) return;
+            
             const records = data.base_excel;
-            const periodoField = currentView === 'semanal' ? 'SEMANA' : 'MES';
             
-            // Obtener todos los períodos únicos y ordenarlos
-            const periodosSet = new Set();
-            records.forEach(r => {
-                if (r[periodoField]) {
-                    periodosSet.add(r[periodoField]);
-                }
-            });
-            
-            let periodos = Array.from(periodosSet).sort();
-            console.log('Períodos encontrados:', periodos);
-
-            if (periodos.length === 0) {
-                document.getElementById('temporalTableHead').innerHTML = '<tr><th colspan="2">No hay datos de período disponibles</th></tr>';
-                document.getElementById('temporalTableBody').innerHTML = '';
-                return;
-            }
-
-            // Identificar criterios Q1-Q22
             const criterios = [];
             for (let i = 1; i <= 22; i++) {
                 const qKey = `Q${i}`;
@@ -857,7 +1310,180 @@
                 }
             }
 
-            // Función para obtener descripción del criterio
+            // Cumplimiento general
+            const cumplimientoGeneral = criterios.map(criterio => {
+                const valores = records.map(r => parseFloat(r[criterio]) || 0);
+                const maximo = Math.max(...valores);
+                const cumplieron = valores.filter(v => v > 0 && v === maximo).length;
+                return (cumplieron / valores.length) * 100;
+            });
+
+            // Gráfico General
+            const ctxGeneral = document.getElementById('radarChartGeneral');
+            if (radarChartGeneral) {
+                radarChartGeneral.destroy();
+            }
+
+            radarChartGeneral = new Chart(ctxGeneral, {
+                type: 'radar',
+                data: {
+                    labels: criterios,
+                    datasets: [{
+                        label: 'Cumplimiento General',
+                        data: cumplimientoGeneral,
+                        backgroundColor: 'rgba(27, 152, 224, 0.2)',
+                        borderColor: 'rgba(27, 152, 224, 1)',
+                        pointBackgroundColor: 'rgba(27, 152, 224, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(27, 152, 224, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    return `${context.label}: ${context.parsed.r.toFixed(1)}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Gráficos por BPO
+            const bposUnicos = [...new Set(records.map(r => r.BPO).filter(b => b))];
+            const container = document.getElementById('bpoRadarsContainer');
+            
+            container.innerHTML = bposUnicos.map(bpo => `
+                <div class="radar-chart-card">
+                    <div class="radar-chart-title">Score por Atributo — ${bpo}</div>
+                    <canvas id="radarChart${bpo}" class="radar-chart-canvas"></canvas>
+                </div>
+            `).join('');
+
+            setTimeout(() => {
+                bposUnicos.forEach(bpo => {
+                    const recordsBPO = records.filter(r => r.BPO === bpo);
+                    
+                    const cumplimientoBPO = criterios.map(criterio => {
+                        const valores = recordsBPO.map(r => parseFloat(r[criterio]) || 0);
+                        if (valores.length === 0) return 0;
+                        const maximo = Math.max(...valores);
+                        const cumplieron = valores.filter(v => v > 0 && v === maximo).length;
+                        return (cumplieron / valores.length) * 100;
+                    });
+
+                    const ctx = document.getElementById(`radarChart${bpo}`);
+                    const color = bpo === 'KN' ? 'rgba(59, 130, 246, 1)' : 'rgba(16, 185, 129, 1)';
+                    const bgColor = bpo === 'KN' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(16, 185, 129, 0.2)';
+
+                    if (radarChartsBPO[bpo]) {
+                        radarChartsBPO[bpo].destroy();
+                    }
+
+                    radarChartsBPO[bpo] = new Chart(ctx, {
+                        type: 'radar',
+                        data: {
+                            labels: criterios,
+                            datasets: [{
+                                label: bpo,
+                                data: cumplimientoBPO,
+                                backgroundColor: bgColor,
+                                borderColor: color,
+                                pointBackgroundColor: color,
+                                pointBorderColor: '#fff',
+                                pointHoverBackgroundColor: '#fff',
+                                pointHoverBorderColor: color,
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            scales: {
+                                r: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    ticks: {
+                                        stepSize: 20
+                                    },
+                                    pointLabels: {
+                                        font: {
+                                            size: 11
+                                        }
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: (context) => {
+                                            return `${context.label}: ${context.parsed.r.toFixed(1)}%`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                });
+
+                setTimeout(notifyHeight, 500);
+            }, 300);
+        }
+
+        // FUNCIÓN MODIFICADA: Renderizar Evolución Temporal
+        function renderTemporalEvolution(data) {
+            console.log('=== RENDERIZANDO EVOLUCIÓN TEMPORAL (DINÁMICA) ===');
+            
+            if (!data || !data.base_excel) {
+                console.error('No hay datos para evolución temporal');
+                return;
+            }
+
+            const records = data.base_excel;
+            
+            const gruposPeriodo = agruparPorPeriodo(records, currentView);
+            const periodosOrdenados = Object.keys(gruposPeriodo).sort();
+            
+            if (periodosOrdenados.length === 0) {
+                document.getElementById('temporalTableHead').innerHTML = '<tr><th colspan="2">No hay datos de fecha disponibles</th></tr>';
+                document.getElementById('temporalTableBody').innerHTML = '';
+                return;
+            }
+
+            const criterios = [];
+            for (let i = 1; i <= 22; i++) {
+                const qKey = `Q${i}`;
+                if (records[0] && records[0].hasOwnProperty(qKey)) {
+                    criterios.push(qKey);
+                }
+            }
+
             function getCriterioDescripcion(qKey) {
                 const metadata = columnasMetadata.find(col => {
                     return col.columna === qKey || col.nombre === qKey || col.campo === qKey || col.id === qKey;
@@ -871,7 +1497,6 @@
                 return qKey;
             }
 
-            // Calcular cumplimiento por criterio y período
             const temporalData = {};
             
             criterios.forEach(criterio => {
@@ -880,8 +1505,8 @@
                     periodos: {}
                 };
 
-                periodos.forEach(periodo => {
-                    const registrosPeriodo = records.filter(r => r[periodoField] === periodo);
+                periodosOrdenados.forEach(clavePeriodo => {
+                    const registrosPeriodo = gruposPeriodo[clavePeriodo].records;
                     const valores = registrosPeriodo.map(r => parseFloat(r[criterio]) || 0);
                     
                     if (valores.length > 0) {
@@ -889,24 +1514,27 @@
                         const cumplieron = valores.filter(v => v > 0 && v === maximo).length;
                         const cumplimiento = (cumplieron / valores.length) * 100;
                         
-                        temporalData[criterio].periodos[periodo] = cumplimiento;
+                        temporalData[criterio].periodos[clavePeriodo] = cumplimiento;
                     } else {
-                        temporalData[criterio].periodos[periodo] = 0;
+                        temporalData[criterio].periodos[clavePeriodo] = 0;
                     }
                 });
             });
 
-            // Renderizar encabezado de tabla
+            const periodosFormateados = periodosOrdenados.map(clave => {
+                const fecha = gruposPeriodo[clave].fecha;
+                return formatearPeriodo(fecha, currentView);
+            });
+
             const thead = document.getElementById('temporalTableHead');
             const headerRow = `
                 <tr>
                     <th>Criterio</th>
-                    ${periodos.map(p => `<th>${p}</th>`).join('')}
+                    ${periodosFormateados.map(p => `<th>${p}</th>`).join('')}
                 </tr>
             `;
             thead.innerHTML = headerRow;
 
-            // Renderizar cuerpo de tabla
             const tbody = document.getElementById('temporalTableBody');
             const bodyRows = criterios.map(criterio => {
                 const data = temporalData[criterio];
@@ -914,16 +1542,15 @@
                     ? data.descripcion.split(' - ').slice(1).join(' - ')
                     : data.descripcion;
                 
-                const cells = periodos.map((periodo, index) => {
-                    const valor = data.periodos[periodo] || 0;
+                const cells = periodosOrdenados.map((clavePeriodo, index) => {
+                    const valor = data.periodos[clavePeriodo] || 0;
                     const color = getCumplimientoColor(valor);
                     const bgColor = getCumplimientoBgColor(valor);
                     
-                    // Calcular tendencia (comparar con período anterior)
                     let trendHTML = '';
                     if (index > 0) {
-                        const periodoAnterior = periodos[index - 1];
-                        const valorAnterior = data.periodos[periodoAnterior] || 0;
+                        const claveAnterior = periodosOrdenados[index - 1];
+                        const valorAnterior = data.periodos[claveAnterior] || 0;
                         const diferencia = valor - valorAnterior;
                         
                         if (Math.abs(diferencia) < 0.5) {
@@ -957,7 +1584,7 @@
             }).join('');
 
             tbody.innerHTML = bodyRows;
-            console.log('Evolución temporal renderizada');
+            console.log('Evolución temporal renderizada (dinámica)');
             setTimeout(notifyHeight, 500);
         }
 
@@ -1005,68 +1632,6 @@
             document.getElementById('brechasContainer').innerHTML = brechasHTML || '<p>No hay datos</p>';
         }
 
-        // Renderizar Gráfico de Barras Horizontales
-        function renderRankingChart(stats) {
-            const sorted = [...stats].sort((a, b) => b.cumplimiento - a.cumplimiento);
-            
-            const ctx = document.getElementById('rankingChart');
-            
-            if (rankingChartInstance) {
-                rankingChartInstance.destroy();
-            }
-            
-            rankingChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: sorted.map(s => s.descripcion),
-                    datasets: [{
-                        label: '% Cumplimiento',
-                        data: sorted.map(s => s.cumplimiento),
-                        backgroundColor: sorted.map(s => getCumplimientoColor(s.cumplimiento)),
-                        borderRadius: 6,
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => {
-                                    const stat = sorted[context.dataIndex];
-                                    return [
-                                        `Cumplimiento: ${stat.cumplimiento.toFixed(1)}%`,
-                                        `Cumplieron: ${stat.cumplieron.toLocaleString()}`,
-                                        `No cumplieron: ${stat.noCumplieron.toLocaleString()}`,
-                                        `Total: ${stat.totalAuditorias.toLocaleString()}`
-                                    ];
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            max: 100,
-                            grid: { color: '#e2e8f0' },
-                            ticks: {
-                                callback: function(value) {
-                                    return value + '%';
-                                }
-                            }
-                        },
-                        y: {
-                            grid: { display: false },
-                            ticks: { font: { size: 10 } }
-                        }
-                    }
-                }
-            });
-        }
-
         // Renderizar Heatmap
         function renderHeatmap(stats) {
             const tbody = document.getElementById('heatmapBody');
@@ -1098,6 +1663,156 @@
 
             tbody.innerHTML = rows;
             setTimeout(notifyHeight, 200);
+        }
+
+        // Renderizar Drill-down de Grupos
+        function renderGruposDrilldown(stats) {
+            console.log('=== RENDERIZANDO DRILL-DOWN DE GRUPOS ===');
+            const container = document.getElementById('gruposDrilldown');
+            
+            if (!container || !stats || stats.length === 0) {
+                console.error('No hay datos para drill-down');
+                return;
+            }
+
+            const atributos = columnasMetadata.filter(col => col.atributo === 1);
+            const gruposUnicos = [...new Set(atributos.map(col => col.grupo).filter(g => g))];
+            
+            const acordeones = gruposUnicos.map((grupo, index) => {
+                const criteriosDelGrupo = atributos.filter(col => col.grupo === grupo);
+                const statsDelGrupo = stats.filter(s => 
+                    criteriosDelGrupo.some(c => c.columna === s.criterio)
+                );
+                
+                if (statsDelGrupo.length === 0) return '';
+
+                const cumplimientoPromedio = statsDelGrupo.reduce((a, b) => a + b.cumplimiento, 0) / statsDelGrupo.length;
+                const color = getCumplimientoColor(cumplimientoPromedio);
+                const grupoKey = grupo.toLowerCase();
+                const icon = GRUPO_ICONS[grupoKey] || GRUPO_ICONS['default'];
+
+                const criteriosRows = statsDelGrupo.map(stat => {
+                    const metadata = criteriosDelGrupo.find(c => c.columna === stat.criterio);
+                    const factores = metadata?.factores_entrenamiento || [];
+                    const descripcionDetallada = metadata?.descripcion_detallada || metadata?.descripcion || '';
+                    
+                    const descripcionLimpia = stat.descripcion.includes(' - ') 
+                        ? stat.descripcion.split(' - ').slice(1).join(' - ')
+                        : stat.descripcion;
+
+                    return `
+                        <tr>
+                            <td style="width: 10%;"><strong>${stat.criterio}</strong></td>
+                            <td style="width: 30%;">
+                                <strong>${descripcionLimpia}</strong>
+                                ${descripcionDetallada ? `<br><small style="color: #64748b;">${descripcionDetallada}</small>` : ''}
+                            </td>
+                            <td style="width: 15%; text-align: center;">
+                                <span style="font-weight: 700; font-size: 16px; color: ${getCumplimientoColor(stat.cumplimiento)};">
+                                    ${stat.cumplimiento.toFixed(1)}%
+                                </span>
+                            </td>
+                            <td style="width: 45%;">
+                                ${factores.length > 0 ? `
+                                    <ul class="factores-list">
+                                        ${factores.map(f => `<li>${f}</li>`).join('')}
+                                    </ul>
+                                ` : '<span style="color: #94a3b8;">Sin factores definidos</span>'}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+                const todosLosFactores = {};
+                statsDelGrupo.forEach(stat => {
+                    const metadata = criteriosDelGrupo.find(c => c.columna === stat.criterio);
+                    const factores = metadata?.factores_entrenamiento || [];
+                    factores.forEach(factor => {
+                        if (!todosLosFactores[factor]) {
+                            todosLosFactores[factor] = {
+                                criterios: [],
+                                cumplimientos: []
+                            };
+                        }
+                        todosLosFactores[factor].criterios.push(stat.criterio);
+                        todosLosFactores[factor].cumplimientos.push(stat.cumplimiento);
+                    });
+                });
+
+                const factoresPrioritarios = Object.entries(todosLosFactores)
+                    .map(([factor, data]) => {
+                        const promedio = data.cumplimientos.reduce((a, b) => a + b, 0) / data.cumplimientos.length;
+                        return {
+                            factor: factor,
+                            cantidad: data.criterios.length,
+                            promedio: promedio,
+                            impacto: data.criterios.length * (100 - promedio)
+                        };
+                    })
+                    .sort((a, b) => b.impacto - a.impacto)
+                    .slice(0, 5);
+
+                const factoresSummary = factoresPrioritarios.length > 0 ? `
+                    <div class="factores-summary">
+                        <h4>🎯 Factores de entrenamiento prioritarios para este grupo:</h4>
+                        <ul>
+                            ${factoresPrioritarios.map(f => `
+                                <li>
+                                    <strong>${f.factor}</strong> 
+                                    (usado en ${f.cantidad} criterio${f.cantidad > 1 ? 's' : ''}, 
+                                    promedio ${f.promedio.toFixed(1)}%)
+                                    ${f.promedio < 70 ? ' ⚠️' : ''}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                ` : '';
+
+                return `
+                    <div class="grupo-accordion">
+                        <div class="grupo-accordion-header" onclick="toggleGrupoAccordion('${grupo}')">
+                            <div class="grupo-accordion-title">
+                                <span class="grupo-accordion-icon">${icon}</span>
+                                <div class="grupo-accordion-info">
+                                    <h3 style="text-transform: capitalize;">${grupo}</h3>
+                                    <p>${statsDelGrupo.length} criterios evaluados</p>
+                                </div>
+                            </div>
+                            <div class="grupo-accordion-stats">
+                                <div class="grupo-stat">
+                                    <div class="grupo-stat-value" style="color: ${color};">
+                                        ${cumplimientoPromedio.toFixed(1)}%
+                                    </div>
+                                    <div class="grupo-stat-label">Cumplimiento</div>
+                                </div>
+                                <span class="grupo-accordion-toggle" id="grupo-toggle-${grupo}">▼</span>
+                            </div>
+                        </div>
+                        <div class="grupo-accordion-content" id="grupo-content-${grupo}">
+                            <div class="grupo-accordion-body">
+                                <table class="criterios-detail-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Criterio</th>
+                                            <th>Descripción</th>
+                                            <th>% Cumplimiento</th>
+                                            <th>Factores de Entrenamiento</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${criteriosRows}
+                                    </tbody>
+                                </table>
+                                ${factoresSummary}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = acordeones;
+            console.log('Drill-down de grupos renderizado');
+            setTimeout(notifyHeight, 500);
         }
 
         // Renderizar Matriz de Impacto
