@@ -338,7 +338,8 @@ function renderScorecard(data) {
         return {
             data: Object.keys(grouped).sort().map(k => ({
                 x: +(promedio(grouped[k], 'AHT') / 60).toFixed(2),
-                y: +promedio(grouped[k], 'AVG_QA_SCORE').toFixed(2)
+                y: +promedio(grouped[k], 'AVG_QA_SCORE').toFixed(2),
+                fecha: k
             })).filter(p => p.x > 0 && p.y > 0),
             backgroundColor: color,
             pointRadius: 6,
@@ -844,7 +845,7 @@ function renderScorecard(data) {
     chartScatter = new Chart(document.getElementById('chartScatter'), {
         type: 'scatter',
         data: { datasets: [{ label: 'KN', ...scatterKN }, { label: 'AT', ...scatterAT }] },
-        options: scatterOpts('AHT (minutos)', v => v + ' min', ctx => `${ctx.dataset.label} — AHT: ${ctx.raw.x} min | QA: ${ctx.raw.y}%`),
+        options: scatterOpts('AHT (minutos)', v => v + ' min', ctx => `${ctx.dataset.label} · ${ctx.raw.fecha} — AHT: ${ctx.raw.x} min | QA: ${ctx.raw.y}%`),
         plugins: [quadPluginAHT]
     });
 
@@ -854,7 +855,8 @@ function renderScorecard(data) {
         return {
             data: Object.keys(grouped).sort().map(k => ({
                 x: +promedio(grouped[k], 'NS').toFixed(2),
-                y: +promedio(grouped[k], 'AVG_QA_SCORE').toFixed(2)
+                y: +promedio(grouped[k], 'AVG_QA_SCORE').toFixed(2),
+                fecha: k
             })).filter(p => p.x > 0 && p.y > 0),
             backgroundColor: color, pointRadius: 6, pointHoverRadius: 9
         };
@@ -864,7 +866,8 @@ function renderScorecard(data) {
         return {
             data: Object.keys(grouped).sort().map(k => ({
                 x: +suma(grouped[k], 'VOL LLAMADAS').toFixed(0),
-                y: +promedio(grouped[k], 'AVG_QA_SCORE').toFixed(2)
+                y: +promedio(grouped[k], 'AVG_QA_SCORE').toFixed(2),
+                fecha: k
             })).filter(p => p.x > 0 && p.y > 0),
             backgroundColor: color, pointRadius: 6, pointHoverRadius: 9
         };
@@ -878,7 +881,7 @@ function renderScorecard(data) {
     chartScatterNS = new Chart(document.getElementById('chartScatterNS'), {
         type: 'scatter',
         data: { datasets: [{ label: 'KN', ...nsKNd }, { label: 'AT', ...nsATd }] },
-        options: scatterOpts('Nivel de Servicio (%)', v => v + '%', ctx => `${ctx.dataset.label} — NS: ${ctx.raw.x}% | QA: ${ctx.raw.y}%`),
+        options: scatterOpts('Nivel de Servicio (%)', v => v + '%', ctx => `${ctx.dataset.label} · ${ctx.raw.fecha} — NS: ${ctx.raw.x}% | QA: ${ctx.raw.y}%`),
         plugins: [quadPluginNS]
     });
 
@@ -890,7 +893,7 @@ function renderScorecard(data) {
     chartScatterVol = new Chart(document.getElementById('chartScatterVol'), {
         type: 'scatter',
         data: { datasets: [{ label: 'KN', ...volKNd }, { label: 'AT', ...volATd }] },
-        options: scatterOpts('Volumen de Llamadas', v => v >= 1000 ? (v/1000).toFixed(1)+'k' : v, ctx => `${ctx.dataset.label} — Vol: ${ctx.raw.x.toLocaleString('es-CL')} | QA: ${ctx.raw.y}%`),
+        options: scatterOpts('Volumen de Llamadas', v => v >= 1000 ? (v/1000).toFixed(1)+'k' : v, ctx => `${ctx.dataset.label} · ${ctx.raw.fecha} — Vol: ${ctx.raw.x.toLocaleString('es-CL')} | QA: ${ctx.raw.y}%`),
         plugins: [quadPluginVol]
     });
 
